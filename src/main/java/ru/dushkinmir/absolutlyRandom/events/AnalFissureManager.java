@@ -18,11 +18,13 @@ public class AnalFissureManager implements Listener {
 
     // Проверка на получение анальной трещины
     public void checkForAnalFissure(Player player) {
-        if (random.nextInt(100) < 10) { // 10% шанс
-            analFissureMap.put(player, 2); // Устанавливаем трещину с 2 днями до заживления
-            player.sendMessage("Вы получили анальную трещину! Она заживет через два игровых дня.");
-        } else {
-            player.sendMessage("В этот раз все прошло гладко.");
+        if (analFissureMap.containsKey(player)) {
+            if (random.nextInt(100) < 10) { // 10% шанс
+                analFissureMap.put(player, 2); // Устанавливаем трещину с 2 днями до заживления
+                player.sendMessage("Вы получили анальную трещину! Она заживет через два игровых дня.");
+            } else {
+                player.sendMessage("В этот раз все прошло гладко.");
+            }
         }
     }
 
