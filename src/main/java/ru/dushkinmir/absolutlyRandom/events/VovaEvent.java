@@ -68,7 +68,8 @@ public class VovaEvent implements Listener {
 
     private static void applySmokeEffect(Player player) {
         float particleSize = RANDOM.nextFloat(1.5f, 2.0f);
-        player.spawnParticle(Particle.DUST, player.getLocation(), 75, 1, 1, 1, new Particle.DustOptions(Color.GREEN, particleSize));
+        for (Player p : Bukkit.getOnlinePlayers()) { // Отправить всем игрокам
+            p.spawnParticle(Particle.DUST, player.getLocation(), 75, 1, 1, 1, new Particle.DustOptions(Color.GREEN, particleSize));
+        }
     }
-
 }
