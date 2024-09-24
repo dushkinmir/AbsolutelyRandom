@@ -71,6 +71,7 @@ public class RandomMessageEvent extends JavaPlugin {
                 var titleText = Component.text("вова пидор", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
                 var subTitleText = Component.text(randomMessage, NamedTextColor.GOLD);
                 player.showTitle(Title.title(titleText, subTitleText));
+                player.sendActionBar(titleText);
                 MESSAGES.remove(randomMessage);
                 messageCount++;
             } else {
