@@ -1,0 +1,27 @@
+name: AbsolutelyRandom
+version: 0.9-SNAPSHOT
+main: ru.dushkinmir.absolutlyRandom.AbsolutelyRandom
+api-version: 1.21
+
+commands:
+  triggerkick:
+    description: Trigger a random player kick event.
+    usage: /triggerkick
+    permission: absolutlyrandom.admin
+  triggerevent:
+    description: Trigger the group event.
+    usage: /triggerevent
+    permission: absolutlyrandom.admin
+  triggercrash:
+    description: Trigger the server crash event.
+    usage: /triggercrash
+    permission: absolutlyrandom.admin
+  triggermessage:
+    description: Trigger the random message event.
+    usage: /triggemessage
+    permission: absolutlyrandom.admin
+
+permissions:
+  absolutlyrandom.admin:
+    description: Allows using debug commands for AbsolutelyRandomPlugin.
+    default: op
