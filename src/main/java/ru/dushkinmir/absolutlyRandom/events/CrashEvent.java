@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.plugin.Plugin;
 
 public class CrashEvent {
+
     private static boolean isOffline = false;
     private static final String MAINTENANCE_KICK_MESSAGE = "The server is currently offline for maintenance. Please try again later.";
     private static final int RESTART_DELAY_TICKS = 400; // 400L = 20 секунд

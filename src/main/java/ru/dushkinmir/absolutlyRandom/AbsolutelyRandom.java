@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Random;
 
 public class AbsolutelyRandom extends JavaPlugin {
+
     private final Random randomGenerator = new Random();
     private int kickEventChance;
     private int groupEventChance;

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 public class KickEvent {
+
     private static final Random RANDOM = new Random();
     private static final String KICK_MESSAGE = "хахаха лошара";
     private static final NamedTextColor KICK_MESSAGE_COLOR = NamedTextColor.RED;
