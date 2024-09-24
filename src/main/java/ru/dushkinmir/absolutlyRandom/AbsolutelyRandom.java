@@ -2,6 +2,7 @@ package ru.dushkinmir.absolutlyRandom;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -32,6 +33,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         getLogger().info("Пусть на вашем сервере царит рандом!!");
         scheduleRandomEventTrigger();
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
+        this.getCommand("debug").setTabCompleter(new DebugTabCompleter());
         saveDefaultConfig();
         loadConfigValues();
     }
@@ -175,6 +177,23 @@ public class AbsolutelyRandom extends JavaPlugin {
             default:
                 sender.sendMessage("Unknown event. Available events: kick, group, crash, message, vova.");
                 break;
+        }
+    }
+    public class DebugTabCompleter implements TabCompleter {
+
+        @Override
+        public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+            List<String> completions = new ArrayList<>();
+
+            if (args.length == 1) { // Первый аргумент после команды
+                completions.add("kick");
+                completions.add("group");
+                completions.add("crash");
+                completions.add("message");
+                completions.add("vova");
+            }
+
+            return completions;
         }
     }
 
