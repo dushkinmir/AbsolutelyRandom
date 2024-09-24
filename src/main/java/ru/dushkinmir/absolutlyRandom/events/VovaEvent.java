@@ -18,10 +18,10 @@ import java.util.Random;
 public class VovaEvent {
 
     private static final Random RANDOM = new Random();
-    private static final int CLOUD_DURATION_TICKS = 200; // 10 seconds in ticks
-    private static final int POISON_DURATION_TICKS = 40; // 2 seconds in ticks
+    private static final int CLOUD_DURATION_TICKS = 20*10;
+    private static final int POISON_DURATION_TICKS = 40;
     private static final int POISON_RADIUS = 1;
-    private static final int TICK_INTERVAL = 20; // 1 second in ticks
+    private static final int TICK_INTERVAL = 20;
 
     public static void triggerVovaEvent(Plugin plugin) {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
@@ -52,7 +52,7 @@ public class VovaEvent {
 
                 ticks += TICK_INTERVAL;
             }
-        }.runTaskTimer(plugin, 0L, TICK_INTERVAL);
+        }.runTaskTimer(plugin, 0L, CLOUD_DURATION_TICKS);
     }
 
     private static void createPoisonCloud(Player player) {
