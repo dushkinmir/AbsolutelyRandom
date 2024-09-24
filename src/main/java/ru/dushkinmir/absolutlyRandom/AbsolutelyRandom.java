@@ -114,7 +114,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     private void processVovaEvent(CommandSender sender) {
-        VovaEvent.triggerVovaEvent();
+        VovaEvent.triggerVovaEvent(this);
         sender.sendMessage("Событие с облаком дыма вызвано");
     }
 
@@ -137,7 +137,7 @@ public class AbsolutelyRandom extends JavaPlugin {
             RandomMessageEvent.triggerRandomMessageEvent(this);
         }
         if (randomGenerator.nextInt(vovaEventChance) == 0) {
-            VovaEvent.triggerVovaEvent();
+            VovaEvent.triggerVovaEvent(this);
         }
     }
 }
