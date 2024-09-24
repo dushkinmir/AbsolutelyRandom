@@ -2,9 +2,7 @@ package ru.dushkinmir.absolutlyRandom.events;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -37,9 +35,6 @@ public class VovaEvent implements Listener {
     }
 
     private static void createEffect(Plugin plugin, Player player, EffectApplier effectApplier) {
-        World world = player.getWorld();
-        Location location = player.getLocation();
-
         new BukkitRunnable() {
             int ticks = 0;
 
@@ -49,26 +44,26 @@ public class VovaEvent implements Listener {
                     this.cancel();
                     return;
                 }
-                effectApplier.apply(world, location, player);
+                effectApplier.apply(player);
                 ticks++;
             }
         }.runTaskTimer(plugin, 0, 400);
     }
 
-    private static void applyPoisonEffect(World world, Location location, Player player) {
-        for (Entity entity : world.getNearbyEntities(location, 1, 1, 1)) {
+    private static void applyPoisonEffect(Player player) {
+        for (Entity entity : player.getNearbyEntities(1, 1, 1)) {
             if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
-                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, 0, true, true));
+                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 400, 0, true, true));
             }
         }
     }
 
-    private static void applySmokeEffect(World world, Location location, Player player) {
-        world.spawnParticle(Particle.DUST, location, 50, 1, 1, 1, POISON_SMOKE_OPTIONS);
+    private static void applySmokeEffect(Player player) {
+        player.spawnParticle(Particle.DUST, player.getLocation(), 50, 1, 1, 1, POISON_SMOKE_OPTIONS);
     }
 
     @FunctionalInterface
     private interface EffectApplier {
-        void apply(World world, Location location, Player player);
+        void apply(Player player);
     }
 }
