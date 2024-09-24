@@ -20,7 +20,7 @@ import java.util.Random;
 public class VovaEvent implements Listener {
 
     private static final Random RANDOM = new Random();
-    private static final Particle.DustOptions POISON_SMOKE_OPTIONS = new Particle.DustOptions(Color.fromRGB(0, 255, 0), 1.0f);
+    private static final Particle.DustOptions POISON_SMOKE_OPTIONS = new Particle.DustOptions(Color.GREEN, 1.0f);
     private static final int MAX_TICKS = 100;
 
     public static void triggerVovaEvent(Plugin plugin) {
@@ -52,7 +52,7 @@ public class VovaEvent implements Listener {
                 effectApplier.apply(world, location, player);
                 ticks++;
             }
-        }.runTaskTimer(plugin, 0, 200);
+        }.runTaskTimer(plugin, 0, 400);
     }
 
     private static void applyPoisonEffect(World world, Location location, Player player) {
