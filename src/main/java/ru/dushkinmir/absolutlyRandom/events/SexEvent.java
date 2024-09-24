@@ -3,20 +3,31 @@ package ru.dushkinmir.absolutlyRandom.events;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerBedEnterEvent;
+import org.bukkit.event.player.PlayerBedLeaveEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
+import ru.dushkinmir.absolutlyRandom.events.AnalFissureManager;
 
+import java.util.HashMap;
 import java.util.Random;
 
 public class SexEvent {
 
     private final CollisionManager collisionManager;
+    private final AnalFissureManager analFissureManager;
 
     public SexEvent() {
         this.collisionManager = new CollisionManager(); // Инициализируем менеджер коллизий
+        this.analFissureManager = new AnalFissureManager();
+
     }
 
     public void triggerSexEvent(Player player, String targetName, Plugin plugin) {
@@ -44,10 +55,12 @@ public class SexEvent {
             teleportBehind(targetPlayer, player);
             movePlayer(player, plugin);
             targetPlayer.sendMessage("Вы остаетесь на месте.");
+            analFissureManager.checkForAnalFissure(targetPlayer);
         } else {
             teleportBehind(player, targetPlayer);
             movePlayer(targetPlayer, plugin);
             player.sendMessage("Вы остаетесь на месте.");
+            analFissureManager.checkForAnalFissure(player);
         }
         // Через 15 секунд включаем коллизии обратно
         Bukkit.getScheduler().runTaskLater(
@@ -94,7 +107,7 @@ public class SexEvent {
                     }
                 },
                 0L, // Начало сразу
-                5L  // Выполняем каждые 20 тиков (1 секунда)
+                5L  // Выполняем каждые 5 тиков (1/4 секунды)
         ).getTaskId();
 
         // Останавливаем задачу через 15 секунд (300 тиков)
@@ -154,5 +167,6 @@ public class SexEvent {
         }
     }
 }
+
 
 

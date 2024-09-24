@@ -67,7 +67,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         // Проверка команды /sex, доступна всем игрокам
         if (commandName.equals("sex")) {
             if (!(sender instanceof Player player)) {
-                sender.sendMessage("Эту команду могут использовать только игроки.");
+                sender.sendMessage("This command can only be used by players.");
                 return true;
             }
 
@@ -86,24 +86,22 @@ public class AbsolutelyRandom extends JavaPlugin {
             sender.sendMessage("У вас нет прав для использования этой команды.");
             return true;
         }
-        switch (commandName) {
-            case "triggerkick":
-                processKickEvent(sender);
-                break;
-            case "triggerevent":
-                processGroupEvent(sender);
-                break;
-            case "triggercrash":
-                processCrashEvent(sender);
-                break;
-            case "triggermessage":
-                processMessageEvent(sender);
-                break;
-            case "triggervova":
-                processVovaEvent(sender);
-                break;
-            default:
-                return false;
+
+        // Проверяем, является ли команда "debug"
+        if (commandName.equals("debug") || commandName.equals("debugevent")) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage("This command can only be used by players.");
+                return true;
+            }
+            // Проверяем наличие аргументов
+            if (args.length != 1) {
+                sender.sendMessage("Usage: /debug <event>");
+                return true;
+            }
+
+            // Перенаправляем на обработку события
+            handleDebugEvent(sender, args);
+            return true;
         }
         return true;
     }
@@ -155,4 +153,29 @@ public class AbsolutelyRandom extends JavaPlugin {
             VovaEvent.triggerVovaEvent(this);
         }
     }
+    private void handleDebugEvent(CommandSender sender, String[] args) {
+        String eventName = args[0].toLowerCase(); // Получаем название события
+
+        switch (eventName) {
+            case "kick":
+                processKickEvent(sender); // Вызов метода для обработки кика
+                break;
+            case "group":
+                processGroupEvent(sender); // Вызов метода для обработки группового события
+                break;
+            case "crash":
+                processCrashEvent(sender); // Вызов метода для обработки краша
+                break;
+            case "message":
+                processMessageEvent(sender); // Вызов метода для обработки сообщения
+                break;
+            case "vova":
+                processVovaEvent(sender); // Вызов метода для обработки события "вова"
+                break;
+            default:
+                sender.sendMessage("Unknown event. Available events: kick, group, crash, message, vova.");
+                break;
+        }
+    }
+
 }

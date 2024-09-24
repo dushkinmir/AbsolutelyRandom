@@ -20,7 +20,7 @@ public class RandomMessageEvent extends JavaPlugin {
     private static final List<String> MESSAGES = new ArrayList<>();
     private static final Random RANDOM = new Random();
     private static final int MAX_MESSAGES_COUNT = 3;
-    private static final long TASK_INTERVAL_TICKS = 40L;
+    private static final long TASK_INTERVAL_TICKS = 20*4;
 
     static {
         loadMessages();
@@ -75,6 +75,7 @@ public class RandomMessageEvent extends JavaPlugin {
                 MESSAGES.remove(randomMessage);
                 messageCount++;
             } else {
+                loadMessages();
                 this.cancel();
             }
         }

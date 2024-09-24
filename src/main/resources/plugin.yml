@@ -4,26 +4,12 @@ main: ru.dushkinmir.absolutlyRandom.AbsolutelyRandom
 api-version: 1.21
 
 commands:
-  triggerkick:
-    description: Trigger a random player kick event.
-    usage: /triggerkick
+  debug:
+    description: "Debugging commands of AbsolutelyPlugin"
+    usage: "/debug <event>"
+    aliases: [debugevent]
     permission: absolutlyrandom.admin
-  triggerevent:
-    description: Trigger the group event.
-    usage: /triggerevent
-    permission: absolutlyrandom.admin
-  triggercrash:
-    description: Trigger the server crash event.
-    usage: /triggercrash
-    permission: absolutlyrandom.admin
-  triggermessage:
-    description: Trigger the random message event.
-    usage: /triggemessage
-    permission: absolutlyrandom.admin
-  triggervova:
-    description: Trigger the vova event.
-    usage: /tiggervova
-    permission: absolutelyrandom.admin
+    permission-message: "You do not have permission to use this command"
   sex:
     description: трахен-трахен чпокен-чпокен
     usage: /sex <player>
