@@ -10,6 +10,7 @@ import ru.dushkinmir.absolutlyRandom.events.GroupEvent;
 import ru.dushkinmir.absolutlyRandom.events.KickEvent;
 import ru.dushkinmir.absolutlyRandom.events.RandomMessageEvent;
 import ru.dushkinmir.absolutlyRandom.events.DrugsEvent;
+import ru.dushkinmir.absolutlyRandom.events.VovaEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private int groupEventChance;
     private int crashEventChance;
     private int messageEventChance;
+    private int vovaEventChance;
     private boolean isEventActive = false;
 
     public static void main(String[] args) {
@@ -48,6 +50,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         groupEventChance = getConfig().getInt("group-event-chance");
         crashEventChance = getConfig().getInt("crash-event-chance");
         messageEventChance = getConfig().getInt("message-event-chance");
+        vovaEventChance = getConfig().getInt("vova-event-chance");
     }
 
     private void scheduleRandomEventTrigger() {
@@ -81,6 +84,9 @@ public class AbsolutelyRandom extends JavaPlugin {
             case "triggermessage":
                 processMessageEvent(sender);
                 break;
+            case "triggervova":
+                processVovaEvent(sender);
+                break;
             default:
                 return false;
         }
@@ -107,6 +113,11 @@ public class AbsolutelyRandom extends JavaPlugin {
         sender.sendMessage("Событие с рандомным сообщением вызвано.");
     }
 
+    private void processVovaEvent(CommandSender sender) {
+        VovaEvent.triggerVovaEvent();
+        sender.sendMessage("Событие с облаком дыма вызвано");
+    }
+
     private void triggerRandomEvents() {
         List<Player> players = new ArrayList<>(getServer().getOnlinePlayers());
         if (players.isEmpty()) return;
@@ -124,6 +135,9 @@ public class AbsolutelyRandom extends JavaPlugin {
         }
         if (randomGenerator.nextInt(messageEventChance) == 0) {
             RandomMessageEvent.triggerRandomMessageEvent(this);
+        }
+        if (randomGenerator.nextInt(vovaEventChance) == 0) {
+            VovaEvent.triggerVovaEvent();
         }
     }
 }
