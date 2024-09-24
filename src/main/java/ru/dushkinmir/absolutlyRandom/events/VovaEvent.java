@@ -1,5 +1,7 @@
 package ru.dushkinmir.absolutlyRandom.events;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -42,17 +44,16 @@ public class VovaEvent {
 
             @Override
             public void run() {
-                if (ticks >= CLOUD_DURATION_TICKS) {
+                if (ticks <= CLOUD_DURATION_TICKS) {
+                    createPoisonCloud(player);
+                    applyPoisonToNearbyEntities(player);
+
+                    ticks += TICK_INTERVAL;
+                } else {
                     this.cancel();
-                    return;
                 }
-
-                createPoisonCloud(player);
-                applyPoisonToNearbyEntities(player);
-
-                ticks += TICK_INTERVAL;
             }
-        }.runTaskTimer(plugin, 0L, CLOUD_DURATION_TICKS);
+        }.runTaskTimer(plugin, 0L, TICK_INTERVAL);
     }
 
     private static void createPoisonCloud(Player player) {
