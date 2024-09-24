@@ -60,7 +60,7 @@ public class VovaEvent implements Listener {
     private static void applyPoisonEffect(Player player) {
         for (Entity entity : player.getNearbyEntities(1, 1, 1)) {
             if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
-                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 400, 0, true, true));
+                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 40, 0, true, true));
             }
         }
     }

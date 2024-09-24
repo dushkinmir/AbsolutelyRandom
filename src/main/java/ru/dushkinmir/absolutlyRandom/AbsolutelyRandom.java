@@ -5,12 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutlyRandom.events.CrashEvent;
-import ru.dushkinmir.absolutlyRandom.events.GroupEvent;
-import ru.dushkinmir.absolutlyRandom.events.KickEvent;
-import ru.dushkinmir.absolutlyRandom.events.RandomMessageEvent;
-import ru.dushkinmir.absolutlyRandom.events.DrugsEvent;
-import ru.dushkinmir.absolutlyRandom.events.VovaEvent;
+import ru.dushkinmir.absolutlyRandom.events.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -27,7 +22,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private int vovaEventChance;
     private boolean isEventActive = false;
 
-    public static void main(String[] args) {
+    public static void main() {
         System.out.println("оаоаоаоао");
     }
 
@@ -66,12 +61,31 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!sender.hasPermission("absolutlyrandom.admin") && !sender.isOp()) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        String commandName = command.getName().toLowerCase();
+
+        // Проверка команды /sex, доступна всем игрокам
+        if (commandName.equals("sex")) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage("Эту команду могут использовать только игроки.");
+                return true;
+            }
+
+            if (args.length != 1) {
+                sender.sendMessage("Используйте: /sex <ник игрока>");
+                return true;
+            }
+
+            String targetName = args[0];
+
+            // Запуск события SexEvent
+            new SexEvent().triggerSexEvent(player, targetName, this);
+            return true;
+        }
+        if (!sender.hasPermission("absolutlyrandom.admin")) {
             sender.sendMessage("У вас нет прав для использования этой команды.");
             return true;
         }
-        String commandName = command.getName().toLowerCase();
         switch (commandName) {
             case "triggerkick":
                 processKickEvent(sender);

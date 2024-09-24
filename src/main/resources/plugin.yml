@@ -24,6 +24,9 @@ commands:
     description: Trigger the vova event.
     usage: /tiggervova
     permission: absolutelyrandom.admin
+  sex:
+    description: трахен-трахен чпокен-чпокен
+    usage: /sex <player>
 
 permissions:
   absolutlyrandom.admin:
