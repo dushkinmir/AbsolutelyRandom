@@ -6,8 +6,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.world.TimeSkipEvent;
+import org.bukkit.event.world.WorldEvent;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -25,6 +26,11 @@ public class AnalFissureManager implements Listener {
             } else {
                 player.sendMessage("В этот раз все прошло гладко.");
             }
+        }
+        else {
+            player.sendMessage("Вы уже имеете анальную трещену!((");
+            analFissureMap.put(player, 2);
+            player.sendMessage("Анальная трещина опять разрослась!");
         }
     }
 
@@ -53,7 +59,7 @@ public class AnalFissureManager implements Listener {
     }
 
     @EventHandler
-    private void onWorldDayChange() {
+    private void onWorldDayChange(WorldEvent event) {
         // Убедимся, что при смене дня обновляем анальные трещины
         for (Player player : Bukkit.getOnlinePlayers()) {
             updateAnalFissure(player); // Обновляем состояние анальной трещины у всех игроков
@@ -61,8 +67,8 @@ public class AnalFissureManager implements Listener {
     }
 
     @EventHandler
-    private void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
-        Player player = event.getPlayer();
+    private void onPlayerEnterVehicle(VehicleEnterEvent event) {
+        Player player = (Player) event.getEntered();
         if (analFissureMap.containsKey(player)) {
             event.setCancelled(true); // Отменяем событие, если у игрока есть трещина
             player.sendMessage("Вы не можете сесть из-за анальной трещины!");
