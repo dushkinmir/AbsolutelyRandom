@@ -12,42 +12,45 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class VovaEvent implements Listener {
 
     private static final Random RANDOM = new Random();
-    private static final Particle.DustOptions POISON_SMOKE_OPTIONS = new Particle.DustOptions(Color.GREEN, 1.0f);
-    private static final int MAX_TICKS = 100;
+    private static final int MAX_SECONDS = 20;
 
     public static void triggerVovaEvent(Plugin plugin) {
-        Player targetPlayer = chooseRandomPlayer();
-        if (targetPlayer == null) return;
-        createEffect(plugin, targetPlayer, VovaEvent::applyPoisonEffect);
-        createEffect(plugin, targetPlayer, VovaEvent::applySmokeEffect);
+        List<Player> players = getOnlinePlayers();
+        if (!players.isEmpty()) {
+            Player randomPlayer = getRandomPlayer(players);
+            createEffect(plugin, randomPlayer);
+        }
+    }
+    private static List<Player> getOnlinePlayers() {
+        return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
 
-    private static Player chooseRandomPlayer() {
-        List<Player> players = List.copyOf(Bukkit.getOnlinePlayers());
-        if (players.isEmpty()) return null;
+    private static Player getRandomPlayer(List<Player> players) {
         return players.get(RANDOM.nextInt(players.size()));
     }
 
-    private static void createEffect(Plugin plugin, Player player, EffectApplier effectApplier) {
+    private static void createEffect(Plugin plugin, Player player) {
         new BukkitRunnable() {
             int ticks = 0;
 
             @Override
             public void run() {
-                if (ticks > MAX_TICKS) {
+                if (ticks > MAX_SECONDS) {
                     this.cancel();
                     return;
                 }
-                effectApplier.apply(player);
+                applyPoisonEffect(player);
+                applySmokeEffect(player);
                 ticks++;
             }
-        }.runTaskTimer(plugin, 0, 400);
+        }.runTaskTimer(plugin, 0, 20L);
     }
 
     private static void applyPoisonEffect(Player player) {
@@ -59,11 +62,8 @@ public class VovaEvent implements Listener {
     }
 
     private static void applySmokeEffect(Player player) {
-        player.spawnParticle(Particle.DUST, player.getLocation(), 50, 1, 1, 1, POISON_SMOKE_OPTIONS);
+        float particleSize = RANDOM.nextFloat(1.5f, 2.0f);
+        player.spawnParticle(Particle.DUST, player.getLocation(), 150, 1, 1, 1, new Particle.DustOptions(Color.GREEN, particleSize));
     }
 
-    @FunctionalInterface
-    private interface EffectApplier {
-        void apply(Player player);
-    }
 }
