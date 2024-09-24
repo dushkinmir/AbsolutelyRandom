@@ -13,7 +13,7 @@ public class CrashEvent {
     private static final Component MAINTENANCE_MOTD = Component.text("This server is offline for maintenance.");
     private static final Component RESTART_KICK_MESSAGE = Component.text("Please wait a moment, the server is restarting...", NamedTextColor.YELLOW);
 
-    public static void triggerCrash(Plugin plugin) {
+    public static void triggerCrashEvent(Plugin plugin) {
         kickAllPlayers();
         setServerToMaintenanceMode();
         registerPlayerJoinListener(plugin);

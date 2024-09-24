@@ -88,7 +88,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     private void processKickEvent(CommandSender sender) {
-        KickEvent.triggerKick();
+        KickEvent.triggerKickEvent();
         sender.sendMessage("Событие с киком игрока вызвано.");
     }
 
@@ -98,12 +98,12 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     private void processCrashEvent(CommandSender sender) {
-        CrashEvent.triggerCrash(this);
+        CrashEvent.triggerCrashEvent(this);
         sender.sendMessage("Краш сервера вызван.");
     }
 
     private void processMessageEvent(CommandSender sender) {
-        RandomMessageEvent.triggerRandomMessage(this);
+        RandomMessageEvent.triggerRandomMessageEvent(this);
         sender.sendMessage("Событие с рандомным сообщением вызвано.");
     }
 
@@ -112,18 +112,18 @@ public class AbsolutelyRandom extends JavaPlugin {
         if (players.isEmpty()) return;
 
         if (randomGenerator.nextInt(kickEventChance) == 0) {
-            KickEvent.triggerKick();
+            KickEvent.triggerKickEvent();
         }
         if (randomGenerator.nextInt(groupEventChance) == 0) {
             GroupEvent.triggerGroupEvent(this);
         }
         if (randomGenerator.nextInt(crashEventChance) == 0) {
             isEventActive = true;
-            CrashEvent.triggerCrash(this);
+            CrashEvent.triggerCrashEvent(this);
             isEventActive = false;
         }
         if (randomGenerator.nextInt(messageEventChance) == 0) {
-            RandomMessageEvent.triggerRandomMessage(this);
+            RandomMessageEvent.triggerRandomMessageEvent(this);
         }
     }
 }

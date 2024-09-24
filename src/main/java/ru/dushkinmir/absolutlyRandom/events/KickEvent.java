@@ -14,7 +14,7 @@ public class KickEvent {
     private static final String KICK_MESSAGE = "хахаха лошара";
     private static final NamedTextColor KICK_MESSAGE_COLOR = NamedTextColor.RED;
 
-    public static void triggerKick() {
+    public static void triggerKickEvent() {
         List<Player> players = getOnlinePlayers();
         if (!players.isEmpty()) {
             Player randomPlayer = getRandomPlayer(players);

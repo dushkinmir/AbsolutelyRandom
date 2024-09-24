@@ -24,7 +24,7 @@ public class RandomMessageEvent extends JavaPlugin {
         loadMessages();
     }
 
-    public static void triggerRandomMessage(Plugin plugin) {
+    public static void triggerRandomMessageEvent(Plugin plugin) {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
         if (onlinePlayers.isEmpty()) return;
 
