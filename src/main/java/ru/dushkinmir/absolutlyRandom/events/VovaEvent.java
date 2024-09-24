@@ -18,9 +18,10 @@ import java.util.Random;
 public class VovaEvent {
 
     private static final Random RANDOM = new Random();
-    private static final int CLOUD_DURATION_SECONDS = 10;
+    private static final int CLOUD_DURATION_TICKS = 200; // 10 seconds in ticks
     private static final int POISON_DURATION_TICKS = 40; // 2 seconds in ticks
     private static final int POISON_RADIUS = 1;
+    private static final int TICK_INTERVAL = 20; // 1 second in ticks
 
     public static void triggerVovaEvent(Plugin plugin) {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
@@ -41,28 +42,31 @@ public class VovaEvent {
 
             @Override
             public void run() {
-                if (ticks >= CLOUD_DURATION_SECONDS * 20) { // 20 ticks per second
+                if (ticks >= CLOUD_DURATION_TICKS) {
                     this.cancel();
                     return;
                 }
 
                 createPoisonCloud(player);
+                applyPoisonToNearbyEntities(player);
 
-                List<Entity> nearbyEntities = player.getNearbyEntities(POISON_RADIUS, POISON_RADIUS, POISON_RADIUS);
-                for (Entity entity : nearbyEntities) {
-                    if (entity instanceof LivingEntity && !entity.equals(player)) {
-                        ((LivingEntity) entity).addPotionEffect(new PotionEffect(
-                                PotionEffectType.POISON, POISON_DURATION_TICKS, 0, true, false, true));
-                    }
-                }
-
-                ticks += 20; // Increase ticks by 20 to match the server tick rate
+                ticks += TICK_INTERVAL;
             }
-        }.runTaskTimer(plugin, 0L, 20L); // Schedule to run every second
+        }.runTaskTimer(plugin, 0L, TICK_INTERVAL);
     }
 
     private static void createPoisonCloud(Player player) {
         Particle.DustOptions dustOptions = new Particle.DustOptions(Color.GREEN, 1.0F);
         player.getWorld().spawnParticle(Particle.DUST, player.getLocation(), 10, 0.5, 0.5, 0.5, dustOptions);
+    }
+
+    private static void applyPoisonToNearbyEntities(Player player) {
+        List<Entity> nearbyEntities = player.getNearbyEntities(POISON_RADIUS, POISON_RADIUS, POISON_RADIUS);
+        for (Entity entity : nearbyEntities) {
+            if (entity instanceof LivingEntity && !entity.equals(player)) {
+                ((LivingEntity) entity).addPotionEffect(new PotionEffect(
+                        PotionEffectType.POISON, POISON_DURATION_TICKS, 0, true, false, true));
+            }
+        }
     }
 }
