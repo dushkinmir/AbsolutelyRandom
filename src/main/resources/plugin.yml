@@ -20,6 +20,10 @@ commands:
     description: Trigger the random message event.
     usage: /triggemessage
     permission: absolutlyrandom.admin
+  triggervova:
+    description: Trigger the vova event.
+    usage: /tiggervova
+    permission: absolutelyrandom.admin
 
 permissions:
   absolutlyrandom.admin:
