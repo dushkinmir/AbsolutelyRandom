@@ -23,13 +23,14 @@ public class VovaEvent implements Listener {
 
     private static final Random RANDOM = new Random();
     private static final int MAX_SECONDS = 20;
+    private static final Component TITLE_TEXT = Component.text("фуу ты вонючка!", NamedTextColor.WHITE);
 
     public static void triggerVovaEvent(Plugin plugin) {
         List<Player> players = getOnlinePlayers();
         if (!players.isEmpty()) {
             Player randomPlayer = getRandomPlayer(players);
             createEffect(plugin, randomPlayer);
-            randomPlayer.showTitle(Title.title(Component.empty(), Component.text("фуу ты вонючка!", NamedTextColor.WHITE)));
+            randomPlayer.showTitle(Title.title(Component.empty(), TITLE_TEXT));
         }
     }
     private static List<Player> getOnlinePlayers() {
@@ -67,7 +68,7 @@ public class VovaEvent implements Listener {
 
     private static void applySmokeEffect(Player player) {
         float particleSize = RANDOM.nextFloat(1.5f, 2.0f);
-        player.spawnParticle(Particle.DUST, player.getLocation(), 150, 1, 1, 1, new Particle.DustOptions(Color.GREEN, particleSize));
+        player.spawnParticle(Particle.DUST, player.getLocation(), 75, 1, 1, 1, new Particle.DustOptions(Color.GREEN, particleSize));
     }
 
 }
