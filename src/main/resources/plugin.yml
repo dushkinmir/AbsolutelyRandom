@@ -1,5 +1,5 @@
 name: AbsolutelyRandom
-version: 0.9-SNAPSHOT
+version: 1.0-ALPHA
 main: ru.dushkinmir.absolutlyRandom.AbsolutelyRandom
 api-version: 1.21
 
