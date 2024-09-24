@@ -1,5 +1,6 @@
 package ru.dushkinmir.absolutlyRandom.events;
 
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -8,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,8 +67,11 @@ public class RandomMessageEvent extends JavaPlugin {
         public void run() {
             if (messageCount < MAX_MESSAGES_COUNT) {
                 String randomMessage = MESSAGES.get(RANDOM.nextInt(MESSAGES.size()));
-                String formattedMessage = String.format("[SERVER] %s", randomMessage);
-                player.sendMessage(Component.text(formattedMessage, NamedTextColor.YELLOW));
+//                player.sendMessage(Component.text(formattedMessage, NamedTextColor.YELLOW));
+                var titleText = Component.text("вова пидор", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
+                var subTitleText = Component.text(randomMessage, NamedTextColor.GOLD);
+                player.showTitle(Title.title(titleText, subTitleText));
+                MESSAGES.remove(randomMessage);
                 messageCount++;
             } else {
                 this.cancel();

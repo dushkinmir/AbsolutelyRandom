@@ -1,5 +1,8 @@
 package ru.dushkinmir.absolutlyRandom.events;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -26,6 +29,7 @@ public class VovaEvent implements Listener {
         if (!players.isEmpty()) {
             Player randomPlayer = getRandomPlayer(players);
             createEffect(plugin, randomPlayer);
+            randomPlayer.showTitle(Title.title(Component.empty(), Component.text("фуу ты вонючка!", NamedTextColor.WHITE)));
         }
     }
     private static List<Player> getOnlinePlayers() {
