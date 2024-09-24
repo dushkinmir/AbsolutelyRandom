@@ -63,11 +63,6 @@ public class SexEvent {
     // Метод для движения игрока вперед-назад на ограниченное время (в секундах)
     private void movePlayer(Player player, Plugin plugin) {
         player.sendMessage("Вы будете двигаться вперед-назад!");
-        // Отключаем управление игроком
-        player.setWalkSpeed(0); // Устанавливаем скорость перемещения в 0
-        player.setFlySpeed(0); // Устанавливаем скорость полета в 0 (если игрок может летать)
-        // Сохраняем текущее положение и направление взгляда игрока
-        Location originalLocation = player.getLocation();
 
         // Устанавливаем движение вперед-назад
         int taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(
@@ -90,15 +85,10 @@ public class SexEvent {
                         direction = direction.normalize(); // Нормализуем снова после обнуления Y
 
                         if (moveForward) {
-                            currentLocation.add(direction.multiply(0.25)); // Двигаем вперед
+                            player.setVelocity(direction.multiply(0.25)); // Двигаем вперед
                         } else {
-                            currentLocation.subtract(direction.multiply(0.25)); // Двигаем назад
+                            player.setVelocity(direction.multiply(-0.25)); // Двигаем назад
                         }
-                        // Телепортируем игрока в новую позицию
-                        player.teleport(currentLocation);
-
-                        // Телепортируем обратно в оригинальное положение для блокировки камеры
-                        player.teleport(originalLocation);
 
                         moveForward = !moveForward; // Меняем направление
                     }
@@ -110,11 +100,7 @@ public class SexEvent {
         // Останавливаем задачу через 15 секунд (300 тиков)
         Bukkit.getScheduler().runTaskLater(
                 plugin,
-                () -> {
-                    Bukkit.getScheduler().cancelTask(taskId);
-                    player.setWalkSpeed(0.2f); // Восстанавливаем скорость перемещения
-                    player.setFlySpeed(0.1f); // Восстанавливаем скорость полета
-                },
+                () -> Bukkit.getScheduler().cancelTask(taskId),
                 15 * 20L // 15 секунд = 300 тиков
         );
     }    // Метод для телепортации игрока "движущегося" за спину "стоячего"
