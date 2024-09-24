@@ -3,20 +3,12 @@ package ru.dushkinmir.absolutlyRandom.events;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.player.PlayerBedLeaveEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
-import ru.dushkinmir.absolutlyRandom.events.AnalFissureManager;
 
-import java.util.HashMap;
 import java.util.Random;
 
 public class SexEvent {

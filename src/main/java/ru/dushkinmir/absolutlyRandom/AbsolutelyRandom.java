@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class AbsolutelyRandom extends JavaPlugin {
@@ -33,7 +34,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         getLogger().info("Пусть на вашем сервере царит рандом!!");
         scheduleRandomEventTrigger();
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
-        this.getCommand("debug").setTabCompleter(new DebugTabCompleter());
+        Objects.requireNonNull(this.getCommand("debug")).setTabCompleter(new DebugTabCompleter());
         saveDefaultConfig();
         loadConfigValues();
     }
@@ -91,7 +92,7 @@ public class AbsolutelyRandom extends JavaPlugin {
 
         // Проверяем, является ли команда "debug"
         if (commandName.equals("debug") || commandName.equals("debugevent")) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage("This command can only be used by players.");
                 return true;
             }
@@ -179,7 +180,7 @@ public class AbsolutelyRandom extends JavaPlugin {
                 break;
         }
     }
-    public class DebugTabCompleter implements TabCompleter {
+    public static class DebugTabCompleter implements TabCompleter {
 
         @Override
         public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
