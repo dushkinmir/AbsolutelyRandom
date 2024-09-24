@@ -1,73 +1,73 @@
 package ru.dushkinmir.absolutlyRandom.events;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class VovaEvent {
-
+public class VovaEvent implements Listener {
     private static final Random RANDOM = new Random();
-    private static final int CLOUD_DURATION_TICKS = 20*10;
-    private static final int POISON_DURATION_TICKS = 40;
-    private static final int POISON_RADIUS = 1;
-    private static final int TICK_INTERVAL = 20;
+    private static final Particle.DustOptions POISON_SMOKE_OPTIONS = new Particle.DustOptions(Color.fromRGB(0, 255, 0), 1.0f);
+    private static final int MAX_TICKS = 100;
 
+    /**
+     * Triggers the Vova event by selecting a random player and creating a poison smoke effect.
+     */
     public static void triggerVovaEvent(Plugin plugin) {
-        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
-        if (onlinePlayers.isEmpty()) return;
-
-        Player selectedPlayer = getRandomPlayer(onlinePlayers);
-        spawnPoisonCloud(plugin, selectedPlayer);
+        Player targetPlayer = chooseRandomPlayer();
+        if (targetPlayer == null) return;
+        createPoisonSmokeEffect(plugin, targetPlayer);
     }
 
-    private static Player getRandomPlayer(List<Player> players) {
-        int randomIndex = RANDOM.nextInt(players.size());
-        return players.get(randomIndex);
+    /**
+     * Chooses a random player from the online players.
+     *
+     * @return a randomly selected Player or null if no players are online.
+     */
+    private static Player chooseRandomPlayer() {
+        List<Player> players = List.copyOf(Bukkit.getOnlinePlayers());
+        if (players.isEmpty()) return null;
+        return players.get(RANDOM.nextInt(players.size()));
     }
 
-    private static void spawnPoisonCloud(Plugin plugin, Player player) {
+    /**
+     * Creates a poison smoke effect around the given player.
+     *
+     * @param player The player around whom the poison smoke effect will be created.
+     */
+    private static void createPoisonSmokeEffect(Plugin plugin, Player player) {
+        World world = player.getWorld();
+        Location location = player.getLocation();
+
         new BukkitRunnable() {
-            private int ticks = 0;
+            int ticks = 0;
 
             @Override
             public void run() {
-                if (ticks <= CLOUD_DURATION_TICKS) {
-                    createPoisonCloud(player);
-                    applyPoisonToNearbyEntities(player);
-
-                    ticks += TICK_INTERVAL;
-                } else {
+                if (ticks > MAX_TICKS) {
                     this.cancel();
+                    return;
                 }
+                world.spawnParticle(Particle.DUST, location, 50, 1, 1, 1, POISON_SMOKE_OPTIONS);
+                for (Entity entity : world.getNearbyEntities(location, 1, 1, 1)) {
+                    if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
+                        livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, 0));
+                    }
+                }
+                ticks++;
             }
-        }.runTaskTimer(plugin, 0L, TICK_INTERVAL);
-    }
-
-    private static void createPoisonCloud(Player player) {
-        Particle.DustOptions dustOptions = new Particle.DustOptions(Color.GREEN, 1.0F);
-        player.getWorld().spawnParticle(Particle.DUST, player.getLocation(), 10, 0.5, 0.5, 0.5, dustOptions);
-    }
-
-    private static void applyPoisonToNearbyEntities(Player player) {
-        List<Entity> nearbyEntities = player.getNearbyEntities(POISON_RADIUS, POISON_RADIUS, POISON_RADIUS);
-        for (Entity entity : nearbyEntities) {
-            if (entity instanceof LivingEntity && !entity.equals(player)) {
-                ((LivingEntity) entity).addPotionEffect(new PotionEffect(
-                        PotionEffectType.POISON, POISON_DURATION_TICKS, 0, true, false, true));
-            }
-        }
+        }.runTaskTimer(plugin, 0, 1);
     }
 }
