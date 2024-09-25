@@ -16,10 +16,9 @@ public class KickEvent {
     private static final NamedTextColor KICK_MESSAGE_COLOR = NamedTextColor.RED;
 
     public static void triggerKickEvent() {
-        List<Player> players = getOnlinePlayers();
-        if (!players.isEmpty()) {
-            Player randomPlayer = getRandomPlayer(players);
-            kickPlayer(randomPlayer);
+        List<Player> onlinePlayers = getOnlinePlayers();
+        if (!onlinePlayers.isEmpty()) {
+            kickRandomPlayer(onlinePlayers);
         }
     }
 
@@ -27,7 +26,12 @@ public class KickEvent {
         return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
 
-    private static Player getRandomPlayer(List<Player> players) {
+    private static void kickRandomPlayer(List<Player> players) {
+        Player randomPlayer = pickRandomPlayer(players);
+        kickPlayer(randomPlayer);
+    }
+
+    private static Player pickRandomPlayer(List<Player> players) {
         return players.get(RANDOM.nextInt(players.size()));
     }
 
