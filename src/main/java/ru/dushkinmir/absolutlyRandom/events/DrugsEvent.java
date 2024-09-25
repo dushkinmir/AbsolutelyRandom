@@ -3,6 +3,7 @@ package ru.dushkinmir.absolutlyRandom.events;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBTCompoundList;
 import net.kyori.adventure.text.Component;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -14,173 +15,73 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import de.tr7zw.nbtapi.NBT;
 
-import java.util.Objects;
+import java.util.Map;
 
 public class DrugsEvent implements Listener {
 
+    private void applyDrugEffects(ItemStack item, String drugName, Map<String, Integer> effects, int nutrition, float saturation) {
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(Component.text(drugName));
+        item.setItemMeta(meta);
+        NBT.modify(item, nbt -> {
+            nbt.setString("drug", "вова хорошенький");
+        });
+
+        NBT.modifyComponents(item, nbt -> {
+            ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
+            foodTag.setInteger("nutrition", nutrition);
+            foodTag.setFloat("saturation", saturation);
+            foodTag.setBoolean("can_always_eat", true);
+
+            ReadWriteNBTCompoundList effectsTag = foodTag.getCompoundList("effects");
+            effects.forEach((effectId, duration) -> {
+                ReadWriteNBT effectTag = effectsTag.addCompound().getOrCreateCompound("effect");
+                effectTag.setString("id", effectId);
+                effectTag.setInteger("duration", duration);
+            });
+        });
+    }
+
     @EventHandler
     public void onPlayerRightClick(PlayerInteractEvent event) {
-        // Проверяем, что событие вызвано правым кликом
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             Block clickedBlock = event.getClickedBlock();
             if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
                 ItemStack item = event.getItem();
                 if (item != null) {
-                    ItemMeta meta = item.getItemMeta();
                     switch (item.getType()) {
                         case SUGAR:
-                            // Сахар - Мефедрон
-                            meta.displayName(Component.text("Мефедрон"));
-                            item.setItemMeta(meta);
-                            NBT.modify(item, nbt -> {
-                                nbt.setString("drug", "вова хорошенький");
-                            });
-                            NBT.modifyComponents(item, nbt -> {
-                                ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
-                                foodTag.setInteger("nutrition", 0);
-                                foodTag.setFloat("saturation", 0.0f);
-                                foodTag.setBoolean("can_always_eat", true);
-
-                                // Effects
-                                ReadWriteNBTCompoundList effectsTag = foodTag.getCompoundList("effects");
-                                ReadWriteNBT effectData;
-                                // Speed
-                                ReadWriteNBT speedEffectTag = effectsTag.addCompound();
-                                effectData = speedEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:speed");
-                                effectData.setInteger("duration", 100);
-                                // Haste
-                                ReadWriteNBT hasteEffectTag = effectsTag.addCompound();
-                                effectData = hasteEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:speed");
-                                effectData.setInteger("duration", 100);
-                                // Weakness
-                                ReadWriteNBT weaknessEffectTag = effectsTag.addCompound();
-                                effectData = weaknessEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:weakness");
-                                effectData.setInteger("duration", 100);
-                                // Hunger
-                                ReadWriteNBT hungerEffectTag = effectsTag.addCompound();
-                                effectData = hungerEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:hunger");
-                                effectData.setInteger("duration", 100);
-                            });
+                            applyDrugEffects(item, "Мефедрон", Map.of(
+                                    "minecraft:speed", 100,
+                                    "minecraft:haste", 100,
+                                    "minecraft:weakness", 100,
+                                    "minecraft:hunger", 100
+                            ), 0, 0.0f);
                             break;
-
                         case WHITE_DYE:
-                            // Белый краситель - Кокаин
-                            meta.displayName(Component.text("Кокаин"));
-                            item.setItemMeta(meta);
-                            NBT.modify(item, nbt -> {
-                                nbt.setString("drug", "вова хорошенький");
-                            });
-                            NBT.modifyComponents(item, nbt -> {
-                                ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
-                                foodTag.setInteger("nutrition", 0);
-                                foodTag.setFloat("saturation", 0.0f);
-                                foodTag.setBoolean("can_always_eat", true);
-                                // Effects
-                                ReadWriteNBTCompoundList effectsTag = foodTag.getCompoundList("effects");
-                                ReadWriteNBT effectData;
-                                // Speed
-                                ReadWriteNBT speedEffectTag = effectsTag.addCompound();
-                                effectData = speedEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:speed");
-                                effectData.setInteger("duration", 100);
-                                // Haste
-                                ReadWriteNBT strengthEffectTag = effectsTag.addCompound();
-                                effectData = strengthEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:strength");
-                                effectData.setInteger("duration", 100);
-                                // Weakness
-                                ReadWriteNBT nauseaEffectTag = effectsTag.addCompound();
-                                effectData = nauseaEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:nausea");
-                                effectData.setInteger("duration", 100);
-                                // Hunger
-                                ReadWriteNBT blindnessEffectTag = effectsTag.addCompound();
-                                effectData = blindnessEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:blindness");
-                                effectData.setInteger("duration", 100);
-                            });
+                            applyDrugEffects(item, "Кокаин", Map.of(
+                                    "minecraft:speed", 100,
+                                    "minecraft:strength", 100,
+                                    "minecraft:nausea", 100,
+                                    "minecraft:blindness", 100
+                            ), 0, 0.0f);
                             break;
-
                         case FERN:
-                            // Папоротник - Марихуана
-                            meta.displayName(Component.text("Марихуана"));
-                            item.setItemMeta(meta);
-                            NBT.modify(item, nbt -> {
-                                nbt.setString("drug", "вова хорошенький");
-                            });
-                            NBT.modifyComponents(item, nbt -> {
-                                ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
-                                foodTag.setInteger("nutrition", 0);
-                                foodTag.setFloat("saturation", 0.0f);
-                                foodTag.setBoolean("can_always_eat", true);
-                                // Effects
-                                ReadWriteNBTCompoundList effectsTag = foodTag.getCompoundList("effects");
-                                ReadWriteNBT effectData;
-                                // Regeneration
-                                ReadWriteNBT regenerationEffectTag = effectsTag.addCompound();
-                                effectData = regenerationEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:regeneration");
-                                effectData.setInteger("duration", 100);
-                                // Hunger
-                                ReadWriteNBT hungerEffectTag = effectsTag.addCompound();
-                                effectData = hungerEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:hunger");
-                                effectData.setInteger("duration", 100);
-                                // Slowness
-                                ReadWriteNBT slownessEffectTag = effectsTag.addCompound();
-                                effectData = slownessEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:slowness");
-                                effectData.setInteger("duration", 100);
-                                // Weakness
-                                ReadWriteNBT weaknessEffectTag = effectsTag.addCompound();
-                                effectData = weaknessEffectTag.getOrCreateCompound("effect");
-                                effectData.setString("id", "minecraft:weakness");
-                                effectData.setInteger("duration", 100);
-                            });
+                            applyDrugEffects(item, "Марихуана", Map.of(
+                                    "minecraft:regeneration", 100,
+                                    "minecraft:hunger", 100,
+                                    "minecraft:slowness", 100,
+                                    "minecraft:weakness", 100
+                            ), 0, 0.0f);
                             break;
-
                         case HONEY_BOTTLE:
-                            // Бутылочка меда - Пиво
-                            meta.displayName(Component.text("Пиво"));
-                            item.setItemMeta(meta);
-                            NBT.modify(item, nbt -> {
-                                nbt.setString("drug", "вова хорошенький");
-                            });
-                            NBT.modifyComponents(item, nbt -> {
-                                ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
-                                foodTag.setInteger("nutrition", 6);
-                                foodTag.setFloat("saturation", 1.0f);
-                                foodTag.setBoolean("can_always_eat", true);
-                                // Effects
-                                ReadWriteNBTCompoundList effectsTag = foodTag.getCompoundList("effects");
-                                ReadWriteNBT effectTag;
-                                // Nausea
-                                ReadWriteNBT nauseaEffectTag = effectsTag.addCompound();
-                                effectTag = nauseaEffectTag.getOrCreateCompound("effect");
-                                effectTag.setString("id", "minecraft:nausea");
-                                effectTag.setInteger("duration", 100);
-                                // Resistance
-                                ReadWriteNBT resistanceEffectTag = effectsTag.addCompound();
-                                effectTag = resistanceEffectTag.getOrCreateCompound("effect");
-                                effectTag.setString("id", "minecraft:resistance");
-                                effectTag.setInteger("duration", 100);
-                                // Mining fatigue
-                                ReadWriteNBT miningFatigueEffectTag = effectsTag.addCompound();
-                                effectTag = miningFatigueEffectTag.getOrCreateCompound("effect");
-                                effectTag.setString("id", "minecraft:mining_fatigue");
-                                effectTag.setInteger("duration", 100);
-                                // Weakness
-                                ReadWriteNBT weaknessEffectTag = effectsTag.addCompound();
-                                effectTag = weaknessEffectTag.getOrCreateCompound("effect");
-                                effectTag.setString("id", "minecraft:weakness");
-                                effectTag.setInteger("duration", 100);
-                            });
+                            applyDrugEffects(item, "Пиво", Map.of(
+                                    "minecraft:nausea", 100,
+                                    "minecraft:resistance", 100,
+                                    "minecraft:mining_fatigue", 100,
+                                    "minecraft:weakness", 100
+                            ), 6, 1.0f);
                             break;
-
                         default:
                             break;
                     }
@@ -191,11 +92,11 @@ public class DrugsEvent implements Listener {
 
     @EventHandler
     public void onPlayerLeftClick(PlayerInteractEvent event) {
-        // Проверяем, что событие вызвано правым кликом
         if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
             Block clickedBlock = event.getClickedBlock();
             if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
-                if (!Objects.equals(String.valueOf(event.getPlayer().getGameMode()), "creative") || !Objects.equals(String.valueOf(event.getPlayer().getGameMode()), "spectator")) {
+                GameMode gameMode = event.getPlayer().getGameMode();
+                if (!gameMode.equals(GameMode.CREATIVE) && !gameMode.equals(GameMode.SPECTATOR)) {
                     event.getPlayer().sendMessage(Component.text("дебил хули ты тычешь, совсем уже под солям объебан"));
                 }
             }
@@ -206,32 +107,22 @@ public class DrugsEvent implements Listener {
     public void onPlayerConsumeDrug(PlayerItemConsumeEvent event) {
         ItemStack item = event.getItem();
         NBT.get(item, nbt -> {
-            if (Objects.equals(nbt.getString("drug"), "вова хорошенький")) {
+            if ("вова хорошенький".equals(nbt.getString("drug"))) {
                 String rawDruggedPlayer = "агаа!! %s у нас тут оказыватся балуется %s";
                 String druggedPlayer = rawDruggedPlayer.formatted(event.getPlayer().getName(), "%s");
                 rawDruggedPlayer = "уф бляя мощненько так закинулся %s";
-                switch (item.getType()) {
-                    case WHITE_DYE:
-                        event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted("мефедрончиком")));
-                        druggedPlayer = rawDruggedPlayer.formatted("мефедрончиком");
-                        event.getPlayer().sendActionBar(Component.text(druggedPlayer));
-                        break;
-                    case SUGAR:
-                        event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted("кокаинчиком")));
-                        druggedPlayer = rawDruggedPlayer.formatted("кокаинчиком");
-                        event.getPlayer().sendActionBar(Component.text(druggedPlayer));
-                        break;
-                    case FERN:
-                        event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted("марихуаной")));
-                        druggedPlayer = rawDruggedPlayer.formatted("марихуаной");
-                        event.getPlayer().sendActionBar(Component.text(druggedPlayer));
-                        break;
-                    case HONEY_BOTTLE:
-                        event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted("пивком")));
-                        druggedPlayer = rawDruggedPlayer.formatted("пивком");
-                        event.getPlayer().sendActionBar(Component.text(druggedPlayer));
-                        break;
-                    default: break;
+                Map<Material, String> drugMessages = Map.of(
+                        Material.WHITE_DYE, "мефедрончиком",
+                        Material.SUGAR, "кокаинчиком",
+                        Material.FERN, "марихуаной",
+                        Material.HONEY_BOTTLE, "пивком"
+                );
+
+                if (drugMessages.containsKey(item.getType())) {
+                    String drugType = drugMessages.get(item.getType());
+                    event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted(drugType)));
+                    druggedPlayer = rawDruggedPlayer.formatted(drugType);
+                    event.getPlayer().sendActionBar(Component.text(druggedPlayer));
                 }
             }
         });
