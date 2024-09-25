@@ -7,3 +7,7 @@ permissions:
   absolutlyrandom.admin:
     description: Allows using debug commands for AbsolutelyRandomPlugin.
     default: op
+
+depend:
+  - NBTAPI
+  - CommandAPI

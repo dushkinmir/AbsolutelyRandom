@@ -1,14 +1,12 @@
 package ru.dushkinmir.absolutlyRandom;
 
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIBukkitConfig;
-import org.bukkit.command.Command;
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.arguments.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutlyRandom.events.*;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,18 +27,29 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     @Override
-    public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
-
-    }
-
-    @Override
     public void onEnable() {
         getLogger().info("AbsolutelyRandomPlugin has been enabled!");
         getLogger().info("Пусть на вашем сервере царит рандом!!");
-        CommandAPI.onEnable();
         scheduleRandomEventTrigger();
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
+        new CommandAPICommand("debug")
+                .withPermission("absolutlyrandom.admin")
+                .withUsage("/debug <event>")
+                .withArguments(
+                        new StringArgument("event")
+                                .replaceSuggestions(ArgumentSuggestions.strings(
+                                        "crash",
+                                        "group",
+                                        "kick",
+                                        "message",
+                                        "vova"))
+                )
+                .executes((sender, args) -> {
+                    String event = (String) args.get("event");
+                    assert event != null;
+                    handleDebugEvent(sender, event);
+                })
+                .register();
         saveDefaultConfig();
         loadConfigValues();
     }
@@ -67,52 +76,6 @@ public class AbsolutelyRandom extends JavaPlugin {
                 }
             }
         }.runTaskTimer(this, 0L, 20L); // 20L = 1 секунда
-    }
-
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        String commandName = command.getName().toLowerCase();
-
-        // Проверка команды /sex, доступна всем игрокам
-//        if (commandName.equals("sex")) {
-//            if (!(sender instanceof Player player)) {
-//                sender.sendMessage("This command can only be used by players.");
-//                return true;
-//            }
-//
-//            if (args.length != 1) {
-//                sender.sendMessage("Используйте: /sex <ник игрока>");
-//                return true;
-//            }
-//
-//            String targetName = args[0];
-//
-//            // Запуск события SexEvent
-//            new SexEvent(this).triggerSexEvent(player, targetName, this);
-//            return true;
-//        }
-        if (!sender.hasPermission("absolutlyrandom.admin")) {
-            sender.sendMessage("У вас нет прав для использования этой команды.");
-            return true;
-        }
-
-        // Проверяем, является ли команда "debug"
-        if (commandName.equals("debug") || commandName.equals("debugevent")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage("This command can only be used by players.");
-                return true;
-            }
-            // Проверяем наличие аргументов
-            if (args.length != 1) {
-                sender.sendMessage("Usage: /debug <event>");
-                return true;
-            }
-
-            // Перенаправляем на обработку события
-            handleDebugEvent(sender, args);
-            return true;
-        }
-        return true;
     }
 
     private void processKickEvent(CommandSender sender) {
@@ -162,10 +125,9 @@ public class AbsolutelyRandom extends JavaPlugin {
             VovaEvent.triggerVovaEvent(this);
         }
     }
-    private void handleDebugEvent(CommandSender sender, String[] args) {
-        String eventName = args[0].toLowerCase(); // Получаем название события
 
-        switch (eventName) {
+    private void handleDebugEvent(CommandSender sender, String arg) {
+        switch (arg) {
             case "kick":
                 processKickEvent(sender); // Вызов метода для обработки кика
                 break;
@@ -182,7 +144,6 @@ public class AbsolutelyRandom extends JavaPlugin {
                 processVovaEvent(sender); // Вызов метода для обработки события "вова"
                 break;
             default:
-                sender.sendMessage("Unknown event. Available events: kick, group, crash, message, vova.");
                 break;
         }
     }
