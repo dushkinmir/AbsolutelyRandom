@@ -13,13 +13,10 @@ import java.util.List;
 import java.util.Random;
 
 public class AbsolutelyRandom extends JavaPlugin {
-
+    private static final long SCHEDULE_PERIOD = 20L;
+    private static final long INITIAL_DELAY = 0L;
     private final Random randomGenerator = new Random();
-    private int kickEventChance;
-    private int groupEventChance;
-    private int crashEventChance;
-    private int messageEventChance;
-    private int vovaEventChance;
+    private int kickEventChance, groupEventChance, crashEventChance, messageEventChance, vovaEventChance;
     private boolean isEventActive = false;
 
     public static void main(String[] args) {
@@ -28,34 +25,24 @@ public class AbsolutelyRandom extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("AbsolutelyRandomPlugin has been enabled!");
-        getLogger().info("Пусть на вашем сервере царит рандом!!");
-        scheduleRandomEventTrigger();
-        getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
-        new CommandAPICommand("debug")
-                .withPermission("absolutlyrandom.admin")
-                .withUsage("/debug <event>")
-                .withArguments(
-                        new StringArgument("event")
-                                .replaceSuggestions(ArgumentSuggestions.strings(
-                                        "crash",
-                                        "group",
-                                        "kick",
-                                        "message",
-                                        "vova"))
-                )
-                .executes((sender, args) -> {
-                    String event = (String) args.get("event");
-                    assert event != null;
-                    handleDebugEvent(sender, event);
-                })
-                .register();
+        logPluginActivation();
+        scheduleEventTrigger();
+        registerEventsAndCommands();
         saveDefaultConfig();
         loadConfigValues();
     }
 
     @Override
     public void onDisable() {
+        logPluginDeactivation();
+    }
+
+    private void logPluginActivation() {
+        getLogger().info("AbsolutelyRandomPlugin has been enabled!");
+        getLogger().info("Пусть на вашем сервере царит рандом!!");
+    }
+
+    private void logPluginDeactivation() {
         getLogger().info("AbsolutelyRandomPlugin has been disabled!");
     }
 
@@ -67,84 +54,83 @@ public class AbsolutelyRandom extends JavaPlugin {
         vovaEventChance = getConfig().getInt("vova-event-chance");
     }
 
-    private void scheduleRandomEventTrigger() {
+    private void scheduleEventTrigger() {
         new BukkitRunnable() {
             @Override
             public void run() {
                 if (!isEventActive) {
-                    triggerRandomEvents();
+                    executeRandomEvents();
                 }
             }
-        }.runTaskTimer(this, 0L, 20L); // 20L = 1 секунда
+        }.runTaskTimer(this, INITIAL_DELAY, SCHEDULE_PERIOD);
     }
 
-    private void processKickEvent(CommandSender sender) {
-        KickEvent.triggerKickEvent();
-        sender.sendMessage("Событие с киком игрока вызвано.");
+    private void registerEventsAndCommands() {
+        getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
+        registerDebugCommand();
     }
 
-    private void processGroupEvent(CommandSender sender) {
-        GroupEvent.triggerGroupEvent(this);
-        sender.sendMessage("Событие с выпадением блоков вызвано.");
+    private void registerDebugCommand() {
+        new CommandAPICommand("debug")
+                .withPermission("absolutlyrandom.admin")
+                .withUsage("/debug <event>")
+                .withArguments(new StringArgument("event")
+                        .replaceSuggestions(ArgumentSuggestions.strings("crash", "group", "kick", "message", "vova")))
+                .executes((sender, args) -> {
+                    String event = (String) args.get("event");
+                    assert event != null;
+                    handleDebugEvent(sender, event);
+                })
+                .register();
     }
 
-    private void processCrashEvent(CommandSender sender) {
-        CrashEvent.triggerCrashEvent(this);
-        sender.sendMessage("Краш сервера вызван.");
+    private void handleDebugEvent(CommandSender sender, String event) {
+        switch (event) {
+            case "kick":
+                triggerEvent(KickEvent::triggerKickEvent, sender, "Событие с киком игрока вызвано.");
+                break;
+            case "group":
+                triggerEvent(() -> GroupEvent.triggerGroupEvent(this), sender, "Событие с выпадением блоков вызвано.");
+                break;
+            case "crash":
+                triggerEvent(() -> CrashEvent.triggerCrashEvent(this), sender, "Краш сервера вызван.");
+                break;
+            case "message":
+                triggerEvent(() -> RandomMessageEvent.triggerRandomMessageEvent(this), sender, "Событие с рандомным сообщением вызвано.");
+                break;
+            case "vova":
+                triggerEvent(() -> VovaEvent.triggerVovaEvent(this), sender, "Событие с облаком дыма вызвано");
+                break;
+            default:
+                break;
+        }
     }
 
-    private void processMessageEvent(CommandSender sender) {
-        RandomMessageEvent.triggerRandomMessageEvent(this);
-        sender.sendMessage("Событие с рандомным сообщением вызвано.");
+    private void triggerEvent(Runnable eventTrigger, CommandSender sender, String message) {
+        eventTrigger.run();
+        sender.sendMessage(message);
     }
 
-    private void processVovaEvent(CommandSender sender) {
-        VovaEvent.triggerVovaEvent(this);
-        sender.sendMessage("Событие с облаком дыма вызвано");
-    }
-
-    private void triggerRandomEvents() {
+    private void executeRandomEvents() {
         List<Player> players = new ArrayList<>(getServer().getOnlinePlayers());
         if (players.isEmpty()) return;
 
-        if (randomGenerator.nextInt(kickEventChance) == 0) {
-            KickEvent.triggerKickEvent();
-        }
-        if (randomGenerator.nextInt(groupEventChance) == 0) {
-            GroupEvent.triggerGroupEvent(this);
-        }
+        checkAndTriggerEvent(KickEvent::triggerKickEvent, kickEventChance);
+        checkAndTriggerEvent(() -> GroupEvent.triggerGroupEvent(this), groupEventChance);
+
         if (randomGenerator.nextInt(crashEventChance) == 0) {
             isEventActive = true;
             CrashEvent.triggerCrashEvent(this);
             isEventActive = false;
         }
-        if (randomGenerator.nextInt(messageEventChance) == 0) {
-            RandomMessageEvent.triggerRandomMessageEvent(this);
-        }
-        if (randomGenerator.nextInt(vovaEventChance) == 0) {
-            VovaEvent.triggerVovaEvent(this);
-        }
+
+        checkAndTriggerEvent(() -> RandomMessageEvent.triggerRandomMessageEvent(this), messageEventChance);
+        checkAndTriggerEvent(() -> VovaEvent.triggerVovaEvent(this), vovaEventChance);
     }
 
-    private void handleDebugEvent(CommandSender sender, String arg) {
-        switch (arg) {
-            case "kick":
-                processKickEvent(sender); // Вызов метода для обработки кика
-                break;
-            case "group":
-                processGroupEvent(sender); // Вызов метода для обработки группового события
-                break;
-            case "crash":
-                processCrashEvent(sender); // Вызов метода для обработки краша
-                break;
-            case "message":
-                processMessageEvent(sender); // Вызов метода для обработки сообщения
-                break;
-            case "vova":
-                processVovaEvent(sender); // Вызов метода для обработки события "вова"
-                break;
-            default:
-                break;
+    private void checkAndTriggerEvent(Runnable eventTrigger, int eventChance) {
+        if (randomGenerator.nextInt(eventChance) == 0) {
+            eventTrigger.run();
         }
     }
 }
