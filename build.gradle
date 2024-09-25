@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'ru.dushkinmir'
-version = '1.0-ALPHA'
+version = '1.1-ALPHA'
 
 repositories {
     mavenCentral()
