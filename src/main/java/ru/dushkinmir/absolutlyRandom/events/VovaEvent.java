@@ -17,12 +17,12 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class VovaEvent implements Listener {
 
     private static final Random RANDOM = new Random();
-    private static final int MAX_SECONDS = 20;
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!", NamedTextColor.WHITE);
 
     public static void triggerVovaEvent(Plugin plugin) {
@@ -30,7 +30,7 @@ public class VovaEvent implements Listener {
         if (!players.isEmpty()) {
             Player randomPlayer = getRandomPlayer(players);
             randomPlayer.sendActionBar(ACTION_BAR_TEXT);
-            randomPlayer.getWorld().sendMessage(Component.text("a %s теперь воняет".formatted(randomPlayer.getPlayer().getName())));
+            randomPlayer.getWorld().sendMessage(Component.text("a %s теперь воняет".formatted(Objects.requireNonNull(randomPlayer.getPlayer()).getName())));
             createEffect(plugin, randomPlayer);
         }
     }

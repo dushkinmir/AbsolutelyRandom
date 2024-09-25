@@ -197,7 +197,7 @@ public class DrugsEvent implements Listener {
             if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
                 if (!Objects.equals(String.valueOf(event.getPlayer().getGameMode()), "creative") || !Objects.equals(String.valueOf(event.getPlayer().getGameMode()), "spectator")) {
                     event.getPlayer().sendMessage(Component.text("дебил хули ты тычешь, совсем уже под солям объебан"));
-                };
+                }
             }
         }
     }
