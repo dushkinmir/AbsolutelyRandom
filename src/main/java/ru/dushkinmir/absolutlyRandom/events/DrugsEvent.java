@@ -9,9 +9,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import de.tr7zw.nbtapi.NBT;
+
+import java.util.Objects;
 
 public class DrugsEvent implements Listener {
 
@@ -29,6 +32,9 @@ public class DrugsEvent implements Listener {
                             // Сахар - Мефедрон
                             meta.displayName(Component.text("Мефедрон"));
                             item.setItemMeta(meta);
+                            NBT.modify(item, nbt -> {
+                                nbt.setString("drug", "вова хорошенький");
+                            });
                             NBT.modifyComponents(item, nbt -> {
                                 ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
                                 foodTag.setInteger("nutrition", 0);
@@ -65,6 +71,9 @@ public class DrugsEvent implements Listener {
                             // Белый краситель - Кокаин
                             meta.displayName(Component.text("Кокаин"));
                             item.setItemMeta(meta);
+                            NBT.modify(item, nbt -> {
+                                nbt.setString("drug", "вова хорошенький");
+                            });
                             NBT.modifyComponents(item, nbt -> {
                                 ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
                                 foodTag.setInteger("nutrition", 0);
@@ -100,6 +109,9 @@ public class DrugsEvent implements Listener {
                             // Папоротник - Марихуана
                             meta.displayName(Component.text("Марихуана"));
                             item.setItemMeta(meta);
+                            NBT.modify(item, nbt -> {
+                                nbt.setString("drug", "вова хорошенький");
+                            });
                             NBT.modifyComponents(item, nbt -> {
                                 ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
                                 foodTag.setInteger("nutrition", 0);
@@ -131,19 +143,13 @@ public class DrugsEvent implements Listener {
                             });
                             break;
 
-                        case POTION:
-                            // Бутылочка воды - Водка
-                            NBT.modifyComponents(item, nbt -> {
-                                ReadWriteNBT potionTag = nbt.getOrCreateCompound("minecraft:potion_contents");
-                                String waterPotion = potionTag.getKeys().toString();
-                                event.getPlayer().sendMessage(waterPotion);
-                            });
-                            break;
-
                         case HONEY_BOTTLE:
                             // Бутылочка меда - Пиво
                             meta.displayName(Component.text("Пиво"));
                             item.setItemMeta(meta);
+                            NBT.modify(item, nbt -> {
+                                nbt.setString("drug", "вова хорошенький");
+                            });
                             NBT.modifyComponents(item, nbt -> {
                                 ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
                                 foodTag.setInteger("nutrition", 6);
@@ -181,5 +187,53 @@ public class DrugsEvent implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onPlayerLeftClick(PlayerInteractEvent event) {
+        // Проверяем, что событие вызвано правым кликом
+        if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
+            Block clickedBlock = event.getClickedBlock();
+            if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
+                if (!Objects.equals(String.valueOf(event.getPlayer().getGameMode()), "creative") || !Objects.equals(String.valueOf(event.getPlayer().getGameMode()), "spectator")) {
+                    event.getPlayer().sendMessage(Component.text("дебил хули ты тычешь, совсем уже под солям объебан"));
+                };
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerConsumeDrug(PlayerItemConsumeEvent event) {
+        ItemStack item = event.getItem();
+        NBT.get(item, nbt -> {
+            if (Objects.equals(nbt.getString("drug"), "вова хорошенький")) {
+                String rawDruggedPlayer = "агаа!! %s у нас тут оказыватся балуется %s";
+                String druggedPlayer = rawDruggedPlayer.formatted(event.getPlayer().getName(), "%s");
+                rawDruggedPlayer = "уф бляя мощненько так закинулся %s";
+                switch (item.getType()) {
+                    case WHITE_DYE:
+                        event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted("мефедрончиком")));
+                        druggedPlayer = rawDruggedPlayer.formatted("мефедрончиком");
+                        event.getPlayer().sendActionBar(Component.text(druggedPlayer));
+                        break;
+                    case SUGAR:
+                        event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted("кокаинчиком")));
+                        druggedPlayer = rawDruggedPlayer.formatted("кокаинчиком");
+                        event.getPlayer().sendActionBar(Component.text(druggedPlayer));
+                        break;
+                    case FERN:
+                        event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted("марихуаной")));
+                        druggedPlayer = rawDruggedPlayer.formatted("марихуаной");
+                        event.getPlayer().sendActionBar(Component.text(druggedPlayer));
+                        break;
+                    case HONEY_BOTTLE:
+                        event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted("пивком")));
+                        druggedPlayer = rawDruggedPlayer.formatted("пивком");
+                        event.getPlayer().sendActionBar(Component.text(druggedPlayer));
+                        break;
+                    default: break;
+                }
+            }
+        });
     }
 }
