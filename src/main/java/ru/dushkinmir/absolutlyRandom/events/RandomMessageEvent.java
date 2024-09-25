@@ -19,38 +19,38 @@ import java.util.Random;
 public class RandomMessageEvent extends JavaPlugin {
     private static final List<String> MESSAGES = new ArrayList<>();
     private static final Random RANDOM = new Random();
-    private static final int MAX_MESSAGES_COUNT = 3;
-    private static final long TASK_INTERVAL_TICKS = 20*4;
+    private static final int MAX_MESSAGE_COUNT = 3;
+    private static final long TASK_INTERVAL_TICKS = 20 * 4;
 
     static {
-        loadMessages();
+        reloadMessages();
     }
 
     public static void triggerRandomMessageEvent(Plugin plugin) {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
         if (onlinePlayers.isEmpty()) return;
 
-        Player selectedPlayer = getRandomPlayer(onlinePlayers);
-        sendRandomMessages(plugin, selectedPlayer);
+        Player randomPlayer = getRandomPlayerFromList(onlinePlayers);
+        scheduleRandomMessagesTask(plugin, randomPlayer);
     }
 
-    private static void loadMessages() {
+    private static void reloadMessages() {
         Plugin plugin = Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("AbsolutelyRandom"));
         FileConfiguration config = plugin.getConfig();
-
         List<String> configMessages = config.getStringList("random-messages");
+
         if (!configMessages.isEmpty()) {
             MESSAGES.clear();
             MESSAGES.addAll(configMessages);
         }
     }
 
-    private static Player getRandomPlayer(List<Player> players) {
+    private static Player getRandomPlayerFromList(List<Player> players) {
         int randomIndex = RANDOM.nextInt(players.size());
         return players.get(randomIndex);
     }
 
-    private static void sendRandomMessages(Plugin plugin, Player player) {
+    private static void scheduleRandomMessagesTask(Plugin plugin, Player player) {
         new MessageTask(player).runTaskTimer(plugin, 0L, TASK_INTERVAL_TICKS);
     }
 
@@ -65,19 +65,23 @@ public class RandomMessageEvent extends JavaPlugin {
 
         @Override
         public void run() {
-            if (messageCount < MAX_MESSAGES_COUNT) {
-                String randomMessage = MESSAGES.get(RANDOM.nextInt(MESSAGES.size()));
-//                player.sendMessage(Component.text(formattedMessage, NamedTextColor.YELLOW));
-                var titleText = Component.text("вова пидор", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
-                var subTitleText = Component.text(randomMessage, NamedTextColor.GOLD);
-                player.showTitle(Title.title(titleText, subTitleText));
-                player.sendActionBar(titleText);
-                MESSAGES.remove(randomMessage);
+            if (messageCount < MAX_MESSAGE_COUNT) {
+                showRandomMessageToPlayer();
                 messageCount++;
             } else {
-                loadMessages();
+                reloadMessages();
                 this.cancel();
             }
+        }
+
+        private void showRandomMessageToPlayer() {
+            String randomMessage = MESSAGES.get(RANDOM.nextInt(MESSAGES.size()));
+            var titleText = Component.text("вова пидор", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
+            var subTitleText = Component.text(randomMessage, NamedTextColor.GOLD);
+
+            player.showTitle(Title.title(titleText, subTitleText));
+            player.sendActionBar(titleText);
+            MESSAGES.remove(randomMessage);
         }
     }
 }
