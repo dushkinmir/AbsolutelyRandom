@@ -18,11 +18,17 @@ repositories {
     maven {
         name = "codemc"
         url = "https://repo.codemc.io/repository/maven-public/" } // Репозиторий NBT-API
+    maven {
+        name = "jitpack.io"
+        url = "https://jitpack.io"
+    }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly "dev.jorel:commandapi-bukkit-core:9.5.2"
     implementation("de.tr7zw:item-nbt-api-plugin:2.13.2")
+    implementation 'com.github.Gecolay.GSit:core:1.10.0'
 }
 
 def targetJavaVersion = 21

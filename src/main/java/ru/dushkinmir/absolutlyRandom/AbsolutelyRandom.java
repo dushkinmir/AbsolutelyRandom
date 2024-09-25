@@ -1,8 +1,9 @@
 package ru.dushkinmir.absolutlyRandom;
 
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -11,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 public class AbsolutelyRandom extends JavaPlugin {
@@ -24,17 +24,23 @@ public class AbsolutelyRandom extends JavaPlugin {
     private int vovaEventChance;
     private boolean isEventActive = false;
 
-    public static void main() {
-        System.out.println("оаоаоаоао");
+    public static void main(String[] args) {
+        System.out.println("Z");
+    }
+
+    @Override
+    public void onLoad() {
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
+
     }
 
     @Override
     public void onEnable() {
         getLogger().info("AbsolutelyRandomPlugin has been enabled!");
         getLogger().info("Пусть на вашем сервере царит рандом!!");
+        CommandAPI.onEnable();
         scheduleRandomEventTrigger();
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
-        Objects.requireNonNull(this.getCommand("debug")).setTabCompleter(new DebugTabCompleter());
         saveDefaultConfig();
         loadConfigValues();
     }
@@ -68,23 +74,23 @@ public class AbsolutelyRandom extends JavaPlugin {
         String commandName = command.getName().toLowerCase();
 
         // Проверка команды /sex, доступна всем игрокам
-        if (commandName.equals("sex")) {
-            if (!(sender instanceof Player player)) {
-                sender.sendMessage("This command can only be used by players.");
-                return true;
-            }
-
-            if (args.length != 1) {
-                sender.sendMessage("Используйте: /sex <ник игрока>");
-                return true;
-            }
-
-            String targetName = args[0];
-
-            // Запуск события SexEvent
-            new SexEvent().triggerSexEvent(player, targetName, this);
-            return true;
-        }
+//        if (commandName.equals("sex")) {
+//            if (!(sender instanceof Player player)) {
+//                sender.sendMessage("This command can only be used by players.");
+//                return true;
+//            }
+//
+//            if (args.length != 1) {
+//                sender.sendMessage("Используйте: /sex <ник игрока>");
+//                return true;
+//            }
+//
+//            String targetName = args[0];
+//
+//            // Запуск события SexEvent
+//            new SexEvent(this).triggerSexEvent(player, targetName, this);
+//            return true;
+//        }
         if (!sender.hasPermission("absolutlyrandom.admin")) {
             sender.sendMessage("У вас нет прав для использования этой команды.");
             return true;
@@ -180,22 +186,4 @@ public class AbsolutelyRandom extends JavaPlugin {
                 break;
         }
     }
-    public static class DebugTabCompleter implements TabCompleter {
-
-        @Override
-        public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-            List<String> completions = new ArrayList<>();
-
-            if (args.length == 1) { // Первый аргумент после команды
-                completions.add("kick");
-                completions.add("group");
-                completions.add("crash");
-                completions.add("message");
-                completions.add("vova");
-            }
-
-            return completions;
-        }
-    }
-
 }

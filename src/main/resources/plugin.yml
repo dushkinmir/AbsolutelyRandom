@@ -3,17 +3,6 @@ version: 1.0-ALPHA
 main: ru.dushkinmir.absolutlyRandom.AbsolutelyRandom
 api-version: 1.21
 
-commands:
-  debug:
-    description: "Debugging commands of AbsolutelyPlugin"
-    usage: "/debug <event>"
-    aliases: [debugevent]
-    permission: absolutlyrandom.admin
-    permission-message: "You do not have permission to use this command"
-  sex:
-    description: трахен-трахен чпокен-чпокен
-    usage: /sex <player>
-
 permissions:
   absolutlyrandom.admin:
     description: Allows using debug commands for AbsolutelyRandomPlugin.

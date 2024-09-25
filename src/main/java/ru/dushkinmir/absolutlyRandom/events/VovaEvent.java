@@ -61,15 +61,18 @@ public class VovaEvent implements Listener {
     private static void applyPoisonEffect(Player player) {
         for (Entity entity : player.getNearbyEntities(1, 1, 1)) {
             if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
-                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 40, 0, true, true));
+                livingEntity.addPotionEffect(new PotionEffect(
+                        PotionEffectType.POISON, 40, 0, true, true));
             }
         }
     }
 
     private static void applySmokeEffect(Player player) {
         float particleSize = RANDOM.nextFloat(1.5f, 2.0f);
-        for (Player p : Bukkit.getOnlinePlayers()) { // Отправить всем игрокам
-            p.spawnParticle(Particle.DUST, player.getLocation(), 75, 1, 1, 1, new Particle.DustOptions(Color.GREEN, particleSize));
-        }
+        player.getWorld().spawnParticle(
+                Particle.DUST,
+                player.getLocation(),
+                75, 1, 1, 1,
+                new Particle.DustOptions(Color.GREEN, particleSize));
     }
 }
