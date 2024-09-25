@@ -21,19 +21,21 @@ import java.util.Objects;
 import java.util.Random;
 
 public class VovaEvent implements Listener {
-
     private static final Random RANDOM = new Random();
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!", NamedTextColor.WHITE);
+    private static final Component STINKY_PLAYER_MESSAGE = Component.text("бля чел иди искупайся, а не то от тебя весь сервер щарахаться будет");
+    private static final Component NORMAL_PLAYER_MESSAGE = Component.text("воо, молодец!");
 
     public static void triggerVovaEvent(Plugin plugin) {
         List<Player> players = getOnlinePlayers();
         if (!players.isEmpty()) {
             Player randomPlayer = getRandomPlayer(players);
-            randomPlayer.sendActionBar(ACTION_BAR_TEXT);
-            randomPlayer.getWorld().sendMessage(Component.text("a %s теперь воняет".formatted(Objects.requireNonNull(randomPlayer.getPlayer()).getName())));
-            createEffect(plugin, randomPlayer);
+            sendPlayerActionBarMessage(randomPlayer);
+            sendPlayerWorldMessage(randomPlayer);
+            scheduleEffects(plugin, randomPlayer);
         }
     }
+
     private static List<Player> getOnlinePlayers() {
         return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
@@ -42,32 +44,46 @@ public class VovaEvent implements Listener {
         return players.get(RANDOM.nextInt(players.size()));
     }
 
-    static Component stinkyPlayerMessage = Component.text("бля чел иди искупайся," +
-            " а не то от тебя весь сервер щарахаться будет");
-    static Component normalPlayerMassage = Component.text("воо, молодец!");
+    private static void sendPlayerActionBarMessage(Player player) {
+        player.sendActionBar(ACTION_BAR_TEXT);
+    }
 
-    private static void createEffect(Plugin plugin, Player player) {
-        new BukkitRunnable() {
+    private static void sendPlayerWorldMessage(Player player) {
+        player.getWorld().sendMessage(Component.text("a %s теперь воняет".formatted(Objects.requireNonNull(player.getPlayer()).getName())));
+    }
 
-            @Override
-            public void run() {
-                if (player.getLocation().getBlock().getType() == Material.WATER) {
-                    player.sendMessage(normalPlayerMassage);
-                    this.cancel();
-                    return;
-                }
-                applyPoisonEffect(player);
-                applySmokeEffect(player);
+    private static void scheduleEffects(Plugin plugin, Player player) {
+        new PlayerEffectTask(player).runTaskTimer(plugin, 0, 20L);
+        player.sendMessage(STINKY_PLAYER_MESSAGE);
+    }
+
+    private static class PlayerEffectTask extends BukkitRunnable {
+        private final Player player;
+
+        public PlayerEffectTask(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void run() {
+            if (isPlayerInWater(player)) {
+                player.sendMessage(NORMAL_PLAYER_MESSAGE);
+                this.cancel();
+                return;
             }
-        }.runTaskTimer(plugin, 0, 20L);
-        player.sendMessage(stinkyPlayerMessage);
+            applyPoisonEffect(player);
+            applySmokeEffect(player);
+        }
+
+        private boolean isPlayerInWater(Player player) {
+            return player.getLocation().getBlock().getType() == Material.WATER;
+        }
     }
 
     private static void applyPoisonEffect(Player player) {
         for (Entity entity : player.getNearbyEntities(1, 1, 1)) {
             if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
-                livingEntity.addPotionEffect(new PotionEffect(
-                        PotionEffectType.POISON, 40, 0, true, true));
+                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 40, 0, true, true));
             }
         }
     }
