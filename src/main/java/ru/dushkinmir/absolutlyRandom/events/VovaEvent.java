@@ -2,9 +2,9 @@ package ru.dushkinmir.absolutlyRandom.events;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -23,14 +23,15 @@ public class VovaEvent implements Listener {
 
     private static final Random RANDOM = new Random();
     private static final int MAX_SECONDS = 20;
-    private static final Component TITLE_TEXT = Component.text("фуу ты вонючка!", NamedTextColor.WHITE);
+    private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!", NamedTextColor.WHITE);
 
     public static void triggerVovaEvent(Plugin plugin) {
         List<Player> players = getOnlinePlayers();
         if (!players.isEmpty()) {
             Player randomPlayer = getRandomPlayer(players);
+            randomPlayer.sendActionBar(ACTION_BAR_TEXT);
+            randomPlayer.getWorld().sendMessage(Component.text("a %s теперь воняет".formatted(randomPlayer.getPlayer().getName())));
             createEffect(plugin, randomPlayer);
-            randomPlayer.showTitle(Title.title(Component.empty(), TITLE_TEXT));
         }
     }
     private static List<Player> getOnlinePlayers() {
@@ -41,21 +42,25 @@ public class VovaEvent implements Listener {
         return players.get(RANDOM.nextInt(players.size()));
     }
 
+    static Component stinkyPlayerMessage = Component.text("бля чел иди искупайся," +
+            " а не то от тебя весь сервер щарахаться будет");
+    static Component normalPlayerMassage = Component.text("воо, молодец!");
+
     private static void createEffect(Plugin plugin, Player player) {
         new BukkitRunnable() {
-            int ticks = 0;
 
             @Override
             public void run() {
-                if (ticks > MAX_SECONDS) {
+                if (player.getLocation().getBlock().getType() == Material.WATER) {
+                    player.sendMessage(normalPlayerMassage);
                     this.cancel();
                     return;
                 }
                 applyPoisonEffect(player);
                 applySmokeEffect(player);
-                ticks++;
             }
         }.runTaskTimer(plugin, 0, 20L);
+        player.sendMessage(stinkyPlayerMessage);
     }
 
     private static void applyPoisonEffect(Player player) {
