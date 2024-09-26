@@ -65,12 +65,13 @@ public class VovaEvent implements Listener {
 
     private static void scheduleEffects(Plugin plugin, Player player) {
         UUID playerUUID = player.getUniqueId();
-        plugin.getLogger().info("[scheduleEffects] getting: " + AbsolutelyRandom.getPlayerTasks());
-        PlayerEffectTask task = new PlayerEffectTask(player);
-        task.runTaskTimer(plugin, 0, 20L);
-        AbsolutelyRandom.getPlayerTasks().put(playerUUID, task);
-        plugin.getLogger().info("[scheduleEffects] putting: " + AbsolutelyRandom.getPlayerTasks().get(playerUUID).toString());
-        player.sendMessage(STINKY_PLAYER_MESSAGE);
+        Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
+        if (!playerTasks.containsKey(playerUUID)) {
+            PlayerEffectTask task = new PlayerEffectTask(player);
+            task.runTaskTimer(plugin, 0, 20L);
+            AbsolutelyRandom.getPlayerTasks().put(playerUUID, task);
+            player.sendMessage(STINKY_PLAYER_MESSAGE);
+        }
     }
 
     @EventHandler
@@ -78,8 +79,6 @@ public class VovaEvent implements Listener {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
         Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
-        plugin.getLogger().info("Player joined: " + player.getName());
-        plugin.getLogger().info("Current playerTasks: " + playerTasks);
         if (playerTasks.containsKey(playerUUID)) {
             scheduleEffects(plugin, player);
         }
@@ -90,8 +89,6 @@ public class VovaEvent implements Listener {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
         Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
-        plugin.getLogger().info("Player quit: " + player.getName());
-        plugin.getLogger().info("Current playerTasks: " + playerTasks);
         if (playerTasks.containsKey(playerUUID)) {
             playerTasks.get(playerUUID).cancel();
         }
