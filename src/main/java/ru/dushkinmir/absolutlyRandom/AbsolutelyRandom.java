@@ -1,5 +1,6 @@
 package ru.dushkinmir.absolutlyRandom;
 
+import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.*;
 import org.bukkit.command.CommandSender;
@@ -35,6 +36,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     @Override
     public void onDisable() {
         logPluginDeactivation();
+        CommandAPI.unregister("debug");
     }
 
     private void logPluginActivation() {
@@ -81,7 +83,7 @@ public class AbsolutelyRandom extends JavaPlugin {
                     assert event != null;
                     handleDebugEvent(sender, event);
                 })
-                .register();
+                .register(this);
     }
 
     private void handleDebugEvent(CommandSender sender, String event) {
