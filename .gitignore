@@ -1,3 +1,4 @@
 /build/
 /.gradle/
 /.idea/
+/src/main/java/ru/dushkinmir/absolutelyRandom/events/SexEvent.java

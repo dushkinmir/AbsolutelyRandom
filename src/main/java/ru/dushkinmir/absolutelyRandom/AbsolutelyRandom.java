@@ -17,7 +17,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private final Random randomGenerator = new Random();
     private int kickEventChance, groupEventChance, crashEventChance, messageEventChance, vovaEventChance;
     private boolean isEventActive = false;
-    private static Map<UUID, BukkitRunnable> playerTasks = new HashMap<>();
+    private static final Map<UUID, BukkitRunnable> playerTasks = new HashMap<>();
 
     public static void main(String[] args) {
         System.out.println("Z");
