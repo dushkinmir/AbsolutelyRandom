@@ -3,9 +3,12 @@ package ru.dushkinmir.absolutlyRandom.events;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBTCompoundList;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -19,7 +22,11 @@ import java.util.Map;
 
 public class DrugsEvent implements Listener {
 
-    private void applyDrugEffects(ItemStack item, String drugName, Map<String, Integer> effects, int nutrition, float saturation) {
+    private void applyDrugEffects(ItemStack item, String drugName, Map<String, Integer> effects, int nutrition, float saturation, Block clickedBlock, Player player) {
+        // Создаем вокруг варочной стойки частицы
+        player.getWorld().playEffect(clickedBlock.getLocation(), Effect.SMOKE, 1);
+        // Воспроизводим звук "пфф"
+        player.getWorld().playSound(clickedBlock.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 1.0f, 1.0f);
         ItemMeta meta = item.getItemMeta();
         meta.displayName(Component.text(drugName));
         item.setItemMeta(meta);
@@ -56,7 +63,7 @@ public class DrugsEvent implements Listener {
                                     "minecraft:haste", 100,
                                     "minecraft:weakness", 100,
                                     "minecraft:hunger", 100
-                            ), 0, 0.0f);
+                            ), 0, 0.0f, clickedBlock, event.getPlayer());
                             break;
                         case WHITE_DYE:
                             applyDrugEffects(item, "Кокаин", Map.of(
@@ -64,7 +71,7 @@ public class DrugsEvent implements Listener {
                                     "minecraft:strength", 100,
                                     "minecraft:nausea", 100,
                                     "minecraft:blindness", 100
-                            ), 0, 0.0f);
+                            ), 0, 0.0f, clickedBlock, event.getPlayer());
                             break;
                         case FERN:
                             applyDrugEffects(item, "Марихуана", Map.of(
@@ -72,7 +79,7 @@ public class DrugsEvent implements Listener {
                                     "minecraft:hunger", 100,
                                     "minecraft:slowness", 100,
                                     "minecraft:weakness", 100
-                            ), 0, 0.0f);
+                            ), 0, 0.0f, clickedBlock, event.getPlayer());
                             break;
                         case HONEY_BOTTLE:
                             applyDrugEffects(item, "Пиво", Map.of(
@@ -80,7 +87,7 @@ public class DrugsEvent implements Listener {
                                     "minecraft:resistance", 100,
                                     "minecraft:mining_fatigue", 100,
                                     "minecraft:weakness", 100
-                            ), 6, 1.0f);
+                            ), 6, 1.0f, clickedBlock, event.getPlayer());
                             break;
                         default:
                             break;
