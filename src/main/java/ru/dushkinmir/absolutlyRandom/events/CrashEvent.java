@@ -8,10 +8,13 @@ import org.bukkit.plugin.Plugin;
 
 public class CrashEvent {
     private static boolean isOffline = false;
-    private static final String MAINTENANCE_KICK_MSG = "The server is currently offline for maintenance. Please try again later.";
+    private static final String MAINTENANCE_KICK_MSG =
+            "The server is currently offline for maintenance. Please try again later.";
     private static final int RESTART_DELAY_TICKS = 400; // 20 секунд
     private static final Component MAINTENANCE_MOTD = Component.text("This server is offline for maintenance.");
-    private static final Component RESTART_KICK_MSG = Component.text("Please wait a moment, the server is restarting...", NamedTextColor.YELLOW);
+    private static final Component RESTART_KICK_MSG = Component.text(
+            "Please wait a moment, the server is restarting...", NamedTextColor.YELLOW
+    );
 
     public static void triggerCrashEvent(Plugin plugin) {
         kickAllPlayers();

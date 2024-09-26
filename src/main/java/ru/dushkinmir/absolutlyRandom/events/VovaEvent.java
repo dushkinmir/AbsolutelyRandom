@@ -9,22 +9,25 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class VovaEvent implements Listener {
     private static final Random RANDOM = new Random();
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!", NamedTextColor.WHITE);
-    private static final Component STINKY_PLAYER_MESSAGE = Component.text("бля чел иди искупайся, а не то от тебя весь сервер щарахаться будет");
+    private static final Component STINKY_PLAYER_MESSAGE = Component.text(
+            "бля чел иди искупайся, а не то от тебя весь сервер щарахаться будет"
+    );
     private static final Component NORMAL_PLAYER_MESSAGE = Component.text("воо, молодец!");
+    private static final Map<Player, BukkitRunnable> playerTasks = new HashMap<>();
 
     public static void triggerVovaEvent(Plugin plugin) {
         List<Player> players = getOnlinePlayers();
@@ -49,12 +52,36 @@ public class VovaEvent implements Listener {
     }
 
     private static void sendPlayerWorldMessage(Player player) {
-        player.getWorld().sendMessage(Component.text("a %s теперь воняет".formatted(Objects.requireNonNull(player.getPlayer()).getName())));
+        player.getWorld().sendMessage(Component.text(
+                "a %s теперь воняет".formatted(Objects.requireNonNull(player.getPlayer()).getName()))
+        );
     }
 
     private static void scheduleEffects(Plugin plugin, Player player) {
-        new PlayerEffectTask(player).runTaskTimer(plugin, 0, 20L);
+        if (playerTasks.containsKey(player)) {
+            playerTasks.get(player).cancel();
+        }
+
+        PlayerEffectTask task = new PlayerEffectTask(player);
+        task.runTaskTimer(plugin, 0, 20L);
+        playerTasks.put(player, task);
         player.sendMessage(STINKY_PLAYER_MESSAGE);
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        if (playerTasks.containsKey(player)) {
+            scheduleEffects(Bukkit.getPluginManager().getPlugin("AbsolutelyRandom"), player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        if (playerTasks.containsKey(player)) {
+            playerTasks.get(player).cancel();
+        }
     }
 
     private static class PlayerEffectTask extends BukkitRunnable {
@@ -69,10 +96,13 @@ public class VovaEvent implements Listener {
             if (isPlayerInWater(player)) {
                 player.sendMessage(NORMAL_PLAYER_MESSAGE);
                 this.cancel();
+                playerTasks.remove(player);
                 return;
             }
-            applyPoisonEffect(player);
-            applySmokeEffect(player);
+            if (player.isOnline()) {
+                applyPoisonEffect(player);
+                applySmokeEffect(player);
+            }
         }
 
         private boolean isPlayerInWater(Player player) {
@@ -83,7 +113,9 @@ public class VovaEvent implements Listener {
     private static void applyPoisonEffect(Player player) {
         for (Entity entity : player.getNearbyEntities(1, 1, 1)) {
             if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
-                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 40, 0, true, true));
+                livingEntity.addPotionEffect(
+                        new PotionEffect(PotionEffectType.POISON, 60, 1, true, true)
+                );
             }
         }
     }

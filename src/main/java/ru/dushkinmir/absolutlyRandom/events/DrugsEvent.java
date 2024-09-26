@@ -22,7 +22,8 @@ import java.util.Map;
 
 public class DrugsEvent implements Listener {
 
-    private void applyDrugEffects(ItemStack item, String drugName, Map<String, Integer> effects, int nutrition, float saturation, Block clickedBlock, Player player) {
+    private void applyDrugEffects(ItemStack item, String drugName, Map<String, Integer> effects, int nutrition,
+                                  float saturation, Block clickedBlock, Player player) {
         // Создаем вокруг варочной стойки частицы
         player.getWorld().playEffect(clickedBlock.getLocation(), Effect.SMOKE, 1);
         // Воспроизводим звук "пфф"
@@ -104,7 +105,9 @@ public class DrugsEvent implements Listener {
             if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
                 GameMode gameMode = event.getPlayer().getGameMode();
                 if (!gameMode.equals(GameMode.CREATIVE) && !gameMode.equals(GameMode.SPECTATOR)) {
-                    event.getPlayer().sendMessage(Component.text("дебил хули ты тычешь, совсем уже под солям объебан"));
+                    event.getPlayer().sendMessage(Component.text(
+                            "дебил хули ты тычешь, совсем уже под солями объебан")
+                    );
                 }
             }
         }

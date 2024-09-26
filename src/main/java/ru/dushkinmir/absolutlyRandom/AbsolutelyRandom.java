@@ -73,11 +73,13 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     private void registerDebugCommand() {
-        new CommandAPICommand("debug")
+        new CommandAPICommand("debugevent")
                 .withPermission("absolutlyrandom.admin")
                 .withUsage("/debug <event>")
                 .withArguments(new StringArgument("event")
-                        .replaceSuggestions(ArgumentSuggestions.strings("crash", "group", "kick", "message", "vova")))
+                        .replaceSuggestions(ArgumentSuggestions.strings(
+                                "crash", "group", "kick", "message", "vova"))
+                )
                 .executes((sender, args) -> {
                     String event = (String) args.get("event");
                     assert event != null;
@@ -92,16 +94,22 @@ public class AbsolutelyRandom extends JavaPlugin {
                 triggerEvent(KickEvent::triggerKickEvent, sender, "Событие с киком игрока вызвано.");
                 break;
             case "group":
-                triggerEvent(() -> GroupEvent.triggerGroupEvent(this), sender, "Событие с выпадением блоков вызвано.");
+                triggerEvent(() -> GroupEvent.triggerGroupEvent(this), sender,
+                        "Событие с выпадением блоков вызвано."
+                );
                 break;
             case "crash":
                 triggerEvent(() -> CrashEvent.triggerCrashEvent(this), sender, "Краш сервера вызван.");
                 break;
             case "message":
-                triggerEvent(() -> RandomMessageEvent.triggerRandomMessageEvent(this), sender, "Событие с рандомным сообщением вызвано.");
+                triggerEvent(() -> RandomMessageEvent.triggerRandomMessageEvent(this), sender,
+                        "Событие с рандомным сообщением вызвано."
+                );
                 break;
             case "vova":
-                triggerEvent(() -> VovaEvent.triggerVovaEvent(this), sender, "Событие с облаком дыма вызвано");
+                triggerEvent(() -> VovaEvent.triggerVovaEvent(this), sender,
+                        "Событие с облаком дыма вызвано"
+                );
                 break;
             default:
                 break;
