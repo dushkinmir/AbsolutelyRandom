@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutlyRandom;
+package ru.dushkinmir.absolutelyRandom;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
@@ -7,11 +7,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutlyRandom.events.*;
+import ru.dushkinmir.absolutelyRandom.events.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class AbsolutelyRandom extends JavaPlugin {
     private static final long SCHEDULE_PERIOD = 20L;
@@ -19,6 +17,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private final Random randomGenerator = new Random();
     private int kickEventChance, groupEventChance, crashEventChance, messageEventChance, vovaEventChance;
     private boolean isEventActive = false;
+    private static Map<UUID, BukkitRunnable> playerTasks = new HashMap<>();
 
     public static void main(String[] args) {
         System.out.println("Z");
@@ -39,6 +38,10 @@ public class AbsolutelyRandom extends JavaPlugin {
         CommandAPI.unregister("debug");
     }
 
+    public static Map<UUID, BukkitRunnable> getPlayerTasks() {
+        return playerTasks;
+    }
+
     private void logPluginActivation() {
         getLogger().info("AbsolutelyRandomPlugin has been enabled!");
         getLogger().info("Пусть на вашем сервере царит рандом!!");
@@ -46,6 +49,8 @@ public class AbsolutelyRandom extends JavaPlugin {
 
     private void logPluginDeactivation() {
         getLogger().info("AbsolutelyRandomPlugin has been disabled!");
+        playerTasks.values().forEach(BukkitRunnable::cancel);
+        playerTasks.clear();
     }
 
     private void loadConfigValues() {
@@ -69,6 +74,7 @@ public class AbsolutelyRandom extends JavaPlugin {
 
     private void registerEventsAndCommands() {
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
+        getServer().getPluginManager().registerEvents(new VovaEvent(this), this);
         registerDebugCommand();
     }
 

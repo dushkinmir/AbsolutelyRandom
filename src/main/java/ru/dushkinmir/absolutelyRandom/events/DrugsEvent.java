@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutlyRandom.events;
+package ru.dushkinmir.absolutelyRandom.events;
 
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBTCompoundList;

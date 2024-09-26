@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutlyRandom.events;
+package ru.dushkinmir.absolutelyRandom.events;
 
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;

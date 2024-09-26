@@ -1,7 +1,6 @@
-package ru.dushkinmir.absolutlyRandom.events;
+package ru.dushkinmir.absolutelyRandom.events;
 
 import dev.geco.gsit.api.event.PreEntitySitEvent;
-import dev.geco.gsit.api.event.PrePlayerPlayerSitEvent;
 import dev.geco.gsit.api.event.PrePlayerPoseEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

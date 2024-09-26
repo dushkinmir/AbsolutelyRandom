@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutlyRandom.events;
+package ru.dushkinmir.absolutelyRandom.events;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

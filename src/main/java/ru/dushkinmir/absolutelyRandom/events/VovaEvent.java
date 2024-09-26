@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutlyRandom.events;
+package ru.dushkinmir.absolutelyRandom.events;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -17,6 +17,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import ru.dushkinmir.absolutelyRandom.AbsolutelyRandom;
 
 import java.util.*;
 
@@ -24,10 +25,15 @@ public class VovaEvent implements Listener {
     private static final Random RANDOM = new Random();
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!", NamedTextColor.WHITE);
     private static final Component STINKY_PLAYER_MESSAGE = Component.text(
-            "бля чел иди искупайся, а не то от тебя весь сервер щарахаться будет"
+            "бля чел иди искупайся, а то от тебя весь сервер щарахается"
     );
     private static final Component NORMAL_PLAYER_MESSAGE = Component.text("воо, молодец!");
-    private static final Map<Player, BukkitRunnable> playerTasks = new HashMap<>();
+
+    private final Plugin plugin;
+
+    public VovaEvent(Plugin plugin) {
+        this.plugin = plugin;
+    }
 
     public static void triggerVovaEvent(Plugin plugin) {
         List<Player> players = getOnlinePlayers();
@@ -58,29 +64,36 @@ public class VovaEvent implements Listener {
     }
 
     private static void scheduleEffects(Plugin plugin, Player player) {
-        if (playerTasks.containsKey(player)) {
-            playerTasks.get(player).cancel();
-        }
-
+        UUID playerUUID = player.getUniqueId();
+        plugin.getLogger().info("[scheduleEffects] getting: " + AbsolutelyRandom.getPlayerTasks());
         PlayerEffectTask task = new PlayerEffectTask(player);
         task.runTaskTimer(plugin, 0, 20L);
-        playerTasks.put(player, task);
+        AbsolutelyRandom.getPlayerTasks().put(playerUUID, task);
+        plugin.getLogger().info("[scheduleEffects] putting: " + AbsolutelyRandom.getPlayerTasks().get(playerUUID).toString());
         player.sendMessage(STINKY_PLAYER_MESSAGE);
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (playerTasks.containsKey(player)) {
-            scheduleEffects(Bukkit.getPluginManager().getPlugin("AbsolutelyRandom"), player);
+        UUID playerUUID = player.getUniqueId();
+        Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
+        plugin.getLogger().info("Player joined: " + player.getName());
+        plugin.getLogger().info("Current playerTasks: " + playerTasks);
+        if (playerTasks.containsKey(playerUUID)) {
+            scheduleEffects(plugin, player);
         }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        if (playerTasks.containsKey(player)) {
-            playerTasks.get(player).cancel();
+        UUID playerUUID = player.getUniqueId();
+        Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
+        plugin.getLogger().info("Player quit: " + player.getName());
+        plugin.getLogger().info("Current playerTasks: " + playerTasks);
+        if (playerTasks.containsKey(playerUUID)) {
+            playerTasks.get(playerUUID).cancel();
         }
     }
 
@@ -93,10 +106,12 @@ public class VovaEvent implements Listener {
 
         @Override
         public void run() {
+            Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
+            UUID playerUUID = player.getUniqueId();
             if (isPlayerInWater(player)) {
                 player.sendMessage(NORMAL_PLAYER_MESSAGE);
                 this.cancel();
-                playerTasks.remove(player);
+                playerTasks.remove(playerUUID);
                 return;
             }
             if (player.isOnline()) {
@@ -113,15 +128,14 @@ public class VovaEvent implements Listener {
     private static void applyPoisonEffect(Player player) {
         for (Entity entity : player.getNearbyEntities(1, 1, 1)) {
             if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
-                livingEntity.addPotionEffect(
-                        new PotionEffect(PotionEffectType.POISON, 60, 1, true, true)
-                );
+                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 60, 1, true, true));
             }
         }
     }
 
     private static void applySmokeEffect(Player player) {
-        float particleSize = RANDOM.nextFloat(1.5f, 2.0f);
+        Random random = new Random();
+        float particleSize = random.nextFloat(1.5f, 2.0f);
         player.getWorld().spawnParticle(
                 Particle.DUST,
                 player.getLocation(),
