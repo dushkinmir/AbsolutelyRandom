@@ -1,5 +1,8 @@
 package ru.dushkinmir.absolutelyRandom.events;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -7,9 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,22 +51,24 @@ public class RandomMessageEvent extends JavaPlugin {
     }
 
     private static void scheduleRandomMessagesTask(Plugin plugin, Player player) {
-        new MessageTask(player).runTaskTimer(plugin, 0L, TASK_INTERVAL_TICKS);
+        new MessageTask(player, RANDOM.nextBoolean()).runTaskTimer(plugin, 0L, TASK_INTERVAL_TICKS);
     }
 
     private static class MessageTask extends BukkitRunnable {
         private final Player player;
         private int messageCount;
+        private final boolean isPlayerMessage;
 
-        public MessageTask(Player player) {
+        public MessageTask(Player player, Boolean isPlayerMessage) {
             this.player = player;
             this.messageCount = 0;
+            this.isPlayerMessage = isPlayerMessage;
         }
 
         @Override
         public void run() {
             if (messageCount < MAX_MESSAGE_COUNT) {
-                showRandomMessageToPlayer();
+                showRandomMessageToPlayer(isPlayerMessage);
                 messageCount++;
             } else {
                 reloadMessages();
@@ -74,13 +76,19 @@ public class RandomMessageEvent extends JavaPlugin {
             }
         }
 
-        private void showRandomMessageToPlayer() {
+        private void showRandomMessageToPlayer(Boolean isPlayerMessage) {
             String randomMessage = MESSAGES.get(RANDOM.nextInt(MESSAGES.size()));
-            var titleText = Component.text("вова пидор", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
-            var subTitleText = Component.text(randomMessage, NamedTextColor.GOLD);
-
-            player.showTitle(Title.title(titleText, subTitleText));
-            player.sendActionBar(titleText);
+            if (!isPlayerMessage) {
+                // Обычное поведение
+                var titleText = Component.text("вова красава", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
+                var subTitleText = Component.text(randomMessage, NamedTextColor.GOLD);
+                player.showTitle(Title.title(titleText, subTitleText));
+                player.sendActionBar(titleText);
+            } else {
+                Component messageFromPlayer = Component.text("<%s> %s".formatted(player.getName(), randomMessage));
+                // Отправка сообщения от имени игрока
+                player.getWorld().sendMessage(messageFromPlayer);
+            }
             MESSAGES.remove(randomMessage);
         }
     }

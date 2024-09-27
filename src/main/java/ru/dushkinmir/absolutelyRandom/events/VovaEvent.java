@@ -14,9 +14,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.AbsolutelyRandom;
 
 import java.util.*;
@@ -66,12 +66,10 @@ public class VovaEvent implements Listener {
     private static void scheduleEffects(Plugin plugin, Player player) {
         UUID playerUUID = player.getUniqueId();
         Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
-        if (!playerTasks.containsKey(playerUUID)) {
-            PlayerEffectTask task = new PlayerEffectTask(player);
-            task.runTaskTimer(plugin, 0, 20L);
-            AbsolutelyRandom.getPlayerTasks().put(playerUUID, task);
-            player.sendMessage(STINKY_PLAYER_MESSAGE);
-        }
+        PlayerEffectTask task = new PlayerEffectTask(player);
+        task.runTaskTimer(plugin, 0, 20L);
+        if (!playerTasks.containsKey(playerUUID)) AbsolutelyRandom.getPlayerTasks().put(playerUUID, task);
+        player.sendMessage(STINKY_PLAYER_MESSAGE);
     }
 
     @EventHandler

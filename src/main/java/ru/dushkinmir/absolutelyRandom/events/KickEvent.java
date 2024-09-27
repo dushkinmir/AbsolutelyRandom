@@ -1,9 +1,9 @@
 package ru.dushkinmir.absolutelyRandom.events;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,5 +1,6 @@
 package ru.dushkinmir.absolutelyRandom.events;
 
+import de.tr7zw.nbtapi.NBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBTCompoundList;
 import net.kyori.adventure.text.Component;
@@ -16,7 +17,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import de.tr7zw.nbtapi.NBT;
 
 import java.util.Map;
 
