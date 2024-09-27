@@ -3,9 +3,7 @@ package ru.dushkinmir.absolutelyRandom;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
-import dev.jorel.commandapi.arguments.PlayerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -78,7 +76,6 @@ public class AbsolutelyRandom extends JavaPlugin {
     private void registerEventsAndCommands() {
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
         getServer().getPluginManager().registerEvents(new VovaEvent(this), this);
-        getServer().getPluginManager().registerEvents(new SexEvent(this), this);
         registerCommans();
     }
 
@@ -94,16 +91,6 @@ public class AbsolutelyRandom extends JavaPlugin {
                     String event = (String) args.get("event");
                     assert event != null;
                     handleDebugEvent(sender, event);
-                })
-                .register(this);
-        new CommandAPICommand("sex")
-                .withUsage("/sex <player>")
-                .withArguments(new PlayerArgument("target"))
-                .executes((sender, args) -> {
-                    Player target = (Player) args.get("target");
-                    assert target != null;
-                    String targetName = target.getName();
-                    new SexEvent(this).triggerSexEvent((Player) sender, targetName, Bukkit.getPluginManager().getPlugin("AbsolutelyRandom"));
                 })
                 .register(this);
     }
