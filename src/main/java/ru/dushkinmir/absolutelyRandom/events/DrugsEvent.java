@@ -4,10 +4,7 @@ import de.tr7zw.nbtapi.NBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBTCompoundList;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Effect;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,7 +22,11 @@ public class DrugsEvent implements Listener {
     private void applyDrugEffects(ItemStack item, String drugName, Map<String, Integer> effects, int nutrition,
                                   float saturation, Block clickedBlock, Player player) {
         // Создаем вокруг варочной стойки частицы
-        player.getWorld().playEffect(clickedBlock.getLocation(), Effect.SMOKE, 1);
+        player.getWorld().spawnParticle(
+                Particle.DUST,
+                player.getLocation(),
+                75, 1, 1, 1,
+                new Particle.DustOptions(Color.GREEN, 1.7f));
         // Воспроизводим звук "пфф"
         player.getWorld().playSound(clickedBlock.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 1.0f, 1.0f);
         ItemMeta meta = item.getItemMeta();
