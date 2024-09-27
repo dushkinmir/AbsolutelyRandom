@@ -26,7 +26,7 @@ public class DrugsEvent implements Listener {
                 Particle.DUST,
                 player.getLocation(),
                 75, 1, 1, 1,
-                new Particle.DustOptions(Color.GREEN, 1.7f));
+                new Particle.DustOptions(Color.GRAY, 1.7f));
         // Воспроизводим звук "пфф"
         player.getWorld().playSound(clickedBlock.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 1.0f, 1.0f);
         ItemMeta meta = item.getItemMeta();
