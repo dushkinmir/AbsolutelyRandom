@@ -24,7 +24,7 @@ public class DrugsEvent implements Listener {
         // Создаем вокруг варочной стойки частицы
         player.getWorld().spawnParticle(
                 Particle.DUST,
-                player.getLocation(),
+                clickedBlock.getLocation(),
                 75, 1, 1, 1,
                 new Particle.DustOptions(Color.GRAY, 1.7f));
         // Воспроизводим звук "пфф"
