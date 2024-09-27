@@ -101,7 +101,9 @@ public class AbsolutelyRandom extends JavaPlugin {
                 .withArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
-                    new SexEvent(this).triggerSexEvent((Player) sender, target.getName(), Bukkit.getPluginManager().getPlugin("AbsolutelyRandom"));
+                    assert target != null;
+                    String targetName = target.getName();
+                    new SexEvent(this).triggerSexEvent((Player) sender, targetName, Bukkit.getPluginManager().getPlugin("AbsolutelyRandom"));
                 })
                 .register(this);
     }
