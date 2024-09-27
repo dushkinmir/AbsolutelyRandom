@@ -1,11 +1,8 @@
 package ru.dushkinmir.absolutelyRandom.events;
 
-import dev.geco.gsit.api.event.PreEntitySitEvent;
-import dev.geco.gsit.api.event.PrePlayerPoseEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,21 +14,18 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
-import java.sql.*;
-import java.util.HashMap;
 import java.util.Random;
+import java.util.UUID;
+import java.util.List;
 
-public class SexEvent {
+public class SexEvent implements Listener {
 
     private final CollisionManager collisionManager;
     private final AnalFissureManager analFissureManager;
-    private static HashMap<Player, Long> lastMessageTime; // Хранит время последнего сообщения для игрока
-    private static final long messageCooldown = 100; // 5 секунд (5000 миллисекунд)
 
     public SexEvent(Plugin plugin) {
         this.collisionManager = new CollisionManager(); // Инициализируем менеджер коллизий
-        this.analFissureManager = new AnalFissureManager(plugin); // Передаем плагин в менеджер анальной трещины
-        lastMessageTime = new HashMap<>();
+        this.analFissureManager = new AnalFissureManager(plugin); // Инициализируем менеджер анальной трещины
     }
 
     public void triggerSexEvent(Player player, String targetName, Plugin plugin) {
@@ -47,6 +41,7 @@ public class SexEvent {
             player.sendMessage("Игрок слишком далеко. Подойдите ближе.");
             return;
         }
+
         // Отключаем коллизии для обоих игроков
         collisionManager.addPlayerToNoCollision(player);
         collisionManager.addPlayerToNoCollision(targetPlayer);
@@ -55,17 +50,20 @@ public class SexEvent {
         Random random = new Random();
         boolean playerMoves = random.nextBoolean(); // true - движется вызывающий игрок, false - целевой
 
-        if (playerMoves) {
-            teleportBehind(targetPlayer, player);
-            movePlayer(player, plugin);
-            targetPlayer.sendMessage("Вы остаетесь на месте.");
-            analFissureManager.checkForAnalFissure(targetPlayer);
-        } else {
-            teleportBehind(player, targetPlayer);
-            movePlayer(targetPlayer, plugin);
-            player.sendMessage("Вы остаетесь на месте.");
-            analFissureManager.checkForAnalFissure(player);
+        Player standingPlayer = playerMoves ? targetPlayer : player;
+        Player movingPlayer = playerMoves ? player : targetPlayer;
+
+        // Телепортируем и двигаем игроков
+        teleportBehind(standingPlayer, movingPlayer);
+        movePlayer(movingPlayer, plugin);
+        standingPlayer.sendMessage("Вы остаетесь на месте.");
+        movingPlayer.sendMessage("Вы будете двигаться.");
+
+        // С шансом 50/50 даем анальную трещину стоячему игроку
+        if (random.nextBoolean()) {
+            analFissureManager.giveAnalFissure(standingPlayer);
         }
+
         // Через 15 секунд включаем коллизии обратно
         Bukkit.getScheduler().runTaskLater(
                 plugin,
@@ -135,6 +133,79 @@ public class SexEvent {
         movingPlayer.teleport(teleportLocation);
     }
 
+    // Класс для управления анальной трещиной
+    private static class AnalFissureManager implements Listener {
+
+        private final Plugin plugin;
+        private final FileConfiguration config;
+
+        public AnalFissureManager(Plugin plugin) {
+            this.plugin = plugin;
+            this.config = plugin.getConfig(); // Загружаем конфиг
+            // Регистрируем события
+            Bukkit.getPluginManager().registerEvents(this, plugin);
+        }
+
+        // Метод для добавления игроку анальной трещины
+        public void giveAnalFissure(Player player) {
+            UUID playerId = player.getUniqueId();
+            List<String> affectedPlayers = config.getStringList("analFissures");
+
+            if (!affectedPlayers.contains(playerId.toString())) {
+                affectedPlayers.add(playerId.toString());
+                config.set("analFissures", affectedPlayers);
+                plugin.saveConfig();
+
+                player.sendMessage("Вам нанесена анальная трещина! Вы не сможете сидеть в транспорте и спать на кровати в течение 2 игровых дней.");
+
+                // Запрещаем садиться в транспорт и спать на кровати
+                Bukkit.getScheduler().runTaskLater(plugin, () -> removeAnalFissure(player), 2 * 24000L); // 2 игровых дня = 48 минут
+            }
+        }
+
+        // Метод для удаления анальной трещины
+        public void removeAnalFissure(Player player) {
+            UUID playerId = player.getUniqueId();
+            List<String> affectedPlayers = config.getStringList("analFissures");
+
+            if (affectedPlayers.contains(playerId.toString())) {
+                affectedPlayers.remove(playerId.toString());
+                config.set("analFissures", affectedPlayers);
+                plugin.saveConfig();
+
+                player.sendMessage("Ваша анальная трещина зажила, теперь вы можете садиться в транспорт и спать на кровати.");
+            }
+        }
+
+        // Проверка, есть ли у игрока анальная трещина
+        public boolean hasAnalFissure(Player player) {
+            UUID playerId = player.getUniqueId();
+            List<String> affectedPlayers = config.getStringList("analFissures");
+            return affectedPlayers.contains(playerId.toString());
+        }
+
+        // Обработчик запрета спать на кровати
+        @EventHandler
+        public void onPlayerBedEnter(PlayerBedEnterEvent event) {
+            Player player = event.getPlayer();
+            if (hasAnalFissure(player)) {
+                event.setCancelled(true); // Отменяем вход в кровать
+                player.sendMessage("Из-за анальной трещины вы не можете спать в кровати.");
+            }
+        }
+
+        // Обработчик запрета сидения в транспорте
+        @EventHandler
+        public void onVehicleEnter(VehicleEnterEvent event) {
+            if (event.getEntered() instanceof Player player) {
+                if (hasAnalFissure(player)) {
+                    event.setCancelled(true); // Отменяем посадку в транспорт
+                    player.sendMessage("Из-за анальной трещины вы не можете сесть в транспорт.");
+                }
+            }
+        }
+    }
+
     private static class CollisionManager {
 
         private Team noCollisionTeam;
@@ -168,140 +239,6 @@ public class SexEvent {
         public void removePlayerFromNoCollision(Player player) {
             if (noCollisionTeam != null && noCollisionTeam.hasEntry(player.getName())) {
                 noCollisionTeam.removeEntry(player.getName());
-            }
-        }
-    }
-
-    // Менеджер для управления анальными трещинами
-    public static class AnalFissureManager implements Listener {
-        private final Connection connection;
-
-        public AnalFissureManager(Plugin plugin) {
-            this.connection = initDatabase(); // Инициализируем базу данных
-
-            // Регистрируем слушатели событий
-            Bukkit.getPluginManager().registerEvents(this, plugin);
-        }
-
-        private Connection initDatabase() {
-            try {
-                // Соединение с SQLite базой данных
-                Connection conn = DriverManager.getConnection("jdbc:sqlite:anal_fissures.db");
-                Statement stmt = conn.createStatement();
-
-                // Создаем таблицу для хранения статусов анальных трещин
-                String sql = "CREATE TABLE IF NOT EXISTS fissures (" +
-                        "player_name TEXT PRIMARY KEY, " +
-                        "has_fissure INTEGER, " +
-                        "heal_time BIGINT)";
-                stmt.executeUpdate(sql);
-                stmt.close();
-
-                return conn;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        // Проверяем шанс появления анальной трещины и записываем в базу данных
-        public void checkForAnalFissure(Player player) {
-            Random random = new Random();
-            long healTime = System.currentTimeMillis() + (2 * 24000 * 50); // 2 игровых дня (каждый день ~20 минут в реальном времени)
-            try {
-                PreparedStatement stmt = connection.prepareStatement("INSERT OR REPLACE INTO fissures (player_name, has_fissure, heal_time) VALUES (?, ?, ?)");
-                stmt.setString(1, player.getName());
-                stmt.setInt(2, 1);
-                stmt.setLong(3, healTime);
-                stmt.executeUpdate();
-                stmt.close();
-
-                player.sendMessage("Вы получили анальную трещину! Она заживет через 2 игровых дня.");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Проверяем, может ли игрок сидеть/спать
-        private boolean hasAnalFissure(Player player) {
-            try {
-                PreparedStatement stmt = connection.prepareStatement("SELECT has_fissure, heal_time FROM fissures WHERE player_name = ?");
-                stmt.setString(1, player.getName());
-                ResultSet rs = stmt.executeQuery();
-
-                if (rs.next()) {
-                    int hasFissure = rs.getInt("has_fissure");
-                    long healTime = rs.getLong("heal_time");
-
-                    if (hasFissure == 1 && System.currentTimeMillis() < healTime) {
-                        return true; // Анальная трещина ещё не зажила
-                    } else if (System.currentTimeMillis() >= healTime) {
-                        // Трещина зажила, обновляем запись
-                        PreparedStatement updateStmt = connection.prepareStatement("UPDATE fissures SET has_fissure = 0 WHERE player_name = ?");
-                        updateStmt.setString(1, player.getName());
-                        updateStmt.executeUpdate();
-                        updateStmt.close();
-                    }
-                }
-
-                rs.close();
-                stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-            return false;
-        }
-
-        // Событие: игрок пытается сесть в транспорт
-        @EventHandler
-        public void onVehicleEnter(VehicleEnterEvent event) {
-            if (event.getEntered() instanceof Player player) {
-                if (hasAnalFissure(player)) {
-                    event.setCancelled(true);
-                    sendFissureMessage(player);
-                }
-            }
-        }
-
-        // Событие: игрок пытается лечь в кровать
-        @EventHandler
-        public void onBedEnter(PlayerBedEnterEvent event) {
-            Player player = event.getPlayer();
-            if (hasAnalFissure(player)) {
-                event.setCancelled(true);
-                sendFissureMessage(player);
-
-            }
-        }
-
-        @EventHandler
-        public void onGSitSit(PreEntitySitEvent event){
-            Entity entity = event.getEntity();
-            if (entity.getType() == EntityType.PLAYER) {
-                Player player = (Player) entity;
-                if (hasAnalFissure(player)) {
-                    event.setCancelled(true);
-                    sendFissureMessage(player);
-                }
-            }
-        }
-
-        @EventHandler
-        public void onGSitPose(PrePlayerPoseEvent event){
-            Player player = event.getPlayer();
-            if (hasAnalFissure(player)) {
-                event.setCancelled(true);
-                sendFissureMessage(player);
-            }
-        }
-
-        // Метод для отправки сообщения об анальной трещине
-        private void sendFissureMessage(Player player) {
-            long currentTime = System.currentTimeMillis();
-            if (!lastMessageTime.containsKey(player) || (currentTime - lastMessageTime.get(player)) > messageCooldown) {
-                player.sendMessage("Из-за анальной трещины вы не можете сидеть/спать!");
-                lastMessageTime.put(player, currentTime); // Обновляем время последнего сообщения
             }
         }
     }
