@@ -76,10 +76,10 @@ public class AbsolutelyRandom extends JavaPlugin {
     private void registerEventsAndCommands() {
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
         getServer().getPluginManager().registerEvents(new VovaEvent(this), this);
-        registerCommans();
+        registerCommands();
     }
 
-    private void registerCommans() {
+    private void registerCommands() {
         new CommandAPICommand("debugevent")
                 .withPermission("absolutlyrandom.admin")
                 .withUsage("/debug <event>")
