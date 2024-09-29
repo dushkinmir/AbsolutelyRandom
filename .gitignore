@@ -1,4 +1,5 @@
-/build/
-/.gradle/
 /.idea/
-/src/main/java/ru/dushkinmir/absolutelyRandom/events/SexEvent.java
+/target/
+/absolutely-random.iml
+/AbsolutlyRandom.iml
+/dependency-reduced-pom.xml

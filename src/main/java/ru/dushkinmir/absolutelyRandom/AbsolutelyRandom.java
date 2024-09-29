@@ -1,6 +1,7 @@
 package ru.dushkinmir.absolutelyRandom;
 
 import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
@@ -25,10 +26,16 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     @Override
+    public void onLoad(){
+        registerCommands();
+    }
+
+    @Override
     public void onEnable() {
         logPluginActivation();
+        CommandAPI.onEnable();
         scheduleEventTrigger();
-        registerEventsAndCommands();
+        registerEvents();
         saveDefaultConfig();
         loadConfigValues();
     }
@@ -36,6 +43,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     @Override
     public void onDisable() {
         logPluginDeactivation();
+        CommandAPI.onDisable();
         CommandAPI.unregister("debug");
     }
 
@@ -73,13 +81,13 @@ public class AbsolutelyRandom extends JavaPlugin {
         }.runTaskTimer(this, INITIAL_DELAY, SCHEDULE_PERIOD);
     }
 
-    private void registerEventsAndCommands() {
+    private void registerEvents() {
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
         getServer().getPluginManager().registerEvents(new VovaEvent(this), this);
-        registerCommands();
     }
 
     private void registerCommands() {
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
         new CommandAPICommand("debugevent")
                 .withPermission("absolutlyrandom.admin")
                 .withUsage("/debug <event>")
