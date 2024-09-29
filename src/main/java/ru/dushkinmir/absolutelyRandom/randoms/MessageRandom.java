@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.events;
+package ru.dushkinmir.absolutelyRandom.randoms;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-public class RandomMessageEvent extends JavaPlugin {
+public class MessageRandom extends JavaPlugin {
     private static final List<String> MESSAGES = new ArrayList<>();
     private static final Random RANDOM = new Random();
     private static final int MAX_MESSAGE_COUNT = 3;
@@ -26,12 +26,12 @@ public class RandomMessageEvent extends JavaPlugin {
         reloadMessages();
     }
 
-    public static void triggerRandomMessageEvent(Plugin plugin) {
+    public static void triggerMessage(Plugin plugin) {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
-        if (onlinePlayers.isEmpty()) return;
-
-        Player randomPlayer = getRandomPlayerFromList(onlinePlayers);
-        scheduleRandomMessagesTask(plugin, randomPlayer);
+        if (!onlinePlayers.isEmpty()) {
+            Player randomPlayer = getRandomPlayerFromList(onlinePlayers);
+            scheduleRandomMessagesTask(plugin, randomPlayer);
+        }
     }
 
     private static void reloadMessages() {

@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.events;
+package ru.dushkinmir.absolutelyRandom.randoms;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -13,7 +13,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupEvent {
+public class GroupRandom {
 
     private static final String EVENT_STARTING_MESSAGE = "ГРУППОВАЯ МАСТУРБАЦИЯ НАЧНЕТСЯ ЧЕРЕЗ...";
     private static final String EVENT_END_MESSAGE = "ГРУППОВАЯ МАСТУРБАЦИЯ ОКОНЧЕНА, СПАСИБО ЗА УЧАСТИЕ";
@@ -22,7 +22,7 @@ public class GroupEvent {
 
     private static boolean eventActive = false;
 
-    public static void triggerGroupEvent(Plugin plugin) {
+    public static void triggerGroup(Plugin plugin) {
         if (eventActive) return;
 
         List<Player> players = getOnlinePlayers();

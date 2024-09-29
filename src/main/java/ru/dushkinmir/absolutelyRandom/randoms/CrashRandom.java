@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.events;
+package ru.dushkinmir.absolutelyRandom.randoms;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -6,7 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-public class CrashEvent {
+public class CrashRandom {
     private static boolean isOffline = false;
     private static final String MAINTENANCE_KICK_MSG =
             "The server is currently offline for maintenance. Please try again later.";
@@ -16,7 +16,7 @@ public class CrashEvent {
             "Please wait a moment, the server is restarting...", NamedTextColor.YELLOW
     );
 
-    public static void triggerCrashEvent(Plugin plugin) {
+    public static void triggerCrash(Plugin plugin) {
         kickAllPlayers();
         enableMaintenanceMode();
         registerJoinListener(plugin);

@@ -5,7 +5,7 @@
 
     <groupId>ru.dushkinmir</groupId>
     <artifactId>AbsolutelyRandom</artifactId> <!-- Укажи свое имя артефакта -->
-    <version>1.1.1-ALPHA</version>
+    <version>1.2-ALPHA</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -113,7 +113,8 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.artifactId}-${project.version}</finalName> <!-- Имя итогового JAR-файла -->
+                            <finalName>${project.artifactId}-${project.version}
+                            </finalName> <!-- Имя итогового JAR-файла -->
                         </configuration>
                     </execution>
                 </executions>

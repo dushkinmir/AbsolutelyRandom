@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.events;
+package ru.dushkinmir.absolutelyRandom.randoms;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -21,7 +21,7 @@ import ru.dushkinmir.absolutelyRandom.AbsolutelyRandom;
 
 import java.util.*;
 
-public class VovaEvent implements Listener {
+public class VovaRandom implements Listener {
     private static final Random RANDOM = new Random();
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!", NamedTextColor.WHITE);
     private static final Component STINKY_PLAYER_MESSAGE = Component.text(
@@ -31,11 +31,11 @@ public class VovaEvent implements Listener {
 
     private final Plugin plugin;
 
-    public VovaEvent(Plugin plugin) {
+    public VovaRandom(Plugin plugin) {
         this.plugin = plugin;
     }
 
-    public static void triggerVovaEvent(Plugin plugin) {
+    public static void triggerVova(Plugin plugin) {
         List<Player> players = getOnlinePlayers();
         if (!players.isEmpty()) {
             Player randomPlayer = getRandomPlayer(players);
