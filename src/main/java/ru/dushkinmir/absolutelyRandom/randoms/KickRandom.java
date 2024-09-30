@@ -12,8 +12,10 @@ import java.util.Random;
 public class KickRandom {
 
     private static final Random RANDOM = new Random();
-    private static final String KICK_MESSAGE = "хахаха лошара";
-    private static final NamedTextColor KICK_MESSAGE_COLOR = NamedTextColor.RED;
+    private static final String PLAYER_KICK_MESSAGE = "хахаха лошара";
+    private static final String BROADCAST_KICK_MESSAGE = "вот же %s лох!";
+    private static final NamedTextColor PLAYER_KICK_MESSAGE_COLOR = NamedTextColor.RED;
+    private static final NamedTextColor BROADCAST_KICK_MESSAGE_COLOR = NamedTextColor.YELLOW;
 
     public static void triggerKick() {
         List<Player> onlinePlayers = getOnlinePlayers();
@@ -36,6 +38,8 @@ public class KickRandom {
     }
 
     private static void kickPlayer(Player player) {
-        player.kick(Component.text(KICK_MESSAGE, KICK_MESSAGE_COLOR));
+        player.kick(Component.text(PLAYER_KICK_MESSAGE, PLAYER_KICK_MESSAGE_COLOR));
+        player.getWorld().sendMessage(Component.text(BROADCAST_KICK_MESSAGE.formatted(player.getName()),
+                BROADCAST_KICK_MESSAGE_COLOR));
     }
 }
