@@ -19,9 +19,9 @@ public class AbsolutelyRandom extends JavaPlugin {
     private static final long SCHEDULE_PERIOD = 20L;
     private static final long INITIAL_DELAY = 0L;
     private final Random randomGenerator = new Random();
-    private int kickChance, groupChance, crashChance, messageChance, vovaChance;
-    private boolean isEventActive = false;
+    private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance;
     private static final Map<UUID, BukkitRunnable> playerTasks = new HashMap<>();
+
 
     public static void main(String[] args) {
         System.out.println("Z");
@@ -64,20 +64,19 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     private void loadConfigValues() {
-        kickChance = getConfig().getInt("kick-event-chance");
-        groupChance = getConfig().getInt("group-event-chance");
-        crashChance = getConfig().getInt("crash-event-chance");
-        messageChance = getConfig().getInt("message-event-chance");
-        vovaChance = getConfig().getInt("vova-event-chance");
+        kickChance = getConfig().getInt("kick-chance");
+        groupChance = getConfig().getInt("group-chance");
+        crashChance = getConfig().getInt("crash-chance");
+        messageChance = getConfig().getInt("message-chance");
+        vovaChance = getConfig().getInt("vova-chance");
+        stormChance = getConfig().getInt("storm-chance");
     }
 
     private void scheduleEventTrigger() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (!isEventActive) {
-                    executeRandomEvents();
-                }
+                executeRandomEvents();
             }
         }.runTaskTimer(this, INITIAL_DELAY, SCHEDULE_PERIOD);
     }
@@ -85,6 +84,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
         getServer().getPluginManager().registerEvents(new VovaRandom(this), this);
+
     }
 
     private void registerCommands() {
@@ -94,7 +94,7 @@ public class AbsolutelyRandom extends JavaPlugin {
                 .withUsage("/debug <event>")
                 .withArguments(new StringArgument("event")
                         .replaceSuggestions(ArgumentSuggestions.strings(
-                                "crash", "group", "kick", "message", "vova"))
+                                "crash", "group", "kick", "message", "vova", "storm"))
                 )
                 .executes((sender, args) -> {
                     String event = (String) args.get("event");
@@ -127,6 +127,9 @@ public class AbsolutelyRandom extends JavaPlugin {
                         "Событие с облаком дыма вызвано"
                 );
                 break;
+            case "storm":
+                triggerRandom(() -> StormRandom.triggerStorm(this), sender,
+                        "Событие с грозой вызвано");
             default:
                 break;
         }
@@ -143,15 +146,10 @@ public class AbsolutelyRandom extends JavaPlugin {
 
         checkAndTriggerEvent(KickRandom::triggerKick, kickChance);
         checkAndTriggerEvent(() -> GroupRandom.triggerGroup(this), groupChance);
-
-        if (randomGenerator.nextInt(crashChance) == 0) {
-            isEventActive = true;
-            CrashRandom.triggerCrash(this);
-            isEventActive = false;
-        }
-
+        checkAndTriggerEvent(() -> CrashRandom.triggerCrash(this), crashChance);
         checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this), messageChance);
         checkAndTriggerEvent(() -> VovaRandom.triggerVova(this), vovaChance);
+        checkAndTriggerEvent(() -> StormRandom.triggerStorm(this), stormChance);
     }
 
     private void checkAndTriggerEvent(Runnable eventTrigger, int eventChance) {
