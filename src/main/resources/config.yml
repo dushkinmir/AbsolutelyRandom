@@ -1,8 +1,9 @@
-kick-event-chance: 3000
-group-event-chance: 500
-crash-event-chance: 10000
-message-event-chance: 1000
-vova-event-chance: 1000
+kick-chance: 3000
+group-chance: 500
+crash-chance: 10000
+message-chance: 1000
+vova-chance: 1000
+storm-chance: 4000
 random-messages:
   - "Бабушка подключилась к Wi-Fi вселенной."
   - "Не пытайся обнять кактус."

@@ -1,41 +1,36 @@
-package ru.dushkinmir.absolutelyRandom.events;
+package ru.dushkinmir.absolutelyRandom.randoms;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class GroupEvent {
+public class GroupRandom {
 
-    private static final String EVENT_STARTING_MESSAGE = "ГРУППОВАЯ МАСТУРБАЦИЯ НАЧНЕТСЯ ЧЕРЕЗ...";
-    private static final String EVENT_END_MESSAGE = "ГРУППОВАЯ МАСТУРБАЦИЯ ОКОНЧЕНА, СПАСИБО ЗА УЧАСТИЕ";
+    private static final Component EVENT_STARTING_MESSAGE =
+            Component.text("ГРУППОВАЯ МАСТУРБАЦИЯ НАЧНЕТСЯ ЧЕРЕЗ...", NamedTextColor.RED);
+    private static final Component EVENT_END_MESSAGE =
+            Component.text("ГРУППОВАЯ МАСТУРБАЦИЯ ОКОНЧЕНА, СПАСИБО ЗА УЧАСТИЕ", NamedTextColor.GREEN);
     private static final int COUNTDOWN_SECONDS = 5;
-    private static final int DURATION_SECONDS = 60; // Множитель на 4 для 15 секунд
-
+    private static final int EVENT_DURATION_TICKS = 60;
     private static boolean eventActive = false;
 
-    public static void triggerGroupEvent(Plugin plugin) {
-        if (eventActive) return;
-
-        List<Player> players = getOnlinePlayers();
-        if (players.isEmpty()) return;
-
+    public static void triggerGroup(Plugin plugin) {
+        if (eventActive || PlayerUtils.getOnlinePlayers().isEmpty()) {
+            return;
+        }
         eventActive = true;
-        Bukkit.broadcast(Component.text(EVENT_STARTING_MESSAGE, NamedTextColor.RED));
 
-        new EventCountdownTask(plugin, players).runTaskTimer(plugin, 0L, 20L);
-    }
+        PlayerUtils.sendMessageToAllPlayers(EVENT_STARTING_MESSAGE, false);
 
-    private static List<Player> getOnlinePlayers() {
-        return new ArrayList<>(Bukkit.getOnlinePlayers());
+        new EventCountdownTask(plugin, PlayerUtils.getOnlinePlayers()).runTaskTimer(plugin, 0L, 20L);
     }
 
     private static class EventCountdownTask extends BukkitRunnable {
@@ -51,7 +46,7 @@ public class GroupEvent {
         @Override
         public void run() {
             if (countdown > 0) {
-                Bukkit.broadcast(Component.text(countdown + "...", NamedTextColor.RED));
+                PlayerUtils.sendMessageToAllPlayers(Component.text(countdown + "...", NamedTextColor.RED), false);
                 countdown--;
             } else {
                 new FallingBlocksTask(plugin, players).runTaskTimer(plugin, 0L, 5L);
@@ -63,7 +58,7 @@ public class GroupEvent {
     private static class FallingBlocksTask extends BukkitRunnable {
         private final Plugin plugin;
         private final List<Player> players;
-        private int duration = DURATION_SECONDS;
+        private int remainingTicks = EVENT_DURATION_TICKS;
 
         public FallingBlocksTask(Plugin plugin, List<Player> players) {
             this.plugin = plugin;
@@ -72,19 +67,19 @@ public class GroupEvent {
 
         @Override
         public void run() {
-            if (duration > 0) {
+            if (remainingTicks > 0) {
                 for (Player player : players) {
-                    dropItemNearPlayer(player, plugin);
+                    dropItemNearPlayer(player);
                 }
-                duration--;
+                remainingTicks--;
             } else {
-                Bukkit.broadcast(Component.text(EVENT_END_MESSAGE, NamedTextColor.DARK_GREEN));
+                PlayerUtils.sendMessageToAllPlayers(EVENT_END_MESSAGE, false);
                 eventActive = false;
                 this.cancel();
             }
         }
 
-        private void dropItemNearPlayer(Player player, Plugin plugin) {
+        private void dropItemNearPlayer(Player player) {
             ItemStack item = new ItemStack(Material.WHITE_WOOL, 1);
             Vector direction = player.getEyeLocation().getDirection().normalize();
             var droppedItem = player.getWorld().dropItem(player.getLocation().add(direction.multiply(1.5)), item);
