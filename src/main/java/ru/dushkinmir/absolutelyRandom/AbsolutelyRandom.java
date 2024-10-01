@@ -18,9 +18,9 @@ import java.util.*;
 public class AbsolutelyRandom extends JavaPlugin {
     private static final long SCHEDULE_PERIOD = 20L;
     private static final long INITIAL_DELAY = 0L;
-    private final Random randomGenerator = new Random();
     private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance;
-    private static final Map<UUID, BukkitRunnable> playerTasks = new HashMap<>();
+    private static final Random RANDOM_GENERATOR = new Random();
+    private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
 
 
     public static void main(String[] args) {
@@ -49,7 +49,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     public static Map<UUID, BukkitRunnable> getPlayerTasks() {
-        return playerTasks;
+        return PLAYER_TASKS;
     }
 
     private void logPluginActivation() {
@@ -59,8 +59,8 @@ public class AbsolutelyRandom extends JavaPlugin {
 
     private void logPluginDeactivation() {
         getLogger().info("AbsolutelyRandomPlugin has been disabled!");
-        playerTasks.values().forEach(BukkitRunnable::cancel);
-        playerTasks.clear();
+        PLAYER_TASKS.values().forEach(BukkitRunnable::cancel);
+        PLAYER_TASKS.clear();
     }
 
     private void loadConfigValues() {
@@ -153,7 +153,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     private void checkAndTriggerEvent(Runnable eventTrigger, int eventChance) {
-        if (randomGenerator.nextInt(eventChance) == 0) {
+        if (RANDOM_GENERATOR.nextInt(eventChance) == 0) {
             eventTrigger.run();
         }
     }
