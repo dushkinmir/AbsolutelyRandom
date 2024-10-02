@@ -28,8 +28,10 @@ public class StormRandom {
     }
 
     private static void startStorm(Plugin plugin, List<Player> players) {
+        players.forEach(player -> player.getWorld().setStorm(true));
         sendStormWarningToPlayers(players);
-        new StormTask(players).runTaskTimer(plugin, 0, 20 * STRIKE_INTERVAL_SECONDS);
+        new StormTask(players).runTaskTimer(plugin, 60, 20 * STRIKE_INTERVAL_SECONDS);
+        players.forEach(player -> player.getWorld().setStorm(false));
     }
 
     private static void sendStormWarningToPlayers(List<Player> players) {
