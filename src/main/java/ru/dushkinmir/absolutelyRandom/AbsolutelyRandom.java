@@ -13,6 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.randoms.*;
+import ru.dushkinmir.absolutelyRandom.utils.TelegramHelper;
 
 import java.util.*;
 
@@ -40,6 +41,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         registerEvents();
         saveDefaultConfig();
         loadConfigValues();
+        TelegramHelper.startServer(this);
     }
 
     @Override
@@ -104,7 +106,7 @@ public class AbsolutelyRandom extends JavaPlugin {
                 .register(this);
     }
 
-    private void handleDebugRandom(CommandSender sender, String event) {
+    public void handleDebugRandom(CommandSender sender, String event) {
         switch (event) {
             case "kick":
                 triggerRandom(KickRandom::triggerKick, sender, "Событие с киком игрока вызвано.");
@@ -137,7 +139,9 @@ public class AbsolutelyRandom extends JavaPlugin {
 
     private void triggerRandom(Runnable eventTrigger, CommandSender sender, String message) {
         eventTrigger.run();
-        sender.sendMessage(message);
+        if (sender != null) {
+            sender.sendMessage(message);
+        }
     }
 
     private void executeRandomEvents() {

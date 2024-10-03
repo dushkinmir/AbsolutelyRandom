@@ -50,6 +50,16 @@
             <artifactId>item-nbt-api</artifactId>
             <version>2.13.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.sparkjava</groupId>
+            <artifactId>spark-core</artifactId>
+            <version>2.9.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -103,6 +113,14 @@
                         <relocation>
                             <pattern>dev.jorel.commandapi</pattern>
                             <shadedPattern>ru.dushkinmir.commandapi</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>spark</pattern>
+                            <shadedPattern>ru.dushkinmir.spark</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.json.simple</pattern>
+                            <shadedPattern>ru.dushkinmir.json.simple</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
