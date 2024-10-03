@@ -23,7 +23,6 @@ public class AbsolutelyRandom extends JavaPlugin {
     private static final Random RANDOM_GENERATOR = new Random();
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
 
-
     public static void main(String[] args) {
         System.out.println("Z");
     }
