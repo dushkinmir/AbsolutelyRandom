@@ -109,7 +109,8 @@ public class AbsolutelyRandom extends JavaPlugin {
     public void handleDebugRandom(CommandSender sender, String event) {
         switch (event) {
             case "kick":
-                triggerRandom(KickRandom::triggerKick, sender, "Событие с киком игрока вызвано.");
+                triggerRandom(KickRandom::triggerKick, sender, 
+                "Событие с киком игрока вызвано.");
                 break;
             case "group":
                 triggerRandom(() -> GroupRandom.triggerGroup(this), sender,
@@ -117,7 +118,8 @@ public class AbsolutelyRandom extends JavaPlugin {
                 );
                 break;
             case "crash":
-                triggerRandom(() -> CrashRandom.triggerCrash(this), sender, "Краш сервера вызван.");
+                triggerRandom(() -> CrashRandom.triggerCrash(this), sender,
+                         "Краш сервера вызван.");
                 break;
             case "message":
                 triggerRandom(() -> MessageRandom.triggerMessage(this), sender,
