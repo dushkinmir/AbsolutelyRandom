@@ -9,7 +9,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
@@ -53,7 +52,7 @@ public class DrugsEvent implements Listener {
 
     @EventHandler
     public void onPlayerRightClick(PlayerInteractEvent event) {
-        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+        if (event.getAction().isRightClick() && event.getPlayer().isSneaking()) {
             Block clickedBlock = event.getClickedBlock();
             if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
                 ItemStack item = event.getItem();
@@ -101,7 +100,7 @@ public class DrugsEvent implements Listener {
 
     @EventHandler
     public void onPlayerLeftClick(PlayerInteractEvent event) {
-        if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
+        if (event.getAction().isLeftClick()) {
             Block clickedBlock = event.getClickedBlock();
             if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
                 GameMode gameMode = event.getPlayer().getGameMode();

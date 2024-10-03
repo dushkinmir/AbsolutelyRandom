@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.randoms.*;
 
@@ -84,7 +85,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
         getServer().getPluginManager().registerEvents(new VovaRandom(this), this);
-
+        getServer().getPluginManager().registerEvents(new ConsentEvent(this), this);
     }
 
     private void registerCommands() {
