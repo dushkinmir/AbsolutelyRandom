@@ -23,13 +23,10 @@ public class MessageRandom extends JavaPlugin {
     private static final int MAX_MESSAGE_COUNT = 3;
     private static final long TASK_INTERVAL_TICKS = 20 * 4;
 
-    static {
-        reloadMessages();
-    }
-
     public static void triggerMessage(Plugin plugin) {
         List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
         if (!onlinePlayers.isEmpty()) {
+            reloadMessages();
             Player randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers);
             scheduleRandomMessagesTask(plugin, randomPlayer);
         }
