@@ -79,8 +79,7 @@ public class ConsentEvent implements Listener {
     public void handleInventoryClick(InventoryClickEvent event) {
         if (event.getView().title().equals(Component.text(
                 "Согласие на обработку данных",
-                NamedTextColor.YELLOW,
-                TextDecoration.BOLD))) {
+                NamedTextColor.YELLOW))) {
             Player player = (Player) event.getWhoClicked();
             event.setCancelled(true);
             ItemStack clickedItem = event.getCurrentItem();

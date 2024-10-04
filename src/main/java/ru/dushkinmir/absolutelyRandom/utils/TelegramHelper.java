@@ -1,6 +1,5 @@
 package ru.dushkinmir.absolutelyRandom.utils;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,6 +14,19 @@ public class TelegramHelper {
     public static void startServer(AbsolutelyRandom plugin) {
         Spark.ipAddress("127.0.0.1");
         Spark.port(5000);
+
+        // Обработка GET-запроса
+        Spark.get("/trigger_event", (request, response) -> {
+            response.type("application/json");
+            Map<String, String> responseMap = new HashMap<>();
+
+            if (plugin.getServer().getOnlinePlayers().isEmpty()) {
+                return createErrorResponse(responseMap, response, "No players online", 400);
+            }
+
+            return createSuccessResponse(responseMap);
+        });
+
         Spark.post("/trigger_event", (request, response) -> {
             response.type("application/json");
             JSONParser jsonParser = new JSONParser();
@@ -41,9 +53,12 @@ public class TelegramHelper {
     }
 
     private static void processEvent(AbsolutelyRandom plugin, String event) {
-        CommandSender console = Bukkit.getServer().getConsoleSender();
-        plugin.handleDebugRandom(console, event);
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            CommandSender console = plugin.getServer().getConsoleSender();
+            plugin.handleDebugRandom(console, event);
+        });
     }
+
 
     private static String createSuccessResponse(Map<String, String> responseMap) {
         responseMap.put("result", "success");
