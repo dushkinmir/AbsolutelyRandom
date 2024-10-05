@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.Map;
 
@@ -20,13 +21,11 @@ public class DrugsEvent implements Listener {
 
     private void applyDrugEffects(ItemStack item, String drugName, Map<String, Integer> effects, int nutrition,
                                   float saturation, Block clickedBlock, Player player) {
-        // Создаем вокруг варочной стойки частицы
         player.getWorld().spawnParticle(
                 Particle.DUST,
                 clickedBlock.getLocation(),
                 75, 1, 1, 1,
                 new Particle.DustOptions(Color.GRAY, 1.7f));
-        // Воспроизводим звук "пфф"
         player.getWorld().playSound(clickedBlock.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 1.0f, 1.0f);
         ItemMeta meta = item.getItemMeta();
         meta.displayName(Component.text(drugName));
@@ -54,46 +53,48 @@ public class DrugsEvent implements Listener {
     public void onPlayerRightClick(PlayerInteractEvent event) {
         if (event.getAction().isRightClick() && event.getPlayer().isSneaking()) {
             Block clickedBlock = event.getClickedBlock();
-            if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
-                ItemStack item = event.getItem();
-                if (item != null) {
-                    switch (item.getType()) {
-                        case SUGAR:
-                            applyDrugEffects(item, "Мефедрон", Map.of(
-                                    "minecraft:speed", 100,
-                                    "minecraft:haste", 100,
-                                    "minecraft:weakness", 100,
-                                    "minecraft:hunger", 100
-                            ), 0, 0.0f, clickedBlock, event.getPlayer());
-                            break;
-                        case WHITE_DYE:
-                            applyDrugEffects(item, "Кокаин", Map.of(
-                                    "minecraft:speed", 100,
-                                    "minecraft:strength", 100,
-                                    "minecraft:nausea", 100,
-                                    "minecraft:blindness", 100
-                            ), 0, 0.0f, clickedBlock, event.getPlayer());
-                            break;
-                        case FERN:
-                            applyDrugEffects(item, "Марихуана", Map.of(
-                                    "minecraft:regeneration", 100,
-                                    "minecraft:hunger", 100,
-                                    "minecraft:slowness", 100,
-                                    "minecraft:weakness", 100
-                            ), 0, 0.0f, clickedBlock, event.getPlayer());
-                            break;
-                        case HONEY_BOTTLE:
-                            applyDrugEffects(item, "Пиво", Map.of(
-                                    "minecraft:nausea", 100,
-                                    "minecraft:resistance", 100,
-                                    "minecraft:mining_fatigue", 100,
-                                    "minecraft:weakness", 100
-                            ), 6, 1.0f, clickedBlock, event.getPlayer());
-                            break;
-                        default:
-                            break;
+            ItemStack item = event.getItem();
+            if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND && item != null) {
+                NBT.get(item, nbt -> {
+                    if (!nbt.hasTag("drug")) {
+                        switch (item.getType()) {
+                            case SUGAR:
+                                applyDrugEffects(item, "Мефедрон", Map.of(
+                                        "minecraft:speed", 100,
+                                        "minecraft:haste", 100,
+                                        "minecraft:weakness", 100,
+                                        "minecraft:hunger", 100
+                                ), 0, 0.0f, clickedBlock, event.getPlayer());
+                                break;
+                            case WHITE_DYE:
+                                applyDrugEffects(item, "Кокаин", Map.of(
+                                        "minecraft:speed", 100,
+                                        "minecraft:strength", 100,
+                                        "minecraft:nausea", 100,
+                                        "minecraft:blindness", 100
+                                ), 0, 0.0f, clickedBlock, event.getPlayer());
+                                break;
+                            case FERN:
+                                applyDrugEffects(item, "Марихуана", Map.of(
+                                        "minecraft:regeneration", 100,
+                                        "minecraft:hunger", 100,
+                                        "minecraft:slowness", 100,
+                                        "minecraft:weakness", 100
+                                ), 0, 0.0f, clickedBlock, event.getPlayer());
+                                break;
+                            case HONEY_BOTTLE:
+                                applyDrugEffects(item, "Пиво", Map.of(
+                                        "minecraft:nausea", 100,
+                                        "minecraft:resistance", 100,
+                                        "minecraft:mining_fatigue", 100,
+                                        "minecraft:weakness", 100
+                                ), 6, 1.0f, clickedBlock, event.getPlayer());
+                                break;
+                            default:
+                                break;
+                        }
                     }
-                }
+                });
             }
         }
     }
@@ -105,9 +106,7 @@ public class DrugsEvent implements Listener {
             if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
                 GameMode gameMode = event.getPlayer().getGameMode();
                 if (!gameMode.equals(GameMode.CREATIVE) && !gameMode.equals(GameMode.SPECTATOR)) {
-                    event.getPlayer().sendMessage(Component.text(
-                            "дебил хули ты тычешь, совсем уже под солями объебан")
-                    );
+                    PlayerUtils.sendMessageToPlayer(event.getPlayer(), Component.text("дебил хули ты тычешь, совсем уже под солями объебан"), PlayerUtils.MessageType.CHAT);
                 }
             }
         }
@@ -130,9 +129,9 @@ public class DrugsEvent implements Listener {
 
                 if (drugMessages.containsKey(item.getType())) {
                     String drugType = drugMessages.get(item.getType());
-                    event.getPlayer().getWorld().sendMessage(Component.text(druggedPlayer.formatted(drugType)));
+                    PlayerUtils.sendMessageToPlayer(event.getPlayer(), Component.text(druggedPlayer.formatted(drugType)), PlayerUtils.MessageType.CHAT);
                     druggedPlayer = rawDruggedPlayer.formatted(drugType);
-                    event.getPlayer().sendActionBar(Component.text(druggedPlayer));
+                    PlayerUtils.sendMessageToPlayer(event.getPlayer(), Component.text(druggedPlayer), PlayerUtils.MessageType.ACTION_BAR);
                 }
             }
         });

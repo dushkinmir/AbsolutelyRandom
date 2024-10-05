@@ -20,7 +20,7 @@ import java.util.*;
 public class AbsolutelyRandom extends JavaPlugin {
     private static final long SCHEDULE_PERIOD = 20L;
     private static final long INITIAL_DELAY = 0L;
-    private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance;
+    private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance, eschkereChance;
     private static final Random RANDOM_GENERATOR = new Random();
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
 
@@ -72,6 +72,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         messageChance = getConfig().getInt("message-chance");
         vovaChance = getConfig().getInt("vova-chance");
         stormChance = getConfig().getInt("storm-chance");
+        eschkereChance = getConfig().getInt("eschkere-chance");
     }
 
     private void scheduleEventTrigger() {
@@ -96,7 +97,7 @@ public class AbsolutelyRandom extends JavaPlugin {
                 .withUsage("/debug <event>")
                 .withArguments(new StringArgument("event")
                         .replaceSuggestions(ArgumentSuggestions.strings(
-                                "crash", "group", "kick", "message", "vova", "storm"))
+                                "crash", "group", "kick", "message", "vova", "storm", "eschkere"))
                 )
                 .executes((sender, args) -> {
                     String event = (String) args.get("event");
@@ -109,9 +110,12 @@ public class AbsolutelyRandom extends JavaPlugin {
     public void handleDebugRandom(CommandSender sender, String event) {
         switch (event) {
             case "kick":
-                triggerRandom(KickRandom::triggerKick, sender, 
-                "Событие с киком игрока вызвано.");
+                triggerRandom(KickRandom::triggerKick, sender,
+                        "Событие с киком игрока вызвано.");
                 break;
+            case "eschkere":
+                triggerRandom(EschkereRandom::triggerEschkere, sender,
+                        "ЕЩКЕРЕЕЕ");
             case "group":
                 triggerRandom(() -> GroupRandom.triggerGroup(this), sender,
                         "Событие с выпадением блоков вызвано."
@@ -119,7 +123,7 @@ public class AbsolutelyRandom extends JavaPlugin {
                 break;
             case "crash":
                 triggerRandom(() -> CrashRandom.triggerCrash(this), sender,
-                         "Краш сервера вызван.");
+                        "Краш сервера вызван.");
                 break;
             case "message":
                 triggerRandom(() -> MessageRandom.triggerMessage(this), sender,
@@ -151,6 +155,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         if (players.isEmpty()) return;
 
         checkAndTriggerEvent(KickRandom::triggerKick, kickChance);
+        checkAndTriggerEvent(EschkereRandom::triggerEschkere, eschkereChance);
         checkAndTriggerEvent(() -> GroupRandom.triggerGroup(this), groupChance);
         checkAndTriggerEvent(() -> CrashRandom.triggerCrash(this), crashChance);
         checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this), messageChance);

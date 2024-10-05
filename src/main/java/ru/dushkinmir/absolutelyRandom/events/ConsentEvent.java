@@ -102,7 +102,7 @@ public class ConsentEvent implements Listener {
                 }.runTaskLater(plugin, 1L);
             }
         } else if (clickedItem.getType() == Material.RED_WOOL) {
-            PlayerUtils.sendMessageToPlayer(player, Component.text("Китай партия вами не доволен! \uD83D\uDE21", NamedTextColor.RED), false);
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Китай партия вами не доволен! \uD83D\uDE21", NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
             player.closeInventory();
             player.getWorld().strikeLightning(player.getLocation());
             player.getWorld().createExplosion(player.getLocation(), 2F, false, false);

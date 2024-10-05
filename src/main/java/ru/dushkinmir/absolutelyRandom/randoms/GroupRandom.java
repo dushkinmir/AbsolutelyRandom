@@ -28,7 +28,7 @@ public class GroupRandom {
         }
         eventActive = true;
 
-        PlayerUtils.sendMessageToAllPlayers(EVENT_STARTING_MESSAGE, false);
+        PlayerUtils.sendMessageToAllPlayers(EVENT_STARTING_MESSAGE, PlayerUtils.MessageType.CHAT);
 
         new EventCountdownTask(plugin, PlayerUtils.getOnlinePlayers()).runTaskTimer(plugin, 0L, 20L);
     }
@@ -46,7 +46,7 @@ public class GroupRandom {
         @Override
         public void run() {
             if (countdown > 0) {
-                PlayerUtils.sendMessageToAllPlayers(Component.text(countdown + "...", NamedTextColor.RED), false);
+                PlayerUtils.sendMessageToAllPlayers(Component.text(countdown + "...", NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
                 countdown--;
             } else {
                 new FallingBlocksTask(plugin, players).runTaskTimer(plugin, 0L, 5L);
@@ -73,7 +73,7 @@ public class GroupRandom {
                 }
                 remainingTicks--;
             } else {
-                PlayerUtils.sendMessageToAllPlayers(EVENT_END_MESSAGE, false);
+                PlayerUtils.sendMessageToAllPlayers(EVENT_END_MESSAGE, PlayerUtils.MessageType.CHAT);
                 eventActive = false;
                 this.cancel();
             }

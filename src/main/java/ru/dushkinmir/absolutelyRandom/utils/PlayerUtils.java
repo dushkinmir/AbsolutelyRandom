@@ -1,6 +1,7 @@
 package ru.dushkinmir.absolutelyRandom.utils;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -20,18 +21,36 @@ public class PlayerUtils {
         return players.get(RANDOM.nextInt(players.size()));
     }
 
-    public static void sendMessageToPlayer(Player player, Component message, boolean isActionBar) {
-        if (isActionBar) {
-            player.sendActionBar(message);
-        } else {
-            player.sendMessage(message);
+    public static void sendMessageToPlayer(Player player, Component message, MessageType type) {
+        switch (type) {
+            case ACTION_BAR:
+                player.sendActionBar(message);
+                break;
+            case CHAT:
+                player.sendMessage(message);
+                break;
+            case TITLE:
+                player.showTitle(Title.title(message, Component.empty()));
+                break;
+            case SUBTITLE:
+                player.showTitle(Title.title(Component.empty(), message));
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown message type: " + type);
         }
     }
 
-    public static void sendMessageToAllPlayers(Component message, boolean isActionBarMessage) {
+    public static void sendMessageToAllPlayers(Component message, MessageType type) {
         for (Player player : getOnlinePlayers()) {
-            sendMessageToPlayer(player, message, isActionBarMessage);
+            sendMessageToPlayer(player, message, type);
         }
+    }
+
+    public enum MessageType {
+        ACTION_BAR,
+        CHAT,
+        TITLE,
+        SUBTITLE
     }
 
     public static void kickPlayer(Player player, Component reason) {

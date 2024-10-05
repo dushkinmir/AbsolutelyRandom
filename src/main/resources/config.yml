@@ -4,6 +4,7 @@ crash-chance: 10000
 message-chance: 1000
 vova-chance: 1000
 storm-chance: 4000
+eschkere-chance: 3000
 random-messages:
   - "Бабушка подключилась к Wi-Fi вселенной."
   - "Не пытайся обнять кактус."

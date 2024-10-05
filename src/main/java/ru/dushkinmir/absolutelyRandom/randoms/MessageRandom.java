@@ -3,7 +3,6 @@ package ru.dushkinmir.absolutelyRandom.randoms;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -82,12 +81,13 @@ public class MessageRandom extends JavaPlugin {
         private void showTitleMessage(Player player, String message) {
             Component titleText = createTitleText();
             Component subTitleText = createSubTitleText(message);
-            player.showTitle(Title.title(titleText, subTitleText));
-            PlayerUtils.sendMessageToPlayer(player, titleText, true);
+            PlayerUtils.sendMessageToPlayer(player, titleText, PlayerUtils.MessageType.TITLE);
+            PlayerUtils.sendMessageToPlayer(player, subTitleText, PlayerUtils.MessageType.SUBTITLE);
+            PlayerUtils.sendMessageToPlayer(player, titleText, PlayerUtils.MessageType.ACTION_BAR);
         }
 
         private Component createTitleText() {
-            return Component.text("вова красава", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
+            return Component.text("вова лашок", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
         }
 
         private Component createSubTitleText(String message) {
@@ -96,7 +96,7 @@ public class MessageRandom extends JavaPlugin {
 
         private void sendPlayerMessage(Player player, String message) {
             Component messageFromPlayer = Component.text(String.format("<%s> %s", player.getName(), message));
-            PlayerUtils.sendMessageToAllPlayers(messageFromPlayer, false);
+            PlayerUtils.sendMessageToAllPlayers(messageFromPlayer, PlayerUtils.MessageType.CHAT);
         }
     }
 }

@@ -37,7 +37,7 @@ public class StormRandom {
 
     private static void sendStormWarningToPlayers(List<Player> players) {
         for (Player player : players) {
-            PlayerUtils.sendMessageToPlayer(player, STORM_MESSAGE, true);
+            PlayerUtils.sendMessageToPlayer(player, STORM_MESSAGE, PlayerUtils.MessageType.ACTION_BAR);
         }
     }
 
