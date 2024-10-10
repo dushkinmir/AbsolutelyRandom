@@ -24,6 +24,8 @@ public class AbsolutelyRandom extends JavaPlugin {
     private boolean botEnabled;
     private static final Random RANDOM_GENERATOR = new Random();
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
+    private static final Set<String> MESSAGES_SET = new HashSet<>();
+    private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
 
     public static void main(String[] args) {
         System.out.println("Z");
@@ -43,6 +45,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         saveDefaultConfig();
         loadConfigValues();
         enableTelegramHelper();
+        startAutoReloadTask();
     }
 
     @Override
@@ -75,6 +78,29 @@ public class AbsolutelyRandom extends JavaPlugin {
         stormChance = getConfig().getInt("storm-chance");
         eschkereChance = getConfig().getInt("eschkere-chance");
         botEnabled = getConfig().getBoolean("telegram");
+        reloadMessagesAsync();
+    }
+
+    private void reloadMessagesAsync() {
+        this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            List<String> configMessages = getConfig().getStringList("random-messages");
+
+            if (!configMessages.isEmpty()) {
+                synchronized (MESSAGES_SET) {
+                    MESSAGES_SET.clear();
+                    MESSAGES_SET.addAll(configMessages);
+                }
+            }
+        });
+    }
+
+    private void startAutoReloadTask() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                reloadMessagesAsync(); // Автоматическая перезагрузка
+            }
+        }.runTaskTimer(this, 0L, RELOAD_INTERVAL);
     }
 
     private void enableTelegramHelper() {
@@ -134,7 +160,7 @@ public class AbsolutelyRandom extends JavaPlugin {
                         "Краш сервера вызван.");
                 break;
             case "message":
-                triggerRandom(() -> MessageRandom.triggerMessage(this), sender,
+                triggerRandom(() -> MessageRandom.triggerMessage(this, MESSAGES_SET), sender,
                         "Событие с рандомным сообщением вызвано."
                 );
                 break;
@@ -166,7 +192,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         checkAndTriggerEvent(EschkereRandom::triggerEschkere, eschkereChance);
         checkAndTriggerEvent(() -> GroupRandom.triggerGroup(this), groupChance);
         checkAndTriggerEvent(() -> CrashRandom.triggerCrash(this), crashChance);
-        checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this), messageChance);
+        checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this, MESSAGES_SET), messageChance);
         checkAndTriggerEvent(() -> VovaRandom.triggerVova(this), vovaChance);
         checkAndTriggerEvent(() -> StormRandom.triggerStorm(this), stormChance);
     }
