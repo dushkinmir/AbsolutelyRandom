@@ -21,17 +21,21 @@ public class SQLiteDatabase {
             // Создаем папку для базы данных, если она не существует
             File dataFolder = new File(plugin.getDataFolder(), "data");
             if (!dataFolder.exists()) {
-                dataFolder.mkdirs();
+                boolean created = dataFolder.mkdirs(); // Сохраняем результат
+                if (created) {
+                    plugin.getLogger().info("Папка данных успешно создана: " + dataFolder.getPath());
+                } else {
+                    plugin.getLogger().warning("Не удалось создать папку данных: " + dataFolder.getPath());
+                }
             }
 
             // Путь к базе данных
             String url = "jdbc:sqlite:" + new File(dataFolder, "database.db").getPath();
             connection = DriverManager.getConnection(url);
             plugin.getLogger().info("База данных успешно открыта!");
-            createTable(); // Создаем таблицы, если они не существуют
         } catch (SQLException e) {
             plugin.getLogger().severe("Не удалось открыть базу данных!");
-            e.printStackTrace();
+            plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
         }
     }
 
@@ -46,15 +50,8 @@ public class SQLiteDatabase {
                 plugin.getLogger().info("База данных успешно закрыта!");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Не удалось закрыть базу данных!");
+            plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
         }
-    }
-
-    private void createTable() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS analFissures ("
-                + "playerName TEXT PRIMARY KEY,"
-                + "sleeps INTEGER DEFAULT 0"
-                + ");";
-        connection.createStatement().execute(sql);
     }
 }

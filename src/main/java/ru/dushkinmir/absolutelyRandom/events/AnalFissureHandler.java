@@ -1,6 +1,5 @@
 package ru.dushkinmir.absolutelyRandom.events;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,10 +14,20 @@ import java.util.Random;
 public class AnalFissureHandler implements Listener {
     private static final Random random = new Random();
     private final SQLiteDatabase database;
+    private final Plugin plugin;
 
-    public AnalFissureHandler(SQLiteDatabase database, Plugin plugin) {
+    public AnalFissureHandler(SQLiteDatabase database, Plugin plugin) throws SQLException {
         this.database = database;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        this.plugin = plugin;
+        createTable();
+    }
+
+    private void createTable() throws SQLException {
+        String sql = "CREATE TABLE IF NOT EXISTS analFissures ("
+                + "playerName TEXT PRIMARY KEY,"
+                + "sleeps INTEGER DEFAULT 0"
+                + ");";
+        database.getConnection().createStatement().execute(sql);
     }
 
     public void checkForFissure(Player player) {
@@ -30,7 +39,8 @@ public class AnalFissureHandler implements Listener {
                         .executeUpdate("INSERT OR REPLACE INTO analFissures (playerName, sleeps) VALUES ('" + player.getName() + "', 0)");
                 player.sendMessage("У вас появилась анальная трещина!");
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().severe("Не удалось checkForFissure в базу данных!");
+                plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
             }
         }
     }
@@ -42,7 +52,8 @@ public class AnalFissureHandler implements Listener {
                     .executeUpdate("UPDATE analFissures SET sleeps = sleeps + 1 WHERE playerName = '" + player.getName() + "'");
             checkFissureState(player);
         } catch (SQLException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Не удалось incrementSleepCount в базу данных!");
+            plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
         }
     }
 
@@ -59,7 +70,8 @@ public class AnalFissureHandler implements Listener {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Не удалось checkFissureState в базу данных!");
+            plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
         }
     }
 
@@ -73,7 +85,7 @@ public class AnalFissureHandler implements Listener {
     public void onPlayerEnterVehicle(VehicleEnterEvent event) {
         if (event.getEntered() instanceof Player player) {
             try {
-                Bukkit.getServer().getLogger().info(player.getName() + " пытается сесть в транспорт.");
+                plugin.getLogger().info(player.getName() + " пытается сесть в транспорт.");
                 var resultSet = database.getConnection().createStatement()
                         .executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
                 if (resultSet.next() && resultSet.getInt("sleeps") <= 2) {
@@ -81,7 +93,8 @@ public class AnalFissureHandler implements Listener {
                     player.sendMessage("Вы не можете сесть в транспорт, у вас анальная трещина!");
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().severe("Не удалось onPlayerEnterVehicle в базу данных!");
+                plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
             }
         }
     }

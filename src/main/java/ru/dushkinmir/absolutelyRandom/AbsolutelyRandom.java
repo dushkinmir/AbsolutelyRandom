@@ -17,6 +17,7 @@ import ru.dushkinmir.absolutelyRandom.randoms.*;
 import ru.dushkinmir.absolutelyRandom.utils.SQLiteDatabase;
 import ru.dushkinmir.absolutelyRandom.utils.TelegramHelper;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class AbsolutelyRandom extends JavaPlugin {
@@ -44,7 +45,11 @@ public class AbsolutelyRandom extends JavaPlugin {
     public void onEnable() {
         logPluginActivation();
         CommandAPI.onEnable();
-        openDatabase();
+        try {
+            openDatabase();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         scheduleEventTrigger();
         registerEvents();
         saveDefaultConfig();
@@ -130,7 +135,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ConsentEvent(this), this);
     }
 
-    private void openDatabase() {
+    private void openDatabase() throws SQLException {
         database = new SQLiteDatabase(this); // Создаем экземпляр базы данных
         fissureHandler = new AnalFissureHandler(database, this); // Инициализируем обработчик анальной трещины
         getServer().getPluginManager().registerEvents(fissureHandler, this);
