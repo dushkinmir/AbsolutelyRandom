@@ -1,6 +1,7 @@
 package ru.dushkinmir.absolutelyRandom.randoms;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
@@ -14,13 +15,13 @@ public class EschkereRandom implements Listener {
 
         if (target != null) {
             target.getWorld().strikeLightning(target.getLocation());
-            target.getWorld().createExplosion(target.getLocation(), 4F, true, false);
+            target.getWorld().createExplosion(target, 2F, false, false);
 
-            Component message = Component.text("ЕЩКЕРЕЕЕ!!! 1488");
-            PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.CHAT);
-            PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.TITLE);
-            PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.SUBTITLE);
-            PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.ACTION_BAR);
+            Component message = Component.text("ЕЩКЕРЕЕЕ!!! 1488", NamedTextColor.DARK_GREEN);
+            PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.CHAT);
+            PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.TITLE);
+            PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.SUBTITLE);
+            PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.ACTION_BAR);
         }
     }
 }
