@@ -4,15 +4,17 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.ArgumentSuggestions;
-import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import ru.dushkinmir.absolutelyRandom.CBO.SexEvent;
+import ru.dushkinmir.absolutelyRandom.events.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.randoms.*;
+import ru.dushkinmir.absolutelyRandom.utils.SQLiteDatabase;
 import ru.dushkinmir.absolutelyRandom.utils.TelegramHelper;
 
 import java.util.*;
@@ -26,6 +28,8 @@ public class AbsolutelyRandom extends JavaPlugin {
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
     private static final Set<String> MESSAGES_SET = new HashSet<>();
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
+    private SQLiteDatabase database;
+    private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
 
     public static void main(String[] args) {
         System.out.println("Z");
@@ -40,6 +44,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     public void onEnable() {
         logPluginActivation();
         CommandAPI.onEnable();
+        openDatabase();
         scheduleEventTrigger();
         registerEvents();
         saveDefaultConfig();
@@ -50,6 +55,7 @@ public class AbsolutelyRandom extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        closeDatabase();
         logPluginDeactivation();
         CommandAPI.onDisable();
     }
@@ -104,7 +110,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     private void enableTelegramHelper() {
-        if (!botEnabled) {
+        if (botEnabled) {
             TelegramHelper.startServer(this);
         }
     }
@@ -124,8 +130,25 @@ public class AbsolutelyRandom extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ConsentEvent(this), this);
     }
 
+    private void openDatabase() {
+        database = new SQLiteDatabase(this); // Создаем экземпляр базы данных
+        fissureHandler = new AnalFissureHandler(database, this); // Инициализируем обработчик анальной трещины
+        getServer().getPluginManager().registerEvents(fissureHandler, this);
+    }
+
+    private void closeDatabase() {
+        if (database != null) {
+            database.close(); // Закрываем базу данных при отключении плагина
+        }
+    }
+
     private void registerCommands() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
+        Argument<?> noSelectorSuggestions = new PlayerArgument("target")
+                .replaceSafeSuggestions(SafeSuggestions.suggest(info ->
+                        this.getServer().getOnlinePlayers().toArray(new Player[0])
+                ));
+
         new CommandAPICommand("debugevent")
                 .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
                 .withUsage("/debug <event>")
@@ -139,6 +162,15 @@ public class AbsolutelyRandom extends JavaPlugin {
                     handleDebugRandom(sender, event);
                 })
                 .register(this);
+        new CommandAPICommand("sex")
+                .withArguments(noSelectorSuggestions)
+                .executes((sender, args) -> {
+                    if (sender instanceof Player player) {
+                        Player target = (Player) args.get("target");
+                        SexEvent.triggerSexEvent(player, target, this, fissureHandler);
+                    }
+                })
+                .register();
     }
 
     public void handleDebugRandom(CommandSender sender, String event) {
