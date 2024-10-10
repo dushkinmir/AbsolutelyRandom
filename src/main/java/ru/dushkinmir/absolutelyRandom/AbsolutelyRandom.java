@@ -21,6 +21,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private static final long SCHEDULE_PERIOD = 20L;
     private static final long INITIAL_DELAY = 0L;
     private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance, eschkereChance;
+    private boolean botEnabled;
     private static final Random RANDOM_GENERATOR = new Random();
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
 
@@ -41,7 +42,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         registerEvents();
         saveDefaultConfig();
         loadConfigValues();
-        TelegramHelper.startServer(this);
+        enableTelegramHelper();
     }
 
     @Override
@@ -73,6 +74,13 @@ public class AbsolutelyRandom extends JavaPlugin {
         vovaChance = getConfig().getInt("vova-chance");
         stormChance = getConfig().getInt("storm-chance");
         eschkereChance = getConfig().getInt("eschkere-chance");
+        botEnabled = getConfig().getBoolean("telegram");
+    }
+
+    private void enableTelegramHelper() {
+        if (!botEnabled) {
+            TelegramHelper.startServer(this);
+        }
     }
 
     private void scheduleEventTrigger() {
