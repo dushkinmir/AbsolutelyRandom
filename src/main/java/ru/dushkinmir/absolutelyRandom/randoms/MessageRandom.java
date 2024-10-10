@@ -78,20 +78,20 @@ public class MessageRandom extends JavaPlugin {
             MESSAGES.remove(randomMessage);
         }
 
+        private Component createTitleText() {
+            return Component.text("пениспиздасиськи", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
+        }
+
+        private Component createSubTitleText(String message) {
+            return Component.text(message, NamedTextColor.GOLD);
+        }
+
         private void showTitleMessage(Player player, String message) {
             Component titleText = createTitleText();
             Component subTitleText = createSubTitleText(message);
             PlayerUtils.sendMessageToPlayer(player, titleText, PlayerUtils.MessageType.TITLE);
             PlayerUtils.sendMessageToPlayer(player, subTitleText, PlayerUtils.MessageType.SUBTITLE);
             PlayerUtils.sendMessageToPlayer(player, titleText, PlayerUtils.MessageType.ACTION_BAR);
-        }
-
-        private Component createTitleText() {
-            return Component.text("вова лашок", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
-        }
-
-        private Component createSubTitleText(String message) {
-            return Component.text(message, NamedTextColor.GOLD);
         }
 
         private void sendPlayerMessage(Player player, String message) {
