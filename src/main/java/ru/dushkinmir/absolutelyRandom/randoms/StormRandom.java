@@ -17,8 +17,8 @@ public class StormRandom {
     private static final Random RANDOM = new Random();
     private static final Component STORM_MESSAGE = Component.text("Гроза началась! Убегай!", NamedTextColor.YELLOW);
     private static final int STORM_DURATION_SECONDS = 60;
-    private static final int STRIKE_INTERVAL_SECONDS = 15;
-    private static final double MAX_OFFSET_DISTANCE = 3.0;
+    private static final int STRIKE_INTERVAL_SECONDS = 10;
+    private static final double STRIKE_DISTANCE = 5.0;
 
     public static void triggerStorm(Plugin plugin) {
         List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
@@ -67,11 +67,11 @@ public class StormRandom {
     }
 
     private static Location calculateStrikeLocation(Location location) {
-        return location.clone().add(getRandomOffset(), 0, getRandomOffset());
-    }
-
-    private static double getRandomOffset() {
-        return RANDOM.nextDouble() * 2 * MAX_OFFSET_DISTANCE - MAX_OFFSET_DISTANCE;
+        // Получаем случайный угол для определения направления
+        double angle = RANDOM.nextDouble() * 2 * Math.PI;  // Угол в радианах
+        double xOffset = Math.cos(angle) * STRIKE_DISTANCE;  // X смещение
+        double zOffset = Math.sin(angle) * STRIKE_DISTANCE;  // Z смещение
+        return location.clone().add(xOffset, 0, zOffset);  // Возвращаем новую локацию
     }
 
     private static void createWeatherEffect(Location strikeLocation) {
