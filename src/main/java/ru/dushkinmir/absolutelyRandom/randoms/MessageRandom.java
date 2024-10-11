@@ -3,6 +3,7 @@ package ru.dushkinmir.absolutelyRandom.randoms;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -76,8 +77,7 @@ public class MessageRandom extends JavaPlugin {
         private void showTitleMessage(Player player, String message) {
             Component titleText = createTitleText();
             Component subTitleText = createSubTitleText(message);
-            PlayerUtils.sendMessageToPlayer(player, titleText, PlayerUtils.MessageType.TITLE);
-            PlayerUtils.sendMessageToPlayer(player, subTitleText, PlayerUtils.MessageType.SUBTITLE);
+            player.showTitle(Title.title(titleText, subTitleText));
             PlayerUtils.sendMessageToPlayer(player, titleText, PlayerUtils.MessageType.ACTION_BAR);
         }
 

@@ -2,6 +2,7 @@ package ru.dushkinmir.absolutelyRandom.randoms;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
@@ -19,8 +20,7 @@ public class EschkereRandom implements Listener {
 
             Component message = Component.text("ЕЩКЕРЕЕЕ!!! 1488", NamedTextColor.DARK_GREEN);
             PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.CHAT);
-            PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.TITLE);
-            PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.SUBTITLE);
+            target.showTitle(Title.title(message, message));
             PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.ACTION_BAR);
         }
     }
