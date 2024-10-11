@@ -1,11 +1,16 @@
 package ru.dushkinmir.absolutelyRandom.events;
 
+import dev.geco.gsit.api.event.PreEntitySitEvent;
+import dev.geco.gsit.api.event.PrePlayerPlayerSitEvent;
+import dev.geco.gsit.api.event.PrePlayerPoseEvent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.plugin.Plugin;
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 import ru.dushkinmir.absolutelyRandom.utils.SQLiteDatabase;
 
 import java.sql.SQLException;
@@ -37,7 +42,11 @@ public class AnalFissureHandler implements Listener {
                 // Запись в базу данных
                 database.getConnection().createStatement()
                         .executeUpdate("INSERT OR REPLACE INTO analFissures (playerName, sleeps) VALUES ('" + player.getName() + "', 0)");
-                player.sendMessage("У вас появилась анальная трещина!");
+                PlayerUtils.sendMessageToPlayer(
+                        player,
+                        Component.text("боже, лох, у тебя анальная трещина теперь!"),
+                        PlayerUtils.MessageType.ACTION_BAR
+                );
             } catch (SQLException e) {
                 plugin.getLogger().severe("Не удалось checkForFissure в базу данных!");
                 plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
@@ -63,7 +72,11 @@ public class AnalFissureHandler implements Listener {
                     .executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
             if (resultSet.next()) {
                 if (resultSet.getInt("sleeps") >= 2) {
-                    player.sendMessage("Ваша анальная трещина зажила!");
+                    PlayerUtils.sendMessageToPlayer(
+                            player,
+                            Component.text("анальная трещина зажила, радуйся"),
+                            PlayerUtils.MessageType.ACTION_BAR
+                    );
                     // Здесь можно удалить запись из базы данных, если это необходимо
                     database.getConnection().createStatement()
                             .executeUpdate("DELETE FROM analFissures WHERE playerName = '" + player.getName() + "'");
@@ -90,12 +103,83 @@ public class AnalFissureHandler implements Listener {
                         .executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
                 if (resultSet.next() && resultSet.getInt("sleeps") <= 2) {
                     event.setCancelled(true); // Отменяем событие, если у игрока анальная трещина
-                    player.sendMessage("Вы не можете сесть в транспорт, у вас анальная трещина!");
+                    PlayerUtils.sendMessageToPlayer(
+                            player,
+                            Component.text("у тя трещина, дурачок"),
+                            PlayerUtils.MessageType.ACTION_BAR
+                    );
                 }
             } catch (SQLException e) {
                 plugin.getLogger().severe("Не удалось onPlayerEnterVehicle в базу данных!");
                 plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
             }
+        }
+    }
+
+    // GSit Events
+    @EventHandler
+    public void onGSitPlayerSit(PreEntitySitEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            try {
+                plugin.getLogger().info(player.getName() + " пытается сесть в транспорт.");
+                var resultSet = database.getConnection().createStatement()
+                        .executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
+                if (resultSet.next() && resultSet.getInt("sleeps") <= 2) {
+                    event.setCancelled(true); // Отменяем событие, если у игрока анальная трещина
+                    PlayerUtils.sendMessageToPlayer(
+                            player,
+                            Component.text("у тя трещина, дурачок"),
+                            PlayerUtils.MessageType.ACTION_BAR
+                    );
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Не удалось onGSitPlayerSit в базу данных!");
+                plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
+            }
+        }
+    }
+
+    @EventHandler
+    public void onGSitPlayerPlayerSit(PrePlayerPlayerSitEvent event) {
+        Player player = event.getPlayer();
+        try {
+            plugin.getLogger().info(player.getName() + " пытается сесть в транспорт.");
+            var resultSet = database.getConnection().createStatement()
+                    .executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
+            if (resultSet.next() && resultSet.getInt("sleeps") <= 2) {
+                event.setCancelled(true); // Отменяем событие, если у игрока анальная трещина
+                PlayerUtils.sendMessageToPlayer(
+                        player,
+                        Component.text("у тя трещина, дурачок"),
+                        PlayerUtils.MessageType.ACTION_BAR
+                );
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Не удалось onGSitPlayerPlayerSit в базу данных!");
+            plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
+        }
+    }
+
+    @EventHandler
+    public void onGSitPlayerPose(PrePlayerPoseEvent event) {
+        Player player = event.getPlayer();
+
+        try {
+            plugin.getLogger().info(player.getName() + " пытается сесть в транспорт.");
+            var resultSet = database.getConnection().createStatement()
+                    .executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
+            if (resultSet.next() && resultSet.getInt("sleeps") <= 2) {
+                event.setCancelled(true); // Отменяем событие, если у игрока анальная трещина
+                PlayerUtils.sendMessageToPlayer(
+                        player,
+                        Component.text("у тя трещина, дурачок"),
+                        PlayerUtils.MessageType.ACTION_BAR
+                );
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Не удалось onGSitPlayerPose в базу данных!");
+            plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
+
         }
     }
 }
