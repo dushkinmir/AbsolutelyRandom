@@ -22,7 +22,6 @@ import java.util.*;
 
 public class AbsolutelyRandom extends JavaPlugin {
     private static final long SCHEDULE_PERIOD = 20L;
-    private static final long INITIAL_DELAY = 0L;
     private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance, eschkereChance;
     private boolean botEnabled;
     private static final Random RANDOM_GENERATOR = new Random();
@@ -126,7 +125,7 @@ public class AbsolutelyRandom extends JavaPlugin {
             public void run() {
                 executeRandomEvents();
             }
-        }.runTaskTimer(this, INITIAL_DELAY, SCHEDULE_PERIOD);
+        }.runTaskTimer(this, 0, SCHEDULE_PERIOD);
     }
 
     private void registerEvents() {
