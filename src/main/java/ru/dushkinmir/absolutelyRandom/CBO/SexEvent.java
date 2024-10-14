@@ -17,67 +17,68 @@ import java.util.Random;
 public class SexEvent {
 
     private static final CollisionManager collisionManager = new CollisionManager();
+    private static final long SEX_DURATION = 15;
 
-    public static void triggerSexEvent(Player player, Player targetPlayer, Plugin plugin, AnalFissureHandler fissureHandler) {
+    public static void triggerSexEvent(Player initiator, Player targetPlayer, Plugin plugin, AnalFissureHandler fissureHandler) {
 
+        // Проверяем, что целевой игрок существует и в сети
         if (targetPlayer == null || !targetPlayer.isOnline()) {
             PlayerUtils.sendMessageToPlayer(
-                    player,
+                    initiator,
                     Component.text("Игрок не найден или не в сети."),
                     PlayerUtils.MessageType.CHAT);
             return;
         }
 
         // Проверяем расстояние между игроками
-        if (player.getLocation().distance(targetPlayer.getLocation()) > 1.5) {
+        if (initiator.getLocation().distance(targetPlayer.getLocation()) > 1.5) {
             PlayerUtils.sendMessageToPlayer(
-                    player,
+                    initiator,
                     Component.text("Игрок слишком далеко. Подойдите ближе."),
                     PlayerUtils.MessageType.CHAT);
             return;
         }
+
         // Отключаем коллизии для обоих игроков
-        collisionManager.addPlayerToNoCollision(player);
+        collisionManager.addPlayerToNoCollision(initiator);
         collisionManager.addPlayerToNoCollision(targetPlayer);
 
-        // Рандом определяет, кто из них будет стоять, а кто двигаться
-        Random random = new Random();
-        boolean playerMoves = random.nextBoolean(); // true - движется вызывающий игрок, false - целевой
+        // Определяем, кто из них будет двигаться
+        boolean initiatorMoves = new Random().nextBoolean(); // true - движется инициатор, false - целевой игрок
 
-        if (playerMoves) {
-            teleportBehind(targetPlayer, player);
-            movePlayer(player, plugin);
-            PlayerUtils.sendMessageToPlayer(
-                    player,
-                    Component.text("<%s> даа мой папочка, накажи меня!!~".formatted(player.getName())),
-                    PlayerUtils.MessageType.CHAT);
-            PlayerUtils.sendMessageToPlayer(
-                    targetPlayer,
-                    Component.text("<%s> ода, давай сучка, нагибайся)".formatted(targetPlayer.getName())),
-                    PlayerUtils.MessageType.CHAT);
+        if (initiatorMoves) {
+            performMovement(initiator, targetPlayer, plugin);
+            fissureHandler.checkForFissure(targetPlayer); // Проверяем фиссуры для целевого игрока
         } else {
-            teleportBehind(player, targetPlayer);
-            movePlayer(targetPlayer, plugin);
-            PlayerUtils.sendMessageToPlayer(
-                    targetPlayer,
-                    Component.text("<%s> даа мой папочка, накажи меня!!~".formatted(targetPlayer.getName())),
-                    PlayerUtils.MessageType.CHAT);
-            PlayerUtils.sendMessageToPlayer(
-                    player,
-                    Component.text("<%s> ода, давай сучка, нагибайся)".formatted(player.getName())),
-                    PlayerUtils.MessageType.CHAT);
-            fissureHandler.checkForFissure(player);
+            performMovement(targetPlayer, initiator, plugin);
+            fissureHandler.checkForFissure(initiator); // Проверяем фиссуры для инициатора
         }
-        // Через 15 секунд включаем коллизии обратно
+
+        // Включаем коллизии обратно через 15 секунд
         Bukkit.getScheduler().runTaskLater(
                 plugin,
                 () -> {
-                    collisionManager.removePlayerFromNoCollision(player);
+                    collisionManager.removePlayerFromNoCollision(initiator);
                     collisionManager.removePlayerFromNoCollision(targetPlayer);
                 },
-                15 * 20L // 15 секунд
+                SEX_DURATION * 20L // 15 секунд
         );
     }
+
+    private static void performMovement(Player movingPlayer, Player stationaryPlayer, Plugin plugin) {
+        teleportBehind(stationaryPlayer, movingPlayer);
+        movePlayer(movingPlayer, plugin);
+
+        PlayerUtils.sendMessageToPlayer(
+                movingPlayer,
+                Component.text("<%s> даа мой папочка, накажи меня!!~".formatted(stationaryPlayer.getName())),
+                PlayerUtils.MessageType.CHAT);
+        PlayerUtils.sendMessageToPlayer(
+                stationaryPlayer,
+                Component.text("<%s> ода, давай сучка, нагибайся)".formatted(movingPlayer.getName())),
+                PlayerUtils.MessageType.CHAT);
+    }
+
 
     // Метод для движения игрока вперед-назад на ограниченное время (в секундах)
     private static void movePlayer(Player player, Plugin plugin) {
@@ -121,7 +122,7 @@ public class SexEvent {
         Bukkit.getScheduler().runTaskLater(
                 plugin,
                 () -> Bukkit.getScheduler().cancelTask(taskId),
-                15 * 20L // 15 секунд = 300 тиков
+                SEX_DURATION * 20L // 15 секунд = 300 тиков
         );
     }    // Метод для телепортации игрока "движущегося" за спину "стоячего"
 
@@ -130,7 +131,7 @@ public class SexEvent {
         Vector backwardDirection = stationaryLocation.getDirection().multiply(-1); // Вектор, указывающий назад
 
         // Рассчитываем новую позицию для телепортации игрока на 1.5 блока позади
-        Location teleportLocation = stationaryLocation.clone().add(backwardDirection.normalize().multiply(1.5));
+        Location teleportLocation = stationaryLocation.clone().add(backwardDirection.normalize().multiply(1.1));
         teleportLocation.setY(stationaryLocation.getY()); // Оставляем высоту на том же уровне
 
         // Телепортируем игрока
