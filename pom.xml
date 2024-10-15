@@ -107,6 +107,10 @@
                             <pattern>org.json.simple</pattern>
                             <shadedPattern>ru.dushkinmir.json.simple</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>com.zaxxer.hikari</pattern>
+                            <shadedPattern>ru.dushkinmir.hikari</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>

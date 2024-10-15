@@ -7,6 +7,13 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.CBO.SexEvent;
@@ -20,7 +27,7 @@ import ru.dushkinmir.absolutelyRandom.utils.TelegramHelper;
 import java.sql.SQLException;
 import java.util.*;
 
-public class AbsolutelyRandom extends JavaPlugin {
+public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private static final long SCHEDULE_PERIOD = 20L;
     private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance, eschkereChance;
     private boolean botEnabled;
@@ -28,6 +35,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
     private static final Set<String> MESSAGES_SET = new HashSet<>();
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
+    private static final int MAX_STACK_SIZE = 52;
     private AbsRandSQLiteDatabase database;
     private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
 
@@ -132,6 +140,7 @@ public class AbsolutelyRandom extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
         getServer().getPluginManager().registerEvents(new VovaRandom(this), this);
         getServer().getPluginManager().registerEvents(new ConsentEvent(this), this);
+        getServer().getPluginManager().registerEvents(this, this);
     }
 
     private void openDatabase() throws SQLException {
@@ -236,6 +245,34 @@ public class AbsolutelyRandom extends JavaPlugin {
     private void checkAndTriggerEvent(Runnable eventTrigger, int eventChance) {
         if (RANDOM_GENERATOR.nextInt(eventChance) == 0) {
             eventTrigger.run();
+        }
+    }
+
+    @EventHandler
+    public void onPlayerPickupItem(PlayerPickupItemEvent event) {
+        ItemStack item = event.getItem().getItemStack();
+        if (item.getAmount() > MAX_STACK_SIZE) {
+            item.setAmount(MAX_STACK_SIZE); // Устанавливаем максимальный размер стака при поднятии
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDropItem(PlayerDropItemEvent event) {
+        ItemStack item = event.getItemDrop().getItemStack();
+        if (item.getAmount() > MAX_STACK_SIZE) {
+            item.setAmount(MAX_STACK_SIZE); // Устанавливаем максимальный размер стака при выбрасывании
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        // Проверяем, что инвентарь не является инвентарем игрока
+        if (event.getInventory().getType() != InventoryType.PLAYER) return;
+
+        ItemStack currentItem = event.getCurrentItem();
+        if (currentItem != null && currentItem.getAmount() > MAX_STACK_SIZE) {
+            currentItem.setAmount(MAX_STACK_SIZE); // Ограничиваем размер стаков при клике в инвентаре
+            event.setCurrentItem(currentItem); // Применяем изменения к предмету
         }
     }
 }
