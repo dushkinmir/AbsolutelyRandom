@@ -66,6 +66,11 @@
             <version>LATEST</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>6.0.0</version> <!-- Проверь последнюю версию на Maven Central -->
+        </dependency>
     </dependencies>
 
     <build>

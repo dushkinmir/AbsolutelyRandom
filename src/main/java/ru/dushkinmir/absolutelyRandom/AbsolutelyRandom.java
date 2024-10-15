@@ -142,7 +142,7 @@ public class AbsolutelyRandom extends JavaPlugin {
 
     private void closeDatabase() {
         if (database != null) {
-            database.close(); // Закрываем базу данных при отключении плагина
+            database.close(); // Закрываем пул соединений при отключении плагина
         }
     }
 

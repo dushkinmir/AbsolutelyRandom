@@ -1,5 +1,7 @@
 package ru.dushkinmir.absolutelyRandom.events;
 
+// Импортируй все необходимые классы
+
 import dev.geco.gsit.api.event.PreEntitySitEvent;
 import dev.geco.gsit.api.event.PrePlayerPlayerSitEvent;
 import dev.geco.gsit.api.event.PrePlayerPoseEvent;
@@ -27,7 +29,7 @@ public class AnalFissureHandler implements Listener {
         this.database = database;
         this.plugin = plugin;
         createTable();
-        // Проверка на наличие зависимости от GSit
+
         if (isGsitPluginAvailable()) {
             plugin.getServer().getPluginManager().registerEvents(new GSitEventHandlers(), plugin);
         }
@@ -49,11 +51,9 @@ public class AnalFissureHandler implements Listener {
     }
 
     public void checkForFissure(Player player) {
-        // 33% шанс появления анальной трещины
         if (random.nextInt(100) < 33) {
             try (Connection conn = database.getConnection();
                  Statement stmt = conn.createStatement()) {
-                // Запись в базу данных
                 stmt.executeUpdate("INSERT OR REPLACE INTO analFissures (playerName, sleeps) VALUES ('" + player.getName() + "', 0)");
                 PlayerUtils.sendMessageToPlayer(
                         player,
@@ -70,7 +70,6 @@ public class AnalFissureHandler implements Listener {
     public void incrementSleepCount(Player player) {
         try (Connection conn = database.getConnection();
              Statement stmt = conn.createStatement()) {
-            // Увеличиваем счетчик сна на 1
             stmt.executeUpdate("UPDATE analFissures SET sleeps = sleeps + 1 WHERE playerName = '" + player.getName() + "'");
             checkFissureState(player);
         } catch (SQLException e) {
@@ -90,7 +89,6 @@ public class AnalFissureHandler implements Listener {
                             Component.text("анальная трещина зажила, радуйся"),
                             PlayerUtils.MessageType.ACTION_BAR
                     );
-                    // Здесь можно удалить запись из базы данных, если это необходимо
                     stmt.executeUpdate("DELETE FROM analFissures WHERE playerName = '" + player.getName() + "'");
                 }
             }
@@ -122,7 +120,7 @@ public class AnalFissureHandler implements Listener {
         if (event.getEntered() instanceof Player player) {
             plugin.getLogger().info(player.getName() + " пытается сесть в транспорт.");
             if (isFissureActive(player)) {
-                event.setCancelled(true); // Отменяем событие, если у игрока анальная трещина
+                event.setCancelled(true);
                 PlayerUtils.sendMessageToPlayer(
                         player,
                         Component.text("у тя трещина, дурачок"),
