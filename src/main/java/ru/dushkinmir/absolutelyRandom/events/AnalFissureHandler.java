@@ -13,7 +13,9 @@ import org.bukkit.plugin.Plugin;
 import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Random;
 
 public class AnalFissureHandler implements Listener {
@@ -36,7 +38,10 @@ public class AnalFissureHandler implements Listener {
                 + "playerName TEXT PRIMARY KEY,"
                 + "sleeps INTEGER DEFAULT 0"
                 + ");";
-        database.getConnection().createStatement().execute(sql);
+        try (Connection conn = database.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
+        }
     }
 
     private boolean isGsitPluginAvailable() {
@@ -46,10 +51,10 @@ public class AnalFissureHandler implements Listener {
     public void checkForFissure(Player player) {
         // 33% шанс появления анальной трещины
         if (random.nextInt(100) < 33) {
-            try {
+            try (Connection conn = database.getConnection();
+                 Statement stmt = conn.createStatement()) {
                 // Запись в базу данных
-                database.getConnection().createStatement()
-                        .executeUpdate("INSERT OR REPLACE INTO analFissures (playerName, sleeps) VALUES ('" + player.getName() + "', 0)");
+                stmt.executeUpdate("INSERT OR REPLACE INTO analFissures (playerName, sleeps) VALUES ('" + player.getName() + "', 0)");
                 PlayerUtils.sendMessageToPlayer(
                         player,
                         Component.text("боже, лох, у тебя анальная трещина теперь!"),
@@ -57,27 +62,27 @@ public class AnalFissureHandler implements Listener {
                 );
             } catch (SQLException e) {
                 plugin.getLogger().severe("Не удалось checkForFissure в базу данных!");
-                plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
+                plugin.getLogger().severe("Ошибка: " + e.getMessage());
             }
         }
     }
 
     public void incrementSleepCount(Player player) {
-        try {
+        try (Connection conn = database.getConnection();
+             Statement stmt = conn.createStatement()) {
             // Увеличиваем счетчик сна на 1
-            database.getConnection().createStatement()
-                    .executeUpdate("UPDATE analFissures SET sleeps = sleeps + 1 WHERE playerName = '" + player.getName() + "'");
+            stmt.executeUpdate("UPDATE analFissures SET sleeps = sleeps + 1 WHERE playerName = '" + player.getName() + "'");
             checkFissureState(player);
         } catch (SQLException e) {
             plugin.getLogger().severe("Не удалось incrementSleepCount в базу данных!");
-            plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
+            plugin.getLogger().severe("Ошибка: " + e.getMessage());
         }
     }
 
     public void checkFissureState(Player player) {
-        try {
-            var resultSet = database.getConnection().createStatement()
-                    .executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
+        try (Connection conn = database.getConnection();
+             Statement stmt = conn.createStatement()) {
+            var resultSet = stmt.executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
             if (resultSet.next()) {
                 if (resultSet.getInt("sleeps") >= 2) {
                     PlayerUtils.sendMessageToPlayer(
@@ -86,23 +91,23 @@ public class AnalFissureHandler implements Listener {
                             PlayerUtils.MessageType.ACTION_BAR
                     );
                     // Здесь можно удалить запись из базы данных, если это необходимо
-                    database.getConnection().createStatement()
-                            .executeUpdate("DELETE FROM analFissures WHERE playerName = '" + player.getName() + "'");
+                    stmt.executeUpdate("DELETE FROM analFissures WHERE playerName = '" + player.getName() + "'");
                 }
             }
         } catch (SQLException e) {
             plugin.getLogger().severe("Не удалось checkFissureState в базу данных!");
-            plugin.getLogger().severe("Ошибка: " + e.getMessage()); // Логируем сообщение об ошибке
+            plugin.getLogger().severe("Ошибка: " + e.getMessage());
         }
     }
 
     private boolean isFissureActive(Player player) {
-        try {
-            var resultSet = database.getConnection().createStatement().executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
+        try (Connection conn = database.getConnection();
+             Statement stmt = conn.createStatement()) {
+            var resultSet = stmt.executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
             return resultSet.next() && resultSet.getInt("sleeps") <= 2;
         } catch (SQLException e) {
             plugin.getLogger().severe("Ошибка при проверке состояния анальной трещины: " + e.getMessage());
-            return false; // В случае ошибки возвращаем false
+            return false;
         }
     }
 
