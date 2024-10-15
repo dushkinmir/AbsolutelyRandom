@@ -14,7 +14,7 @@ import ru.dushkinmir.absolutelyRandom.events.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.randoms.*;
-import ru.dushkinmir.absolutelyRandom.utils.SQLiteDatabase;
+import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
 import ru.dushkinmir.absolutelyRandom.utils.TelegramHelper;
 
 import java.sql.SQLException;
@@ -28,7 +28,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
     private static final Set<String> MESSAGES_SET = new HashSet<>();
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
-    private SQLiteDatabase database;
+    private AbsRandSQLiteDatabase database;
     private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
 
     public static void main(String[] args) {
@@ -135,7 +135,7 @@ public class AbsolutelyRandom extends JavaPlugin {
     }
 
     private void openDatabase() throws SQLException {
-        database = new SQLiteDatabase(this); // Создаем экземпляр базы данных
+        database = new AbsRandSQLiteDatabase(this); // Создаем экземпляр базы данных
         fissureHandler = new AnalFissureHandler(database, this); // Инициализируем обработчик анальной трещины
         getServer().getPluginManager().registerEvents(fissureHandler, this);
     }

@@ -7,11 +7,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class SQLiteDatabase {
+public class AbsRandSQLiteDatabase {
     private final Plugin plugin;
     private Connection connection;
 
-    public SQLiteDatabase(Plugin plugin) {
+    public AbsRandSQLiteDatabase(Plugin plugin) {
         this.plugin = plugin;
         open();
     }
