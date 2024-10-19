@@ -23,6 +23,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class ConsentEvent implements Listener {
     private final Map<Player, Block> playerBlockMap = new HashMap<>();
@@ -36,11 +37,14 @@ public class ConsentEvent implements Listener {
     public void handlePlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
-        if (block != null && event.getAction().isRightClick() && block.getState() instanceof Container) {
-            if (player.isSneaking()) return;
-            playerBlockMap.put(player, block);
-            openConsentMenu(player);
-            event.setCancelled(true);
+        boolean openConsentMenu = new Random().nextBoolean();
+        if (openConsentMenu) {
+            if (block != null && event.getAction().isRightClick() && block.getState() instanceof Container) {
+                if (player.isSneaking()) return;
+                playerBlockMap.put(player, block);
+                openConsentMenu(player);
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -102,7 +106,7 @@ public class ConsentEvent implements Listener {
                 }.runTaskLater(plugin, 1L);
             }
         } else if (clickedItem.getType() == Material.RED_WOOL) {
-            PlayerUtils.sendMessageToPlayer(player, Component.text("Китай партия вами не доволен! \uD83D\uDE21", NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            PlayerUtils.kickPlayer(player, Component.text("Китай партия вами не доволен! \uD83D\uDE21", NamedTextColor.RED));
             player.closeInventory();
             player.getWorld().strikeLightning(player.getLocation());
             player.getWorld().createExplosion(player.getLocation(), 2F, false, false);
