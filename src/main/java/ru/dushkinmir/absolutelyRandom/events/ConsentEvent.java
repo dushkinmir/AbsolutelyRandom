@@ -92,7 +92,6 @@ public class ConsentEvent implements Listener {
         }
     }
 
-
     private void handleItemClick(Player player, ItemStack clickedItem) {
         if (clickedItem.getType() == Material.GREEN_WOOL) {
             Block block = playerBlockMap.get(player);
@@ -107,9 +106,6 @@ public class ConsentEvent implements Listener {
             }
         } else if (clickedItem.getType() == Material.RED_WOOL) {
             PlayerUtils.kickPlayer(player, Component.text("Китай партия вами не доволен! \uD83D\uDE21", NamedTextColor.RED));
-            player.closeInventory();
-            player.getWorld().strikeLightning(player.getLocation());
-            player.getWorld().createExplosion(player.getLocation(), 2F, false, false);
         }
     }
 }
