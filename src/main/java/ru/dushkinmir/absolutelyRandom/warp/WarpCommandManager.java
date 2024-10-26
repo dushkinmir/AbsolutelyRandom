@@ -5,11 +5,12 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class WarpCommandManager {
 
@@ -62,11 +63,24 @@ public class WarpCommandManager {
 
         CommandAPICommand warpList = new CommandAPICommand("list")
                 .executesPlayer((player, args) -> {
-                    PlayerUtils.sendMessageToPlayer(
-                            player,
-                            Component.text(Arrays.toString(warpManager.getWarps(player).toArray(new String[0]))),
-                            PlayerUtils.MessageType.CHAT);
+                    List<String> warps = warpManager.getWarps(player);
+
+                    if (warps.isEmpty()) {
+                        PlayerUtils.sendMessageToPlayer(
+                                player,
+                                Component.text("У вас нет созданных варпов.")
+                                        .color(NamedTextColor.RED),
+                                PlayerUtils.MessageType.CHAT);
+                    } else {
+                        String formattedWarps = String.join(", ", warps);
+                        PlayerUtils.sendMessageToPlayer(
+                                player,
+                                Component.text("Ваши варпы: " + formattedWarps)
+                                        .color(NamedTextColor.GREEN),
+                                PlayerUtils.MessageType.CHAT);
+                    }
                 });
+
 
         // Основная команда "warp" с подкомандами
         new CommandAPICommand("warp")

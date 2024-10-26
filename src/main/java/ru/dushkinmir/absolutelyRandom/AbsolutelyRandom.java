@@ -141,7 +141,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         database = new AbsRandSQLiteDatabase(this); // Создаем экземпляр базы данных
         fissureHandler = new AnalFissureHandler(database, this); // Инициализируем обработчик анальной трещины
         WarpManager warpManager = new WarpManager(database, this);
-        new WarpCommandManager(warpManager, this); // Инициализируем командный менеджер для варпов
+        new WarpCommandManager(warpManager); // Инициализируем командный менеджер для варпов
         getServer().getPluginManager().registerEvents(fissureHandler, this);
     }
 
