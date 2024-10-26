@@ -1,10 +1,14 @@
 package ru.dushkinmir.absolutelyRandom.warp;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -24,36 +28,60 @@ public class WarpManager {
         try (Connection connection = database.getConnection();
              Statement statement = connection.createStatement()) {
             statement.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS warps (player_uuid TEXT, warp_name TEXT, x DOUBLE, y DOUBLE, z DOUBLE);"
+                    "CREATE TABLE IF NOT EXISTS warps (player_uuid TEXT, warp_name TEXT, x DOUBLE, y DOUBLE, z DOUBLE, yaw FLOAT, pitch FLOAT);"
             );
         } catch (SQLException e) {
             plugin.getLogger().severe("Ошибка при создании таблицы варпов: " + e.getMessage());
         }
     }
 
-    public void createWarp(Player player, String warpName, Location location, ItemStack requiredItem) {
+    public void createWarp(Player player, String warpName, Location location) {
+        // Получаем список варпов игрока
+        List<String> playerWarps = getWarps(player);
+
+        // Проверка на существование варпа
+        if (playerWarps.contains(warpName)) {
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Варп с именем '" + warpName + "' уже существует.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            return;
+        }
+
+        // Получаем предмет из конфига
+        String requiredItemName = plugin.getConfig().getString("warp.requiredItem", "DIAMOND"); // Значение по умолчанию DIAMOND
+        Material requiredMaterial = Material.matchMaterial(requiredItemName);
+        if (requiredMaterial == null) {
+            player.sendMessage("Конфигурация содержит неверный материал для варпа.");
+            return;
+        }
+        ItemStack requiredItem = new ItemStack(requiredMaterial);
+
         if (!player.getInventory().containsAtLeast(requiredItem, requiredItem.getAmount())) {
-            player.sendMessage("У вас нет необходимого предмета для создания варпа.");
+            PlayerUtils.sendMessageToPlayer(player, Component.text("У вас нет необходимого предмета для создания варпа.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
             return;
         }
 
         ItemStack heldItem = player.getInventory().getItemInMainHand();
         if (!heldItem.isSimilar(requiredItem)) {
-            player.sendMessage("Вы должны держать необходимый предмет в руке.");
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Вы должны держать необходимый предмет в руке.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
             return;
         }
 
         player.getInventory().removeItem(requiredItem);
         try (Connection connection = database.getConnection();
              PreparedStatement ps = connection.prepareStatement(
-                     "INSERT INTO warps (player_uuid, warp_name, x, y, z) VALUES (?, ?, ?, ?, ?);")) {
+                     "INSERT INTO warps (player_uuid, warp_name, x, y, z, yaw, pitch) VALUES (?, ?, ?, ?, ?, ?, ?);")) {
             ps.setString(1, player.getUniqueId().toString());
             ps.setString(2, warpName);
             ps.setDouble(3, location.getX());
             ps.setDouble(4, location.getY());
             ps.setDouble(5, location.getZ());
+            ps.setFloat(6, location.getYaw());  // Сохраняем направление взгляда (yaw)
+            ps.setFloat(7, location.getPitch()); // Сохраняем направление взгляда (pitch)
             ps.executeUpdate();
-            player.sendMessage("Варп '" + warpName + "' успешно создан!");
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Варп '" + warpName + "' успешно создан!")
+                    .color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
         } catch (SQLException e) {
             player.sendMessage("Ошибка при создании варпа.");
             plugin.getLogger().severe("Ошибка при создании варпа.");
@@ -62,27 +90,42 @@ public class WarpManager {
     }
 
     public void teleportToWarp(Player player, String warpName) {
+        List<String> playerWarps = getWarps(player);
+
+        if (!playerWarps.contains(warpName)) {
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Варп с именем '" + warpName + "' не найден.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            return;
+        }
+
         try (Connection connection = database.getConnection();
              PreparedStatement ps = connection.prepareStatement(
-                     "SELECT x, y, z FROM warps WHERE player_uuid = ? AND warp_name = ?;")) {
+                     "SELECT x, y, z, yaw, pitch FROM warps WHERE player_uuid = ? AND warp_name = ?;")) {
             ps.setString(1, player.getUniqueId().toString());
             ps.setString(2, warpName);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                Location location = new Location(player.getWorld(), rs.getDouble("x"), rs.getDouble("y"), rs.getDouble("z"));
+                Location location = new Location(player.getWorld(), rs.getDouble("x"), rs.getDouble("y"), rs.getDouble("z"), rs.getFloat("yaw"), rs.getFloat("pitch"));
                 player.teleport(location);
-                player.sendMessage("Вы телепортировались к варпу '" + warpName + "'.");
-            } else {
-                player.sendMessage("Варп с именем '" + warpName + "' не найден.");
+                PlayerUtils.sendMessageToPlayer(player, Component.text("Вы телепортировались к варпу '" + warpName + "'.")
+                        .color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
             }
         } catch (SQLException e) {
-            player.sendMessage("Ошибка при телепортации.");
-            plugin.getLogger().severe("Ошибка при телепортации.");
-            plugin.getLogger().severe("Ошибка: " + e.getMessage());
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при телепортации.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            plugin.getLogger().severe("Ошибка при телепортации: " + e.getMessage());
         }
     }
 
     public void deleteWarp(Player player, String warpName) {
+        List<String> playerWarps = getWarps(player);
+
+        if (!playerWarps.contains(warpName)) {
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Варп с именем '" + warpName + "' не найден.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            return;
+        }
+
         try (Connection connection = database.getConnection();
              PreparedStatement ps = connection.prepareStatement(
                      "DELETE FROM warps WHERE player_uuid = ? AND warp_name = ?;")) {
@@ -90,28 +133,35 @@ public class WarpManager {
             ps.setString(2, warpName);
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected > 0) {
-                player.sendMessage("Варп '" + warpName + "' успешно удален.");
-            } else {
-                player.sendMessage("Варп с именем '" + warpName + "' не найден.");
+                PlayerUtils.sendMessageToPlayer(player, Component.text("Варп '" + warpName + "' успешно удален.")
+                        .color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
             }
         } catch (SQLException e) {
-            player.sendMessage("Ошибка при удалении варпа.");
-            plugin.getLogger().severe("Ошибка при удалении варпа.");
-            plugin.getLogger().severe("Ошибка: " + e.getMessage());
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при удалении варпа.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            plugin.getLogger().severe("Ошибка при удалении варпа: " + e.getMessage());
         }
     }
 
     public void deleteAllWarps(Player player) {
+        List<String> playerWarps = getWarps(player);
+
+        if (playerWarps.isEmpty()) {
+            PlayerUtils.sendMessageToPlayer(player, Component.text("У вас нет варпов для удаления.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            return;
+        }
+
         try (Connection connection = database.getConnection();
              PreparedStatement ps = connection.prepareStatement(
                      "DELETE FROM warps WHERE player_uuid = ?;")) {
             ps.setString(1, player.getUniqueId().toString());
-            int rowsAffected = ps.executeUpdate();
-            player.sendMessage(rowsAffected > 0 ? "Все ваши варпы успешно удалены." : "У вас нет варпов для удаления.");
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Все ваши варпы успешно удалены.")
+                    .color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
         } catch (SQLException e) {
-            player.sendMessage("Ошибка при удалении всех варпов.");
-            plugin.getLogger().severe("Ошибка при удалении всех варпов.");
-            plugin.getLogger().severe("Ошибка: " + e.getMessage());
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при удалении всех варпов.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            plugin.getLogger().severe("Ошибка при удалении всех варпов: " + e.getMessage());
         }
     }
 
@@ -126,10 +176,11 @@ public class WarpManager {
                 warps.add(rs.getString("warp_name"));
             }
         } catch (SQLException e) {
-            player.sendMessage("Ошибка при получении списка варпов.");
-            plugin.getLogger().severe("Ошибка при получении списка варпов.");
-            plugin.getLogger().severe("Ошибка: " + e.getMessage());
+            PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при получении списка варпов.")
+                    .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            plugin.getLogger().severe("Ошибка при получении списка варпов: " + e.getMessage());
         }
         return warps;
     }
+
 }

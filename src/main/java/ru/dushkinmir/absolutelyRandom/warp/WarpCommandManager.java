@@ -5,9 +5,7 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 public class WarpCommandManager {
@@ -27,23 +25,12 @@ public class WarpCommandManager {
                 .withArguments(new StringArgument("warpName"))
                 .executesPlayer((player, args) -> {
                     String warpName = (String) args.get("warpName");
-
-                    // Получаем предмет из конфига
-                    String requiredItemName = plugin.getConfig().getString("warp.requiredItem", "DIAMOND"); // Значение по умолчанию DIAMOND
-                    Material requiredMaterial = Material.matchMaterial(requiredItemName);
-
-                    if (requiredMaterial == null) {
-                        player.sendMessage("Конфигурация содержит неверный материал для варпа.");
-                        return;
-                    }
-
-                    ItemStack requiredItem = new ItemStack(requiredMaterial);
                     Location location = player.getLocation();
-                    warpManager.createWarp(player, warpName, location, requiredItem);
+                    warpManager.createWarp(player, warpName, location);
                 });
 
         // Подкоманда "teleport"
-        CommandAPICommand warpTeleport = new CommandAPICommand("teleport")
+        CommandAPICommand warpTeleport = new CommandAPICommand("tp")
                 .withArguments(new StringArgument("warpName")
                         .replaceSuggestions(ArgumentSuggestions.strings(info -> {
                             Player player = (Player) info.sender();
@@ -55,7 +42,7 @@ public class WarpCommandManager {
                 });
 
         // Подкоманда "delete"
-        CommandAPICommand warpDelete = new CommandAPICommand("delete")
+        CommandAPICommand warpDelete = new CommandAPICommand("del")
                 .withArguments(new StringArgument("warpName")
                         .replaceSuggestions(ArgumentSuggestions.strings(info -> {
                             Player player = (Player) info.sender();
@@ -67,7 +54,7 @@ public class WarpCommandManager {
                 });
 
         // Подкоманда "deleteall"
-        CommandAPICommand warpDeleteAll = new CommandAPICommand("deleteall")
+        CommandAPICommand warpDeleteAll = new CommandAPICommand("delall")
                 .executesPlayer((player, args) -> {
                     warpManager.deleteAllWarps(player);
                 });
