@@ -10,11 +10,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutelyRandom.CBO.SexEvent;
-import ru.dushkinmir.absolutelyRandom.events.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.randoms.*;
+import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
+import ru.dushkinmir.absolutelyRandom.sex.SexEvent;
 import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
 import ru.dushkinmir.absolutelyRandom.utils.TelegramHelper;
 

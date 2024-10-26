@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.CBO;
+package ru.dushkinmir.absolutelyRandom.sex;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -9,7 +9,6 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
-import ru.dushkinmir.absolutelyRandom.events.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.Random;
