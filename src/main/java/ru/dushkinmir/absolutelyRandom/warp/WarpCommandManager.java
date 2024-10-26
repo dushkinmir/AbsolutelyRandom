@@ -4,18 +4,19 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+
+import java.util.Arrays;
 
 public class WarpCommandManager {
 
     private final WarpManager warpManager;
-    private final Plugin plugin;
 
-    public WarpCommandManager(WarpManager warpManager, Plugin plugin) {
+    public WarpCommandManager(WarpManager warpManager) {
         this.warpManager = warpManager;
-        this.plugin = plugin;
         registerWarpCommands();
     }
 
@@ -59,6 +60,14 @@ public class WarpCommandManager {
                     warpManager.deleteAllWarps(player);
                 });
 
+        CommandAPICommand warpList = new CommandAPICommand("list")
+                .executesPlayer((player, args) -> {
+                    PlayerUtils.sendMessageToPlayer(
+                            player,
+                            Component.text(Arrays.toString(warpManager.getWarps(player).toArray(new String[0]))),
+                            PlayerUtils.MessageType.CHAT);
+                });
+
         // Основная команда "warp" с подкомандами
         new CommandAPICommand("warp")
                 .withPermission(CommandPermission.fromString("absolutlyrandom.warp"))
@@ -66,6 +75,7 @@ public class WarpCommandManager {
                 .withSubcommand(warpTeleport)
                 .withSubcommand(warpDelete)
                 .withSubcommand(warpDeleteAll)
+                .withSubcommand(warpList)
                 .register();
     }
 }
