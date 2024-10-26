@@ -59,7 +59,7 @@ public class DrugsEvent implements Listener {
                     if (!nbt.hasTag("drug")) {
                         switch (item.getType()) {
                             case SUGAR:
-                                applyDrugEffects(item, "Мефедрон", Map.of(
+                                applyDrugEffects(item, "Кокаин", Map.of(
                                         "minecraft:speed", 100,
                                         "minecraft:haste", 100,
                                         "minecraft:weakness", 100,
@@ -67,7 +67,7 @@ public class DrugsEvent implements Listener {
                                 ), 0, 0.0f, clickedBlock, event.getPlayer());
                                 break;
                             case WHITE_DYE:
-                                applyDrugEffects(item, "Кокаин", Map.of(
+                                applyDrugEffects(item, "Мефедрон", Map.of(
                                         "minecraft:speed", 100,
                                         "minecraft:strength", 100,
                                         "minecraft:nausea", 100,
