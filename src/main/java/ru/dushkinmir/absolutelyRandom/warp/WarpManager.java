@@ -142,8 +142,14 @@ public class WarpManager {
              PreparedStatement ps = connection.prepareStatement(
                      "DELETE FROM warps WHERE player_uuid = ?;")) {
             ps.setString(1, player.getUniqueId().toString());
-            PlayerUtils.sendMessageToPlayer(player, Component.text("Все ваши варпы успешно удалены.")
-                    .color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
+            int rowsAffected = ps.executeUpdate(); // Выполняем запрос и получаем количество затронутых строк
+            if (rowsAffected > 0) {
+                PlayerUtils.sendMessageToPlayer(player, Component.text("Все ваши варпы успешно удалены.")
+                        .color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
+            } else {
+                PlayerUtils.sendMessageToPlayer(player, Component.text("У вас нет варпов для удаления.")
+                        .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
+            }
         } catch (SQLException e) {
             PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при удалении всех варпов.")
                     .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
