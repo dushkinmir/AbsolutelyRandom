@@ -150,9 +150,14 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private void registerCommands() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
         Argument<?> noSelectorSuggestions = new PlayerArgument("target")
-                .replaceSafeSuggestions(SafeSuggestions.suggest(info ->
-                        this.getServer().getOnlinePlayers().toArray(new Player[0])
-                ));
+                .replaceSafeSuggestions(SafeSuggestions.suggest(info -> {
+                    // Получаем игрока, который вводит команду
+                    Player senderPlayer = (Player) info.sender();
+                    // Получаем всех онлайн игроков, кроме отправителя
+                    return this.getServer().getOnlinePlayers().stream()
+                            .filter(player -> !player.equals(senderPlayer)) // исключаем отправителя
+                            .toArray(Player[]::new);
+                }));
 
         new CommandAPICommand("debugevent")
                 .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
