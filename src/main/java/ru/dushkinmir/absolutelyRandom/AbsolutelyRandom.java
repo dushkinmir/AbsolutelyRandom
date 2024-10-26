@@ -17,6 +17,8 @@ import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.sex.SexEvent;
 import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
 import ru.dushkinmir.absolutelyRandom.utils.TelegramHelper;
+import ru.dushkinmir.absolutelyRandom.warp.WarpCommandManager;
+import ru.dushkinmir.absolutelyRandom.warp.WarpManager;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -138,6 +140,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private void openDatabase() throws SQLException {
         database = new AbsRandSQLiteDatabase(this); // Создаем экземпляр базы данных
         fissureHandler = new AnalFissureHandler(database, this); // Инициализируем обработчик анальной трещины
+        WarpManager warpManager = new WarpManager(database, this);
+        new WarpCommandManager(warpManager, this); // Инициализируем командный менеджер для варпов
         getServer().getPluginManager().registerEvents(fissureHandler, this);
     }
 
