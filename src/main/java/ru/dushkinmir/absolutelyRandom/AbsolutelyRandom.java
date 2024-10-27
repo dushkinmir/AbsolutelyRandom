@@ -45,19 +45,23 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     @Override
     public void onLoad() {
         registerCommands();
+        try {
+            openDatabase();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void onEnable() {
         logPluginActivation();
         CommandAPI.onEnable();
+        scheduleEventTrigger();
         try {
-            openDatabase();
+            registerEvents();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        scheduleEventTrigger();
-        registerEvents();
         saveDefaultConfig();
         loadConfigValues();
         enableTelegramHelper();
@@ -131,19 +135,19 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         }.runTaskTimer(this, 0, SCHEDULE_PERIOD);
     }
 
-    private void registerEvents() {
+    private void registerEvents() throws SQLException {
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
         getServer().getPluginManager().registerEvents(new VovaRandom(this), this);
         getServer().getPluginManager().registerEvents(new ConsentEvent(this), this);
-    }
-
-    private void openDatabase() throws SQLException {
-        database = new AbsRandSQLiteDatabase(this); // Создаем экземпляр базы данных
         fissureHandler = new AnalFissureHandler(database, this); // Инициализируем обработчик анальной трещины
         WarpManager warpManager = new WarpManager(database, this);
         new WarpCommandManager(warpManager); // Инициализируем командный менеджер для варпов
         getServer().getPluginManager().registerEvents(new WarpCommandManager(warpManager), this);
         getServer().getPluginManager().registerEvents(fissureHandler, this);
+    }
+
+    private void openDatabase() throws SQLException {
+        database = new AbsRandSQLiteDatabase(this); // Создаем экземпляр базы данных
     }
 
     private void closeDatabase() {
