@@ -31,7 +31,7 @@ public class WarpManager {
                     "CREATE TABLE IF NOT EXISTS warps (player_uuid TEXT, warp_name TEXT, x DOUBLE, y DOUBLE, z DOUBLE, yaw FLOAT, pitch FLOAT);"
             );
         } catch (SQLException e) {
-            plugin.getLogger().severe("Ошибка при создании таблицы варпов: " + e.getMessage());
+            plugin.getLogger().severe("Ошибка при создании таблицы варпов: \n" + e.getMessage());
         }
     }
 
@@ -83,7 +83,7 @@ public class WarpManager {
         } catch (SQLException e) {
             PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при создании варпа.")
                     .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
-            plugin.getLogger().severe("Ошибка при создании варпа: " + e.getMessage());
+            plugin.getLogger().severe("Ошибка при создании варпа: \n" + e.getMessage());
         }
     }
 
@@ -109,7 +109,7 @@ public class WarpManager {
         } catch (SQLException e) {
             PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при телепортации.")
                     .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
-            plugin.getLogger().severe("Ошибка при телепортации: " + e.getMessage());
+            plugin.getLogger().severe("Ошибка при телепортации: \n" + e.getMessage());
         }
     }
 
@@ -133,7 +133,7 @@ public class WarpManager {
         } catch (SQLException e) {
             PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при удалении варпа.")
                     .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
-            plugin.getLogger().severe("Ошибка при удалении варпа: " + e.getMessage());
+            plugin.getLogger().severe("Ошибка при удалении варпа: \n" + e.getMessage());
         }
     }
 
@@ -153,7 +153,7 @@ public class WarpManager {
         } catch (SQLException e) {
             PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при удалении всех варпов.")
                     .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
-            plugin.getLogger().severe("Ошибка при удалении всех варпов: " + e.getMessage());
+            plugin.getLogger().severe("Ошибка при удалении всех варпов: \n" + e.getMessage());
         }
     }
 
@@ -161,19 +161,24 @@ public class WarpManager {
         List<String> warps = new ArrayList<>();
         try (Connection connection = database.getConnection();
              PreparedStatement ps = connection.prepareStatement(
-                     "SELECT warp_name FROM warps WHERE player_uuid = ?;")) {
+                     "SELECT warp_name, x, y, z FROM warps WHERE player_uuid = ?;")) {
             ps.setString(1, player.getUniqueId().toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                warps.add(rs.getString("warp_name"));
+                String warpName = rs.getString("warp_name");
+                int x = rs.getInt("x");
+                int y = rs.getInt("y");
+                int z = rs.getInt("z");
+                warps.add(warpName + " (" + x + ", " + y + ", " + z + ")");
             }
         } catch (SQLException e) {
             PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при получении списка варпов.")
                     .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
-            plugin.getLogger().severe("Ошибка при получении списка варпов: " + e.getMessage());
+            plugin.getLogger().severe("Ошибка при получении списка варпов: \n" + e.getMessage());
         }
         return warps;
     }
+
 
     private boolean warpExists(Player player, String warpName) {
         try (Connection connection = database.getConnection();
@@ -186,7 +191,7 @@ public class WarpManager {
         } catch (SQLException e) {
             PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при проверке существования варпа.")
                     .color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
-            plugin.getLogger().severe("Ошибка при проверке существования варпа: " + e.getMessage());
+            plugin.getLogger().severe("Ошибка при проверке существования варпа: \n" + e.getMessage());
             return false;
         }
     }
