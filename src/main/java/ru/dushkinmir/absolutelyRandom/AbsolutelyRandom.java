@@ -126,9 +126,9 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     }
 
     private void registerEvents() throws SQLException {
-        fissureHandler = new AnalFissureHandler(database, this); // Инициализируем обработчик анальной трещины
+        fissureHandler = new AnalFissureHandler(database, this);
         WarpManager warpManager = new WarpManager(database, this);
-        new WarpCommandManager(warpManager); // Инициализируем командный менеджер для варпов
+        new WarpCommandManager(warpManager);
         getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
         getServer().getPluginManager().registerEvents(new VovaRandom(this), this);
         getServer().getPluginManager().registerEvents(new ConsentEvent(this), this);
