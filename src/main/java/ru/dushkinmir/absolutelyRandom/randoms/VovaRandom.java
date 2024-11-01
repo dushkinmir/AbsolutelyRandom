@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -69,14 +68,6 @@ public class VovaRandom implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        UUID playerUUID = event.getPlayer().getUniqueId();
-        if (isPlayerTracked(playerUUID)) {
-            AbsolutelyRandom.getPlayerTasks().get(playerUUID).cancel();
-        }
-    }
-
     private boolean isPlayerTracked(UUID playerUUID) {
         return AbsolutelyRandom.getPlayerTasks().containsKey(playerUUID);
     }
@@ -98,9 +89,10 @@ public class VovaRandom implements Listener {
                 playerTasks.remove(playerUUID);
                 return;
             }
-            if (player.isOnline()) {
-                applyPoisonEffect(player);
-                applySmokeEffect(player);
+            applyPoisonEffect(player);
+            applySmokeEffect(player);
+            if (!player.isOnline()) {
+                this.cancel();
             }
         }
 
