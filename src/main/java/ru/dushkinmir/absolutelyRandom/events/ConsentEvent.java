@@ -2,7 +2,6 @@ package ru.dushkinmir.absolutelyRandom.events;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,14 +19,16 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class ConsentEvent implements Listener {
     private final Map<Player, Block> playerBlockMap = new HashMap<>();
     private final Plugin plugin;
+    private final Random random = new Random();
+    private static final Component CONSENT_TITLE = Component.text("Согласие на обработку данных", NamedTextColor.YELLOW);
 
     public ConsentEvent(Plugin plugin) {
         this.plugin = plugin;
@@ -37,19 +38,16 @@ public class ConsentEvent implements Listener {
     public void handlePlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
-        boolean openConsentMenu = new Random().nextBoolean();
-        if (openConsentMenu) {
-            if (block != null && event.getAction().isRightClick() && block.getState() instanceof Container) {
-                if (player.isSneaking()) return;
-                playerBlockMap.put(player, block);
-                openConsentMenu(player);
-                event.setCancelled(true);
-            }
+        if (random.nextBoolean() && block != null && event.getAction().isRightClick() && block.getState() instanceof Container) {
+            if (player.isSneaking()) return;
+            playerBlockMap.put(player, block);
+            openConsentMenu(player);
+            event.setCancelled(true);
         }
     }
 
     private void openConsentMenu(Player player) {
-        Inventory consentMenu = Bukkit.createInventory(null, 9, Component.text("Согласие на обработку данных", NamedTextColor.YELLOW));
+        Inventory consentMenu = Bukkit.createInventory(null, 9, CONSENT_TITLE);
         consentMenu.setItem(3, createItemStack(Material.GREEN_WOOL, "Принять", NamedTextColor.GREEN));
         consentMenu.setItem(4, createInfoItem());
         consentMenu.setItem(5, createItemStack(Material.RED_WOOL, "Отказаться", NamedTextColor.RED));
@@ -68,39 +66,43 @@ public class ConsentEvent implements Listener {
         ItemStack item = new ItemStack(Material.OAK_LOG);
         ItemMeta meta = item.getItemMeta();
         meta.displayName(Component.text("Договор о согласии", NamedTextColor.GOLD, TextDecoration.BOLD));
-        meta.lore(Arrays.asList(
-                Component.text("Соглашаясь, вы добровольно передаете", Style.style(TextDecoration.ITALIC)),
-                Component.text("себя в вечное рабство этому серверу", Style.style(TextDecoration.ITALIC)),
-                Component.text("Отказ приведет к немедленному накаказанию!", Style.style(TextDecoration.ITALIC)),
-                Component.text("Соглашаясь, вы теряете свою свободу", Style.style(TextDecoration.ITALIC)),
-                Component.text("и становитесь собственностью владельца сервера.", Style.style(TextDecoration.ITALIC))
+        meta.lore(List.of(
+                createStyledText("Соглашаясь, вы добровольно передаете", TextDecoration.ITALIC),
+                createStyledText("себя в вечное рабство этому серверу", TextDecoration.ITALIC),
+                createStyledText("Отказ приведет к немедленному наказанию!", TextDecoration.ITALIC),
+                createStyledText("Соглашаясь, вы теряете свою свободу", TextDecoration.ITALIC),
+                createStyledText("и становитесь собственностью владельца сервера.", TextDecoration.ITALIC)
         ));
         item.setItemMeta(meta);
         return item;
     }
 
+    private Component createStyledText(String text, TextDecoration... decorations) {
+        return Component.text(text, NamedTextColor.GRAY, decorations);
+    }
+
     @EventHandler
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (event.getView().title().equals(Component.text(
-                "Согласие на обработку данных",
-                NamedTextColor.YELLOW))) {
+        if (event.getView().title().equals(CONSENT_TITLE)) {
             Player player = (Player) event.getWhoClicked();
             event.setCancelled(true);
             ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+            if (clickedItem == null || clickedItem.getType() == Material.AIR) {
+                return;
+            }
             handleItemClick(player, clickedItem);
         }
     }
 
     private void handleItemClick(Player player, ItemStack clickedItem) {
         if (clickedItem.getType() == Material.GREEN_WOOL) {
-            Block block = playerBlockMap.get(player);
+            Block block = playerBlockMap.remove(player);
             if (block != null) {
                 player.closeInventory();
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        player.openInventory(((org.bukkit.block.Container) block.getState()).getInventory());
+                        player.openInventory(((Container) block.getState()).getInventory());
                     }
                 }.runTaskLater(plugin, 1L);
             }

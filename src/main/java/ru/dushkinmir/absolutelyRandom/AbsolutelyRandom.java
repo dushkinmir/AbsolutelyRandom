@@ -98,7 +98,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
             List<String> configMessages = getConfig().getStringList("random-messages");
 
-            if (!configMessages.isEmpty()) {
+            if (!configMessages.isEmpty() && !configMessages.equals(new ArrayList<>(MESSAGES_SET))) {
                 synchronized (MESSAGES_SET) {
                     MESSAGES_SET.clear();
                     MESSAGES_SET.addAll(configMessages);
@@ -129,11 +129,18 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         fissureHandler = new AnalFissureHandler(database, this);
         WarpManager warpManager = new WarpManager(database, this);
         new WarpCommandManager(warpManager);
-        getServer().getPluginManager().registerEvents(new DrugsEvent(), this);
-        getServer().getPluginManager().registerEvents(new VovaRandom(this), this);
-        getServer().getPluginManager().registerEvents(new ConsentEvent(this), this);
-        getServer().getPluginManager().registerEvents(new WarpCommandManager(warpManager), this);
-        getServer().getPluginManager().registerEvents(fissureHandler, this);
+
+        List<Listener> events = Arrays.asList(
+                new DrugsEvent(),
+                new VovaRandom(this),
+                new ConsentEvent(this),
+                new WarpCommandManager(warpManager),
+                fissureHandler
+        );
+
+        for (Listener event : events) {
+            getServer().getPluginManager().registerEvents(event, this);
+        }
     }
 
     private void openDatabase() throws SQLException {
@@ -163,7 +170,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 .withUsage("/debug <event>")
                 .withArguments(new StringArgument("event")
                         .replaceSuggestions(ArgumentSuggestions.strings(
-                                "crash", "group", "kick", "message", "vova", "storm", "eschkere"))
+                                new ArrayList<>(debugEvents.keySet())))
                 )
                 .executes((sender, args) -> {
                     String event = (String) args.get("event");
@@ -182,47 +189,26 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 .register();
     }
 
+    private final Map<String, Runnable> debugEvents = Map.of(
+            "kick", () -> triggerRandom(KickRandom::triggerKick),
+            "eschkere", () -> triggerRandom(EschkereRandom::triggerEschkere),
+            "group", () -> triggerRandom(() -> GroupRandom.triggerGroup(this)),
+            "crash", () -> triggerRandom(() -> CrashRandom.triggerCrash(this)),
+            "message", () -> triggerRandom(() -> MessageRandom.triggerMessage(this, MESSAGES_SET)),
+            "vova", () -> triggerRandom(() -> VovaRandom.triggerVova(this)),
+            "storm", () -> triggerRandom(() -> StormRandom.triggerStorm(this))
+    );
+
     public void handleDebugRandom(CommandSender sender, String event) {
-        switch (event) {
-            case "kick":
-                triggerRandom(KickRandom::triggerKick, sender,
-                        "Событие с киком игрока вызвано.");
-                break;
-            case "eschkere":
-                triggerRandom(EschkereRandom::triggerEschkere, sender,
-                        "ЕЩКЕРЕЕЕ");
-            case "group":
-                triggerRandom(() -> GroupRandom.triggerGroup(this), sender,
-                        "Событие с выпадением блоков вызвано."
-                );
-                break;
-            case "crash":
-                triggerRandom(() -> CrashRandom.triggerCrash(this), sender,
-                        "Краш сервера вызван.");
-                break;
-            case "message":
-                triggerRandom(() -> MessageRandom.triggerMessage(this, MESSAGES_SET), sender,
-                        "Событие с рандомным сообщением вызвано."
-                );
-                break;
-            case "vova":
-                triggerRandom(() -> VovaRandom.triggerVova(this), sender,
-                        "Событие с облаком дыма вызвано"
-                );
-                break;
-            case "storm":
-                triggerRandom(() -> StormRandom.triggerStorm(this), sender,
-                        "Событие с грозой вызвано");
-            default:
-                break;
+        Runnable eventAction = debugEvents.get(event);
+        if (eventAction != null) {
+            eventAction.run();
+            if (sender != null) sender.sendMessage("Событие " + event + " выполнено.");
         }
     }
 
-    private void triggerRandom(Runnable eventTrigger, CommandSender sender, String message) {
+    private void triggerRandom(Runnable eventTrigger) {
         eventTrigger.run();
-        if (sender != null) {
-            sender.sendMessage(message);
-        }
     }
 
     private void executeRandomEvents() {
