@@ -157,7 +157,7 @@ public class WarpManager {
         }
     }
 
-    public List<String> getWarps(Player player) {
+    public List<String> getWarps(Player player, boolean includeCoordinates) {
         List<String> warps = new ArrayList<>();
         try (Connection connection = database.getConnection();
              PreparedStatement ps = connection.prepareStatement(
@@ -166,10 +166,14 @@ public class WarpManager {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String warpName = rs.getString("warp_name");
-                int x = rs.getInt("x");
-                int y = rs.getInt("y");
-                int z = rs.getInt("z");
-                warps.add(warpName + " (" + x + ", " + y + ", " + z + ")");
+                if (includeCoordinates) {
+                    int x = rs.getInt("x");
+                    int y = rs.getInt("y");
+                    int z = rs.getInt("z");
+                    warps.add(warpName + " (" + x + ", " + y + ", " + z + ")");
+                } else {
+                    warps.add(warpName);
+                }
             }
         } catch (SQLException e) {
             PlayerUtils.sendMessageToPlayer(player, Component.text("Ошибка при получении списка варпов.")
@@ -178,7 +182,6 @@ public class WarpManager {
         }
         return warps;
     }
-
 
     private boolean warpExists(Player player, String warpName) {
         try (Connection connection = database.getConnection();

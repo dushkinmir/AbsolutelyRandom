@@ -45,7 +45,7 @@ public class WarpCommandManager implements Listener {
                 .withArguments(new StringArgument("warpName")
                         .replaceSuggestions(ArgumentSuggestions.strings(info -> {
                             Player player = (Player) info.sender();
-                            return warpManager.getWarps(player).toArray(new String[0]);
+                            return warpManager.getWarps(player, false).toArray(new String[0]);
                         })))
                 .executesPlayer((player, args) -> {
                     String warpName = (String) args.get("warpName");
@@ -57,7 +57,7 @@ public class WarpCommandManager implements Listener {
                 .withArguments(new StringArgument("warpName")
                         .replaceSuggestions(ArgumentSuggestions.strings(info -> {
                             Player player = (Player) info.sender();
-                            return warpManager.getWarps(player).toArray(new String[0]);
+                            return warpManager.getWarps(player, false).toArray(new String[0]);
                         })))
                 .executesPlayer((player, args) -> {
                     String warpName = (String) args.get("warpName");
@@ -80,7 +80,7 @@ public class WarpCommandManager implements Listener {
 
         CommandAPICommand warpList = new CommandAPICommand("list")
                 .executesPlayer((player, args) -> {
-                    List<String> warps = warpManager.getWarps(player);
+                    List<String> warps = warpManager.getWarps(player, true);
 
                     if (warps.isEmpty()) {
                         PlayerUtils.sendMessageToPlayer(
@@ -89,7 +89,7 @@ public class WarpCommandManager implements Listener {
                                         .color(NamedTextColor.RED),
                                 PlayerUtils.MessageType.CHAT);
                     } else {
-                        String formattedWarps = String.join(", ", warps);
+                        String formattedWarps = String.join("\n ", warps);
                         PlayerUtils.sendMessageToPlayer(
                                 player,
                                 Component.text("Ваши варпы: " + formattedWarps)
