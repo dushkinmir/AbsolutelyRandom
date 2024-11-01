@@ -78,7 +78,7 @@ public class ConsentEvent implements Listener {
     }
 
     private Component createStyledText(String text, TextDecoration... decorations) {
-        return Component.text(text, NamedTextColor.GRAY, decorations);
+        return Component.text(text, NamedTextColor.DARK_PURPLE, decorations);
     }
 
     @EventHandler
