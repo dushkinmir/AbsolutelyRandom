@@ -5,7 +5,7 @@
 
     <groupId>ru.dushkinmir</groupId>
     <artifactId>AbsolutelyRandom</artifactId> <!-- Укажи свое имя артефакта -->
-    <version>1.2-ALPHA</version>
+    <version>1.3-ALPHA</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -60,6 +60,17 @@
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.Gecolay.GSit</groupId>
+            <artifactId>core</artifactId>
+            <version>LATEST</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>6.0.0</version> <!-- Проверь последнюю версию на Maven Central -->
+        </dependency>
     </dependencies>
 
     <build>
@@ -95,6 +106,10 @@
                         <relocation>
                             <pattern>org.json.simple</pattern>
                             <shadedPattern>ru.dushkinmir.json.simple</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.zaxxer.hikari</pattern>
+                            <shadedPattern>ru.dushkinmir.hikari</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>

@@ -37,7 +37,7 @@ public class VovaRandom implements Listener {
         List<Player> players = PlayerUtils.getOnlinePlayers();
         if (!players.isEmpty()) {
             Player randomPlayer = PlayerUtils.getRandomPlayer(players);
-            PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, true);
+            PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR);
             sendPlayerWorldMessage(randomPlayer);
             UUID playerUUID = randomPlayer.getUniqueId();
             scheduleEffects(plugin, playerUUID);
@@ -56,7 +56,7 @@ public class VovaRandom implements Listener {
             PlayerEffectTask task = new PlayerEffectTask(player);
             task.runTaskTimer(plugin, 0, 20L);
             if (!playerTasks.containsKey(playerUUID)) playerTasks.put(playerUUID, task);
-            PlayerUtils.sendMessageToPlayer(player, STINKY_PLAYER_MESSAGE, false);
+            PlayerUtils.sendMessageToPlayer(player, STINKY_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT);
         }
     }
 
@@ -93,7 +93,7 @@ public class VovaRandom implements Listener {
             Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
             UUID playerUUID = player.getUniqueId();
             if (isPlayerInWater(player)) {
-                PlayerUtils.sendMessageToPlayer(player, NORMAL_PLAYER_MESSAGE, false);
+                PlayerUtils.sendMessageToPlayer(player, NORMAL_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT);
                 this.cancel();
                 playerTasks.remove(playerUUID);
                 return;

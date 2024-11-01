@@ -19,7 +19,7 @@ public class KickRandom {
 
     private static void kickPlayer(Player player) {
         Component broadcastMessage = generateKickMessage(player.getName());
-        PlayerUtils.sendMessageToAllPlayers(broadcastMessage, false);
+        PlayerUtils.sendMessageToAllPlayers(broadcastMessage, PlayerUtils.MessageType.CHAT);
         PlayerUtils.kickPlayer(player, PLAYER_KICK_MESSAGE);
     }
 
