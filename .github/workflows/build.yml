@@ -27,18 +27,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Get version from VERSION
-        id: get_version
-        run: |
-          version=$(cat VERSION)
-          echo "New version: $version"
-          echo "VERSION=$version" >> $GITHUB_ENV
-
       - name: Update Version from VERSION.txt and Update plugin.yml
         id: bump_version
         run: |
-          # Read version from VERSION.txt
-          new_version=$(cat VERSION.txt)
+          # Read version from VERSION
+          new_version=$(cat VERSION)
           echo "New version: $new_version"
           
           # Check current version in pom.xml
