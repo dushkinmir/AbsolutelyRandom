@@ -132,7 +132,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
         List<Listener> events = Arrays.asList(
                 new DrugsEvent(),
-                new VovaRandom(this),
+                new StinkyRandom(this),
                 new ConsentEvent(this),
                 new WarpCommandManager(warpManager),
                 fissureHandler
@@ -195,7 +195,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             "group", () -> triggerRandom(() -> GroupRandom.triggerGroup(this)),
             "crash", () -> triggerRandom(() -> CrashRandom.triggerCrash(this)),
             "message", () -> triggerRandom(() -> MessageRandom.triggerMessage(this, MESSAGES_SET)),
-            "vova", () -> triggerRandom(() -> VovaRandom.triggerVova(this)),
+            "vova", () -> triggerRandom(() -> StinkyRandom.triggerVova(this)),
             "storm", () -> triggerRandom(() -> StormRandom.triggerStorm(this))
     );
 
@@ -220,7 +220,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         checkAndTriggerEvent(() -> GroupRandom.triggerGroup(this), groupChance);
         checkAndTriggerEvent(() -> CrashRandom.triggerCrash(this), crashChance);
         checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this, MESSAGES_SET), messageChance);
-        checkAndTriggerEvent(() -> VovaRandom.triggerVova(this), vovaChance);
+        checkAndTriggerEvent(() -> StinkyRandom.triggerVova(this), vovaChance);
         checkAndTriggerEvent(() -> StormRandom.triggerStorm(this), stormChance);
     }
 

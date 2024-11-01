@@ -19,7 +19,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.*;
 
-public class VovaRandom implements Listener {
+public class StinkyRandom implements Listener {
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!");
     private static final Component STINKY_PLAYER_MESSAGE = Component.text(
             "бля чел иди искупайся, а то от тебя весь сервер щарахается"
@@ -28,7 +28,7 @@ public class VovaRandom implements Listener {
 
     private final Plugin plugin;
 
-    public VovaRandom(Plugin plugin) {
+    public StinkyRandom(Plugin plugin) {
         this.plugin = plugin;
     }
 
@@ -45,7 +45,7 @@ public class VovaRandom implements Listener {
 
     private static void sendPlayerWorldMessage(Player player) {
         String message = "a %s теперь воняет".formatted(Objects.requireNonNull(player.getPlayer()).getName());
-        player.getWorld().sendMessage(Component.text(message));
+        PlayerUtils.sendMessageToAllPlayers(Component.text(message), PlayerUtils.MessageType.CHAT);
     }
 
     private static void scheduleEffects(Plugin plugin, UUID playerUUID) {
