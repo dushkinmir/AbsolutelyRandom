@@ -92,7 +92,7 @@ public class WarpCommandManager implements Listener {
                         String formattedWarps = String.join("\n ", warps);
                         PlayerUtils.sendMessageToPlayer(
                                 player,
-                                Component.text("Ваши варпы: " + formattedWarps)
+                                Component.text("Ваши варпы: \n" + formattedWarps)
                                         .color(NamedTextColor.GREEN),
                                 PlayerUtils.MessageType.CHAT);
                     }
