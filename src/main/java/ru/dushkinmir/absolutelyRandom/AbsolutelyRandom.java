@@ -16,7 +16,6 @@ import ru.dushkinmir.absolutelyRandom.randoms.*;
 import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.sex.SexEvent;
 import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
-import ru.dushkinmir.absolutelyRandom.utils.TelegramHelper;
 import ru.dushkinmir.absolutelyRandom.warp.WarpCommandManager;
 import ru.dushkinmir.absolutelyRandom.warp.WarpManager;
 
@@ -30,7 +29,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private static final Set<String> MESSAGES_SET = new HashSet<>();
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
     private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance, eschkereChance;
-    private boolean botEnabled;
     private AbsRandSQLiteDatabase database;
     private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
 
@@ -64,7 +62,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         }
         saveDefaultConfig();
         loadConfigValues();
-        enableTelegramHelper();
         startAutoReloadTask();
     }
 
@@ -94,7 +91,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         vovaChance = getConfig().getInt("vova-chance");
         stormChance = getConfig().getInt("storm-chance");
         eschkereChance = getConfig().getInt("eschkere-chance");
-        botEnabled = getConfig().getBoolean("telegram");
         reloadMessagesAsync();
     }
 
@@ -118,12 +114,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 reloadMessagesAsync(); // Автоматическая перезагрузка
             }
         }.runTaskTimer(this, 0L, RELOAD_INTERVAL);
-    }
-
-    private void enableTelegramHelper() {
-        if (botEnabled) {
-            TelegramHelper.startServer(this);
-        }
     }
 
     private void scheduleEventTrigger() {
