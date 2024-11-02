@@ -27,10 +27,9 @@ public class WarpCommandManager implements Listener {
 
     public WarpCommandManager(WarpManager warpManager) {
         this.warpManager = warpManager;
-        registerWarpCommands();
     }
 
-    private void registerWarpCommands() {
+    public void registerWarpCommands() {
         // Подкоманда "create"
         CommandAPICommand warpCreate = new CommandAPICommand("create")
                 .withArguments(new StringArgument("warpName"))

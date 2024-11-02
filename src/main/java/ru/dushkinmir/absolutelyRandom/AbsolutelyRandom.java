@@ -4,7 +4,8 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.*;
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
+import dev.jorel.commandapi.arguments.StringArgument;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -14,7 +15,7 @@ import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.randoms.*;
 import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
-import ru.dushkinmir.absolutelyRandom.sex.SexEvent;
+import ru.dushkinmir.absolutelyRandom.sex.SexCommandManager;
 import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
 import ru.dushkinmir.absolutelyRandom.warp.WarpCommandManager;
 import ru.dushkinmir.absolutelyRandom.warp.WarpManager;
@@ -31,6 +32,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance, eschkereChance;
     private AbsRandSQLiteDatabase database;
     private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
+    private WarpManager warpManager;
 
     public static void main(String[] args) {
         System.out.println("пидисят два!!!");
@@ -57,6 +59,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         scheduleEventTrigger();
         try {
             registerEvents();
+            warpManager = new WarpManager(database, this);
+            fissureHandler = new AnalFissureHandler(database, this);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -126,10 +130,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     }
 
     private void registerEvents() throws SQLException {
-        fissureHandler = new AnalFissureHandler(database, this);
-        WarpManager warpManager = new WarpManager(database, this);
-        new WarpCommandManager(warpManager);
-
         List<Listener> events = Arrays.asList(
                 new DrugsEvent(),
                 new StinkyRandom(this),
@@ -155,16 +155,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
     private void registerCommands() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
-        Argument<?> noSelectorSuggestions = new PlayerArgument("target")
-                .replaceSafeSuggestions(SafeSuggestions.suggest(info -> {
-                    // Получаем игрока, который вводит команду
-                    Player senderPlayer = (Player) info.sender();
-                    // Получаем всех онлайн игроков, кроме отправителя
-                    return this.getServer().getOnlinePlayers().stream()
-                            .filter(player -> !player.equals(senderPlayer)) // исключаем отправителя
-                            .toArray(Player[]::new);
-                }));
-
         new CommandAPICommand("debugevent")
                 .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
                 .withUsage("/debug <event>")
@@ -178,15 +168,10 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                     handleDebugRandom(sender, event);
                 })
                 .register(this);
-        new CommandAPICommand("sex")
-                .withArguments(noSelectorSuggestions)
-                .executes((sender, args) -> {
-                    if (sender instanceof Player player) {
-                        Player target = (Player) args.get("target");
-                        SexEvent.triggerSexEvent(player, target, this, fissureHandler);
-                    }
-                })
-                .register();
+        WarpCommandManager wcm = new WarpCommandManager(warpManager);
+        wcm.registerWarpCommands();
+        SexCommandManager scm = new SexCommandManager(fissureHandler, this);
+        scm.registerSexCommand();
     }
 
     private final Map<String, Runnable> debugEvents = Map.of(

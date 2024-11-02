@@ -13,7 +13,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.Random;
 
-public class SexEvent {
+public class SexManager {
 
     private static final CollisionManager collisionManager = new CollisionManager();
     private static final long SEX_DURATION = 15;
