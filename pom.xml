@@ -116,5 +116,6 @@
                 </executions>
             </plugin>
         </plugins>
+        <finalName>${project.artifactId}-original</finalName>
     </build>
 </project>
