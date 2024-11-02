@@ -58,9 +58,9 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         CommandAPI.onEnable();
         scheduleEventTrigger();
         try {
-            registerEvents();
             warpManager = new WarpManager(database, this);
             fissureHandler = new AnalFissureHandler(database, this);
+            registerEvents();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
