@@ -44,11 +44,9 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
     @Override
     public void onLoad() {
-        registerCommands();
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
         try {
             openDatabase();
-            warpManager = new WarpManager(database, this);
-            fissureHandler = new AnalFissureHandler(database, this);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -63,10 +61,13 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         startAutoReloadTask();
         scheduleEventTrigger();
         try {
+            warpManager = new WarpManager(database, this);
+            fissureHandler = new AnalFissureHandler(database, this);
             registerEvents();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        registerCommands();
     }
 
     @Override
@@ -154,7 +155,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     }
 
     private void registerCommands() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load with verbose output
         new CommandAPICommand("debugevent")
                 .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
                 .withUsage("/debug <event>")
