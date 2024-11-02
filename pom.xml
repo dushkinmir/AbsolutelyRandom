@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.dushkinmir</groupId>
-    <artifactId>AbsolutelyRandom</artifactId> <!-- Укажи свое имя артефакта -->
+    <artifactId>AbsolutelyRandom</artifactId>
     <version>1.4.2-ALPHA</version>
     <packaging>jar</packaging>
 
@@ -38,7 +38,7 @@
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.21.1-R0.1-SNAPSHOT</version>
-            <scope>provided</scope> <!-- Используется compileOnly в Gradle -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dev.jorel</groupId>
@@ -51,16 +51,6 @@
             <version>2.13.2</version>
         </dependency>
         <dependency>
-            <groupId>com.sparkjava</groupId>
-            <artifactId>spark-core</artifactId>
-            <version>2.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.Gecolay.GSit</groupId>
             <artifactId>core</artifactId>
             <version>LATEST</version>
@@ -69,7 +59,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>6.0.0</version> <!-- Проверь последнюю версию на Maven Central -->
+            <version>6.0.0</version>
         </dependency>
     </dependencies>
 
@@ -120,7 +110,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>${project.artifactId}-${project.version}</finalName>
+                            <finalName>${project.artifactId}</finalName>
                         </configuration>
                     </execution>
                 </executions>
