@@ -47,6 +47,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         registerCommands();
         try {
             openDatabase();
+            warpManager = new WarpManager(database, this);
+            fissureHandler = new AnalFissureHandler(database, this);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -56,17 +58,15 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     public void onEnable() {
         logPluginActivation();
         CommandAPI.onEnable();
+        saveDefaultConfig();
+        loadConfigValues();
+        startAutoReloadTask();
         scheduleEventTrigger();
         try {
-            warpManager = new WarpManager(database, this);
-            fissureHandler = new AnalFissureHandler(database, this);
             registerEvents();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        saveDefaultConfig();
-        loadConfigValues();
-        startAutoReloadTask();
     }
 
     @Override
@@ -169,8 +169,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 })
                 .register(this);
         WarpCommandManager wcm = new WarpCommandManager(warpManager);
-        wcm.registerWarpCommands();
         SexCommandManager scm = new SexCommandManager(fissureHandler, this);
+        wcm.registerWarpCommands();
         scm.registerSexCommand();
     }
 
