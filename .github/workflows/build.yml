@@ -45,12 +45,6 @@ jobs:
             # Update pom.xml with new version
             mvn versions:set -DnewVersion=$new_version -DgenerateBackupPoms=false
           
-            # Git commit and push changes
-            git config user.name "github-actions"
-            git config user.email "github-actions@github.com"
-            git add src/main/resources/plugin.yml pom.xml
-            git commit -m "Bump version to $new_version"
-          
             # Create and push tag
             git tag "$new_version"
             git push origin HEAD:main

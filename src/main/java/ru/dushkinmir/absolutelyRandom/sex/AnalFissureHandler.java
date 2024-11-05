@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.plugin.Plugin;
-import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
+import ru.dushkinmir.absolutelyRandom.utils.ARDatabaseManager;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.sql.Connection;
@@ -22,10 +22,10 @@ import java.util.Random;
 
 public class AnalFissureHandler implements Listener {
     private static final Random random = new Random();
-    private final AbsRandSQLiteDatabase database;
+    private final ARDatabaseManager database;
     private final Plugin plugin;
 
-    public AnalFissureHandler(AbsRandSQLiteDatabase database, Plugin plugin) throws SQLException {
+    public AnalFissureHandler(ARDatabaseManager database, Plugin plugin) throws SQLException {
         this.database = database;
         this.plugin = plugin;
         createTable();

@@ -17,16 +17,18 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.List;
 
-public class WarpCommandManager implements Listener {
+public class WarpCommandManager {
 
     private final WarpManager warpManager;
 
-    public WarpCommandManager(WarpManager warpManager) {
+    public WarpCommandManager(WarpManager warpManager, Plugin plugin) {
         this.warpManager = warpManager;
+        Bukkit.getServer().getPluginManager().registerEvents(new ConsentMenu(), plugin);
     }
 
     public void registerWarpCommands() {
@@ -68,10 +70,10 @@ public class WarpCommandManager implements Listener {
                 .executesPlayer((player, args) -> {
                     // Открыть меню подтверждения удаления всех варпов
                     Inventory deleteMenu = Bukkit.createInventory(null, 9, Component.text("Подтверждение", NamedTextColor.YELLOW));
-                    deleteMenu.setItem(3, createItemStack(Material.GREEN_WOOL, "Подтвердить", NamedTextColor.GREEN));
-                    deleteMenu.setItem(5, createItemStack(Material.RED_WOOL, "Отменить", NamedTextColor.RED));
+                    deleteMenu.setItem(3, new ConsentMenu().createItemStack(Material.GREEN_WOOL, "Подтвердить", NamedTextColor.GREEN));
+                    deleteMenu.setItem(5, new ConsentMenu().createItemStack(Material.RED_WOOL, "Отменить", NamedTextColor.RED));
                     // Создание блока дерева с информацией
-                    deleteMenu.setItem(4, createInfoItem());
+                    deleteMenu.setItem(4, new ConsentMenu().createInfoItem());
                     // Предупреждение для игрока
                     PlayerUtils.sendMessageToPlayer(player, Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
                     player.openInventory(deleteMenu);
@@ -109,45 +111,47 @@ public class WarpCommandManager implements Listener {
                 .register();
     }
 
-    // Метод для создания ItemStack
-    private ItemStack createItemStack(Material material, String displayName, NamedTextColor color) {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text(displayName, color, TextDecoration.BOLD));
-        item.setItemMeta(meta);
-        return item;
-    }
+    private class ConsentMenu implements Listener {
+        // Метод для создания ItemStack
+        private ItemStack createItemStack(Material material, String displayName, NamedTextColor color) {
+            ItemStack item = new ItemStack(material);
+            ItemMeta meta = item.getItemMeta();
+            meta.displayName(Component.text(displayName, color, TextDecoration.BOLD));
+            item.setItemMeta(meta);
+            return item;
+        }
 
-    // Метод для создания информационного предмета
-    private ItemStack createInfoItem() {
-        ItemStack item = new ItemStack(Material.OAK_LOG);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text("Внимание: валюта не будет возвращена!", NamedTextColor.RED, TextDecoration.BOLD));
-        meta.lore(List.of(
-                Component.text("Подтвердите удаление всех варпов.", NamedTextColor.YELLOW)
-        ));
-        item.setItemMeta(meta);
-        return item;
-    }
+        // Метод для создания информационного предмета
+        private ItemStack createInfoItem() {
+            ItemStack item = new ItemStack(Material.OAK_LOG);
+            ItemMeta meta = item.getItemMeta();
+            meta.displayName(Component.text("Внимание: валюта не будет возвращена!", NamedTextColor.RED, TextDecoration.BOLD));
+            meta.lore(List.of(
+                    Component.text("Подтвердите удаление всех варпов.", NamedTextColor.YELLOW)
+            ));
+            item.setItemMeta(meta);
+            return item;
+        }
 
-    // Обработка кликов в меню подтверждения удаления всех варпов
-    @EventHandler
-    public void handleInventoryClick(InventoryClickEvent event) {
-        if (event.getView().title().equals(Component.text(
-                "Подтверждение",
-                NamedTextColor.YELLOW))) {
-            Player player = (Player) event.getWhoClicked();
-            event.setCancelled(true);
-            ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+        // Обработка кликов в меню подтверждения удаления всех варпов
+        @EventHandler
+        public void handleInventoryClick(InventoryClickEvent event) {
+            if (event.getView().title().equals(Component.text(
+                    "Подтверждение",
+                    NamedTextColor.YELLOW))) {
+                Player player = (Player) event.getWhoClicked();
+                event.setCancelled(true);
+                ItemStack clickedItem = event.getCurrentItem();
+                if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
-            // Обработка нажатия на кнопки
-            if (clickedItem.getType() == Material.GREEN_WOOL) {
-                warpManager.deleteAllWarps(player);
-                player.closeInventory();
-            } else if (clickedItem.getType() == Material.RED_WOOL) {
-                player.closeInventory();
-                PlayerUtils.sendMessageToPlayer(player, Component.text("Удаление всех варпов отменено.").color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
+                // Обработка нажатия на кнопки
+                if (clickedItem.getType() == Material.GREEN_WOOL) {
+                    warpManager.deleteAllWarps(player);
+                    player.closeInventory();
+                } else if (clickedItem.getType() == Material.RED_WOOL) {
+                    player.closeInventory();
+                    PlayerUtils.sendMessageToPlayer(player, Component.text("Удаление всех варпов отменено.").color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
+                }
             }
         }
     }

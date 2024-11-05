@@ -8,11 +8,11 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class AbsRandSQLiteDatabase {
+public class ARDatabaseManager {
     private final Plugin plugin;
     private HikariDataSource dataSource;
 
-    public AbsRandSQLiteDatabase(Plugin plugin) {
+    public ARDatabaseManager(Plugin plugin) {
         this.plugin = plugin;
         setupDataSource();
     }

@@ -16,7 +16,7 @@ import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.randoms.*;
 import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.sex.SexCommandManager;
-import ru.dushkinmir.absolutelyRandom.utils.AbsRandSQLiteDatabase;
+import ru.dushkinmir.absolutelyRandom.utils.ARDatabaseManager;
 import ru.dushkinmir.absolutelyRandom.warp.WarpCommandManager;
 import ru.dushkinmir.absolutelyRandom.warp.WarpManager;
 
@@ -30,7 +30,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private static final Set<String> MESSAGES_SET = new HashSet<>();
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
     private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance, eschkereChance;
-    private AbsRandSQLiteDatabase database;
+    private ARDatabaseManager database;
     private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
     private WarpManager warpManager;
 
@@ -55,7 +55,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         logPluginActivation();
-        CommandAPI.onEnable();
         saveDefaultConfig();
         loadConfigValues();
         startAutoReloadTask();
@@ -74,18 +73,19 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     public void onDisable() {
         closeDatabase();
         logPluginDeactivation();
-        CommandAPI.onDisable();
     }
 
     private void logPluginActivation() {
         getLogger().info("AbsolutelyRandomPlugin has been enabled!");
         getLogger().info("Пусть на вашем сервере царит рандом!!");
+        CommandAPI.onEnable();
     }
 
     private void logPluginDeactivation() {
         getLogger().info("AbsolutelyRandomPlugin has been disabled!");
         PLAYER_TASKS.values().forEach(BukkitRunnable::cancel);
         PLAYER_TASKS.clear();
+        CommandAPI.onDisable();
     }
 
     private void loadConfigValues() {
@@ -135,7 +135,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 new DrugsEvent(),
                 new StinkyRandom(this),
                 new ConsentEvent(this),
-                new WarpCommandManager(warpManager),
                 fissureHandler
         );
 
@@ -145,7 +144,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     }
 
     private void openDatabase() throws SQLException {
-        database = new AbsRandSQLiteDatabase(this); // Создаем экземпляр базы данных
+        database = new ARDatabaseManager(this); // Создаем экземпляр базы данных
     }
 
     private void closeDatabase() {
@@ -168,7 +167,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                     handleDebugRandom(sender, event);
                 })
                 .register(this);
-        WarpCommandManager wcm = new WarpCommandManager(warpManager);
+        WarpCommandManager wcm = new WarpCommandManager(warpManager, this);
         SexCommandManager scm = new SexCommandManager(fissureHandler, this);
         wcm.registerWarpCommands();
         scm.registerSexCommand();
