@@ -24,9 +24,10 @@ public class CrashRandom {
 
     public static void triggerCrash(Plugin plugin) {
         PlayerUtils.kickAllPlayers(MAINTENANCE_KICK_MSG);
+        Component oldMotd = Bukkit.getServer().motd();
         enableMaintenanceMode();
         registerJoinListener(plugin);
-        scheduleServerRestart(plugin);
+        scheduleServerRestart(plugin, oldMotd);
     }
 
     private static void enableMaintenanceMode() {
@@ -56,8 +57,7 @@ public class CrashRandom {
         }
     }
 
-    private static void scheduleServerRestart(Plugin plugin) {
-        Component oldMotd = Bukkit.getServer().motd();
+    private static void scheduleServerRestart(Plugin plugin, Component oldMotd) {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             isMaintenanceMode = false;
             restoreMotd(oldMotd);

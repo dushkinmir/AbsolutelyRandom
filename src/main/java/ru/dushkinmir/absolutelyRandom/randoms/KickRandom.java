@@ -12,9 +12,7 @@ public class KickRandom {
     private static final NamedTextColor BROADCAST_KICK_MESSAGE_COLOR = NamedTextColor.YELLOW;
 
     public static void triggerKick() {
-        if (!PlayerUtils.getOnlinePlayers().isEmpty()) {
-            kickPlayer(PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers()));
-        }
+        kickPlayer(PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers()));
     }
 
     private static void kickPlayer(Player player) {

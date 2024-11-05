@@ -175,7 +175,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
     private final Map<String, Runnable> debugEvents = Map.of(
             "kick", () -> triggerRandom(KickRandom::triggerKick),
-            "eschkere", () -> triggerRandom(EschkereRandom::triggerEschkere),
+            "eschkere", () -> triggerRandom(PrankRandom::triggerPrank),
             "group", () -> triggerRandom(() -> GroupRandom.triggerGroup(this)),
             "crash", () -> triggerRandom(() -> CrashRandom.triggerCrash(this)),
             "message", () -> triggerRandom(() -> MessageRandom.triggerMessage(this, MESSAGES_SET)),
@@ -200,7 +200,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         if (players.isEmpty()) return;
 
         checkAndTriggerEvent(KickRandom::triggerKick, kickChance);
-        checkAndTriggerEvent(EschkereRandom::triggerEschkere, eschkereChance);
+        checkAndTriggerEvent(PrankRandom::triggerPrank, eschkereChance);
         checkAndTriggerEvent(() -> GroupRandom.triggerGroup(this), groupChance);
         checkAndTriggerEvent(() -> CrashRandom.triggerCrash(this), crashChance);
         checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this, MESSAGES_SET), messageChance);
