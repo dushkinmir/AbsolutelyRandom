@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import ru.dushkinmir.absolutelyRandom.betters.CraftingRecipe;
+import ru.dushkinmir.absolutelyRandom.betters.PlayerChatHandler;
 import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.randoms.*;
@@ -30,7 +32,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
     private static final Set<String> MESSAGES_SET = new HashSet<>();
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
-    private Map<String, Integer> eventChances = new HashMap<>();
+    private final Map<String, Integer> eventChances = new HashMap<>();
     private ARDatabaseManager database;
     private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
     private WarpManager warpManager;
@@ -144,11 +146,13 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 new DrugsEvent(),
                 new StinkyRandom(this),
                 new ConsentEvent(this),
+                new PlayerChatHandler(this),
                 fissureHandler
         );
         for (Listener event : events) {
             getServer().getPluginManager().registerEvents(event, this);
         }
+        new CraftingRecipe(this);
     }
 
     private void openDatabase() throws SQLException {

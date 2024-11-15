@@ -1,52 +1,74 @@
 package ru.dushkinmir.absolutelyRandom.betters;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class PlayerChatHandler implements Listener {
+    private final Plugin plugin;
+    private static final TextComponent RADIO_NAME = Component.text("Radio", NamedTextColor.GOLD);
 
-    private final JavaPlugin plugin;
-
-    public PlayerChatHandler(JavaPlugin plugin) {
+    public PlayerChatHandler(Plugin plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent event) {
+    public void onPlayerChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
-        String message = event.getMessage();
+        String message = LegacyComponentSerializer.legacySection().serialize(event.message());
 
-        // Check if the player is holding the special item (radio)
-        ItemStack itemInHand = player.getInventory().getItemInMainHand();
-        if (itemInHand != null && itemInHand.getType() == Material.NOTE_BLOCK) { // "NOTE_BLOCK" as the radio
-            event.setFormat(player.getName() + ChatColor.RESET + ": " + message);
-            return; // Let the chat message go through as usual
+        // Игнорировать сообщения от плагинов, сервера и команды
+        if (message.startsWith("/") || event.isCancelled()) {
+            return;
         }
 
-        // Cancel the original chat event to prevent it from being broadcast
+        // Проверка есть ли у игрока радио
+        ItemStack heldItem = player.getInventory().getItemInMainHand();
+        if (heldItem.hasItemMeta() && heldItem.getItemMeta().hasDisplayName()
+                && RADIO_NAME.equals(heldItem.getItemMeta().displayName())) {
+            return;
+        }
+
+        // Отменить отправку сообщения в чат
         event.setCancelled(true);
 
-        // Display the message above the player's head
-        player.setCustomName(ChatColor.YELLOW + player.getName() + ChatColor.RESET + ": " + message);
-        player.setCustomNameVisible(true);
+        // Отобразить сообщение над головой игрока
+        sendActionBar(player, message);
 
-        // Calculate the display time (n)
-        int displayTime = message.length() > 15 ? (int) (message.length() * 1.5) : 15;
+        // Прокручивание длинных сообщений
+        if (message.length() > 64) {
+            scrollLongMessage(player, message);
+        }
+    }
 
-        // Schedule task to reset the player's name after n seconds
+    // Метод для отображения сообщения над головой игрока
+    private void sendActionBar(Player player, String message) {
+        player.sendActionBar(LegacyComponentSerializer.legacySection().deserialize(message));
+    }
+
+    // Метод для прокрутки длинных сообщений
+    private void scrollLongMessage(Player player, String message) {
+        int messageLength = message.length();
         new BukkitRunnable() {
+            int offset = 0;
+
             @Override
             public void run() {
-                player.setCustomName(player.getName());
-                player.setCustomNameVisible(false);
+                if (offset + 64 >= messageLength) {
+                    this.cancel();
+                } else {
+                    sendActionBar(player, message.substring(offset, offset + 64));
+                    offset++;
+                }
             }
-        }.runTaskLater(plugin, displayTime * 20L); // Convert seconds to ticks
+        }.runTaskTimer(plugin, 0L, 20L); // 1 сообщение в секунду
     }
 }
