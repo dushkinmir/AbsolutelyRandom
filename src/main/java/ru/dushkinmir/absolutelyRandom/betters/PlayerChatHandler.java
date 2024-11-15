@@ -5,6 +5,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.Location;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,7 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class PlayerChatHandler implements Listener {
     private final Plugin plugin;
-    private static final TextComponent RADIO_NAME = Component.text("Radio", NamedTextColor.GOLD);
+    private static final TextComponent RADIO_NAME = Component.text("Радио", NamedTextColor.GOLD);
 
     public PlayerChatHandler(Plugin plugin) {
         this.plugin = plugin;
@@ -25,50 +28,94 @@ public class PlayerChatHandler implements Listener {
         Player player = event.getPlayer();
         String message = LegacyComponentSerializer.legacySection().serialize(event.message());
 
-        // Игнорировать сообщения от плагинов, сервера и команды
-        if (message.startsWith("/") || event.isCancelled()) {
+        if (isInvalidMessage(event, message) || playerHasRadio(player)) {
             return;
         }
 
-        // Проверка есть ли у игрока радио
-        ItemStack heldItem = player.getInventory().getItemInMainHand();
-        if (heldItem.hasItemMeta() && heldItem.getItemMeta().hasDisplayName()
-                && RADIO_NAME.equals(heldItem.getItemMeta().displayName())) {
-            return;
-        }
-
-        // Отменить отправку сообщения в чат
         event.setCancelled(true);
+        ArmorStand armorStand = createArmorStand(player, message);
 
-        // Отобразить сообщение над головой игрока
-        sendActionBar(player, message);
-
-        // Прокручивание длинных сообщений
         if (message.length() > 64) {
-            scrollLongMessage(player, message);
+            new MessageScroller(plugin).scrollMessageAboveHead(armorStand, message);
+        } else {
+            removeArmorStandLater(armorStand, 60L);
         }
+
+        new ArmorStandFollower(plugin).followPlayer(player, armorStand, 1L);
     }
 
-    // Метод для отображения сообщения над головой игрока
-    private void sendActionBar(Player player, String message) {
-        player.sendActionBar(LegacyComponentSerializer.legacySection().deserialize(message));
+    private boolean isInvalidMessage(AsyncChatEvent event, String message) {
+        return message.startsWith("/") || event.isCancelled();
     }
 
-    // Метод для прокрутки длинных сообщений
-    private void scrollLongMessage(Player player, String message) {
-        int messageLength = message.length();
+    private boolean playerHasRadio(Player player) {
+        ItemStack heldItem = player.getInventory().getItemInMainHand();
+        return heldItem.hasItemMeta()
+                && heldItem.getItemMeta().hasDisplayName()
+                && RADIO_NAME.equals(heldItem.getItemMeta().displayName());
+    }
+
+    private ArmorStand createArmorStand(Player player, String message) {
+        Location location = player.getLocation().add(0, 2.25, 0);
+        ArmorStand armorStand = (ArmorStand) player.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+        armorStand.setInvisible(true);
+        armorStand.customName(Component.text(message));
+        armorStand.setCustomNameVisible(true);
+        armorStand.setMarker(true);
+        armorStand.setGravity(false);
+        return armorStand;
+    }
+
+    private void removeArmorStandLater(ArmorStand armorStand, long delay) {
         new BukkitRunnable() {
-            int offset = 0;
-
             @Override
             public void run() {
-                if (offset + 64 >= messageLength) {
-                    this.cancel();
-                } else {
-                    sendActionBar(player, message.substring(offset, offset + 64));
-                    offset++;
-                }
+                armorStand.remove();
             }
-        }.runTaskTimer(plugin, 0L, 20L); // 1 сообщение в секунду
+        }.runTaskLater(plugin, delay);
+    }
+
+    private record ArmorStandFollower(Plugin plugin) {
+
+        void followPlayer(Player player, ArmorStand armorStand, long interval) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (!armorStand.isValid() || !player.isOnline()) {
+                        armorStand.remove();
+                        this.cancel();
+                        return;
+                    }
+                    Location location = player.getLocation().add(0, 2.25, 0);
+                    armorStand.teleport(location);
+                }
+            }.runTaskTimer(plugin, 0L, interval);
+        }
+    }
+
+    private record MessageScroller(Plugin plugin) {
+
+        void scrollMessageAboveHead(ArmorStand armorStand, String message) {
+            int messageLength = message.length();
+            new BukkitRunnable() {
+                int offset = 0;
+
+                @Override
+                public void run() {
+                    if (offset + 64 >= messageLength) {
+                        this.cancel();
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                armorStand.remove();
+                            }
+                        }.runTaskLater(plugin, 20L);
+                    } else {
+                        armorStand.customName(Component.text(message.substring(offset, Math.min(offset + 64, messageLength))));
+                        offset++;
+                    }
+                }
+            }.runTaskTimer(plugin, 0L, 10L);
+        }
     }
 }

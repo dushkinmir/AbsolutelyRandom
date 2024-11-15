@@ -78,6 +78,11 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     public void onDisable() {
         closeDatabase();
         logPluginDeactivation();
+        try {
+            wsserver.stop();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void enableWebSocketServer() {
