@@ -33,15 +33,20 @@ public class PlayerChatHandler implements Listener {
         }
 
         event.setCancelled(true);
-        ArmorStand armorStand = createArmorStand(player, message);
 
-        if (message.length() > 64) {
-            new MessageScroller(plugin).scrollMessageAboveHead(armorStand, message);
-        } else {
-            removeArmorStandLater(armorStand, 60L);
-        }
-
-        new ArmorStandFollower(plugin).followPlayer(player, armorStand, 1L);
+        // Переносим создание ArmorStand в основной поток
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                ArmorStand armorStand = createArmorStand(player, message);
+                if (message.length() > 64) {
+                    new MessageScroller(plugin).scrollMessageAboveHead(armorStand, message);
+                } else {
+                    removeArmorStandLater(armorStand, 80L);
+                }
+                new ArmorStandFollower(plugin).followPlayer(player, armorStand, 1L);
+            }
+        }.runTask(plugin);
     }
 
     private boolean isInvalidMessage(AsyncChatEvent event, String message) {
@@ -76,7 +81,6 @@ public class PlayerChatHandler implements Listener {
     }
 
     private record ArmorStandFollower(Plugin plugin) {
-
         void followPlayer(Player player, ArmorStand armorStand, long interval) {
             new BukkitRunnable() {
                 @Override
@@ -94,7 +98,6 @@ public class PlayerChatHandler implements Listener {
     }
 
     private record MessageScroller(Plugin plugin) {
-
         void scrollMessageAboveHead(ArmorStand armorStand, String message) {
             int messageLength = message.length();
             new BukkitRunnable() {
@@ -115,7 +118,7 @@ public class PlayerChatHandler implements Listener {
                         offset++;
                     }
                 }
-            }.runTaskTimer(plugin, 0L, 10L);
+            }.runTaskTimer(plugin, 0L, 7L);
         }
     }
 }
