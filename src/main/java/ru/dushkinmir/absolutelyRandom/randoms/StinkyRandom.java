@@ -32,7 +32,7 @@ public class StinkyRandom implements Listener {
         this.plugin = plugin;
     }
 
-    public static void triggerVova(Plugin plugin) {
+    public static void triggerStinky(Plugin plugin) {
         List<Player> players = PlayerUtils.getOnlinePlayers();
         if (!players.isEmpty()) {
             Player randomPlayer = PlayerUtils.getRandomPlayer(players);

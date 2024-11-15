@@ -2,7 +2,6 @@ package ru.dushkinmir.absolutelyRandom.randoms;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -23,17 +22,10 @@ public class PrankRandom {
 
     public static void triggerPrank() {
         Player loshara = PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers());
-        int prankType = random.nextInt(3);
-        switch (prankType) {
-            case 0:
-                eschkere(loshara);
-                break;
-            case 1:
-                playRandomSound(loshara);
-                spawnParticles(loshara.getLocation());
-                break;
-            case 2:
-                sendRickrollMessage();
+        if (random.nextBoolean()) {
+            eschkere(loshara);
+        } else {
+            spookyScarySkeleton(loshara);
         }
     }
 
@@ -42,24 +34,17 @@ public class PrankRandom {
         target.getWorld().createExplosion(target, 2F, false, false);
 
         Component message = Component.text("ЕЩКЕРЕЕЕ!!! 1488", NamedTextColor.DARK_GREEN);
-        PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.CHAT);
-        target.showTitle(Title.title(message, message));
-        PlayerUtils.sendMessageToAllPlayers(message, PlayerUtils.MessageType.ACTION_BAR);
+
+        PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.CHAT);
+        PlayerUtils.sendMessageToPlayer(target, message, message);
+        PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.ACTION_BAR);
     }
 
-    private static void playRandomSound(Player target) {
+    private static void spookyScarySkeleton(Player target) {
         Location location = target.getLocation();
         Sound sound = sounds[random.nextInt(sounds.length)];
 
         target.getWorld().playSound(location, sound, 1.0f, 1.0f);
-    }
-
-    private static void spawnParticles(Location location) {
         location.getWorld().spawnParticle(Particle.EXPLOSION, location, 20);
-    }
-
-    private static void sendRickrollMessage() {
-        Component rickrollMessage = Component.text("RICKROLL!!!", NamedTextColor.GOLD);
-        PlayerUtils.sendMessageToAllPlayers(rickrollMessage, PlayerUtils.MessageType.CHAT);
     }
 }

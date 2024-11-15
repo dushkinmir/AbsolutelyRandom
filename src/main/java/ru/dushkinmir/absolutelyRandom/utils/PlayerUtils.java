@@ -29,15 +29,13 @@ public class PlayerUtils {
             case CHAT:
                 player.sendMessage(message);
                 break;
-            case TITLE:
-                player.showTitle(Title.title(message, Component.empty()));
-                break;
-            case SUBTITLE:
-                player.showTitle(Title.title(Component.empty(), message));
-                break;
             default:
                 throw new IllegalArgumentException("Unknown message type: " + type);
         }
+    }
+
+    public static void sendMessageToPlayer(Player player, Component message, Component message1) {
+        player.showTitle(Title.title(message, message1));
     }
 
     public static void sendMessageToAllPlayers(Component message, MessageType type) {
@@ -48,9 +46,7 @@ public class PlayerUtils {
 
     public enum MessageType {
         ACTION_BAR,
-        CHAT,
-        TITLE,
-        SUBTITLE
+        CHAT
     }
 
     public static void kickPlayer(Player player, Component reason) {

@@ -17,6 +17,7 @@ import ru.dushkinmir.absolutelyRandom.randoms.*;
 import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.sex.SexCommandManager;
 import ru.dushkinmir.absolutelyRandom.utils.ARDatabaseManager;
+import ru.dushkinmir.absolutelyRandom.utils.ARWebSocketServer;
 import ru.dushkinmir.absolutelyRandom.warp.WarpCommandManager;
 import ru.dushkinmir.absolutelyRandom.warp.WarpManager;
 
@@ -29,10 +30,11 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
     private static final Set<String> MESSAGES_SET = new HashSet<>();
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
-    private int kickChance, groupChance, crashChance, messageChance, vovaChance, stormChance, eschkereChance;
+    private int kickChance, groupChance, crashChance, messageChance, stinkyChance, stormChance, prankChance;
     private ARDatabaseManager database;
     private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
     private WarpManager warpManager;
+    private ARWebSocketServer wsserver;
 
     public static void main(String[] args) {
         System.out.println("пидисят два!!!");
@@ -59,6 +61,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         loadConfigValues();
         startAutoReloadTask();
         scheduleEventTrigger();
+        enableWebSocketServer();
         try {
             warpManager = new WarpManager(database, this);
             fissureHandler = new AnalFissureHandler(database, this);
@@ -73,6 +76,16 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     public void onDisable() {
         closeDatabase();
         logPluginDeactivation();
+    }
+
+    private void enableWebSocketServer() {
+        String serverIp = this.getServer().getIp().isEmpty() ? "localhost" : this.getServer().getIp();
+        int port = this.getServer().getPort() + 1;
+
+        wsserver = new ARWebSocketServer(serverIp, port, getLogger());
+        wsserver.start();
+
+        getLogger().info("WebSocket сервер запущен.");
     }
 
     private void logPluginActivation() {
@@ -93,10 +106,9 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         groupChance = getConfig().getInt("group-chance");
         crashChance = getConfig().getInt("crash-chance");
         messageChance = getConfig().getInt("message-chance");
-        vovaChance = getConfig().getInt("vova-chance");
+        stinkyChance = getConfig().getInt("vova-chance");
         stormChance = getConfig().getInt("storm-chance");
-        eschkereChance = getConfig().getInt("eschkere-chance");
-        reloadMessagesAsync();
+        prankChance = getConfig().getInt("eschkere-chance");
     }
 
     private void reloadMessagesAsync() {
@@ -130,7 +142,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         }.runTaskTimer(this, 0, SCHEDULE_PERIOD);
     }
 
-    private void registerEvents() throws SQLException {
+    private void registerEvents() {
         List<Listener> events = Arrays.asList(
                 new DrugsEvent(),
                 new StinkyRandom(this),
@@ -179,7 +191,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             "group", () -> triggerRandom(() -> GroupRandom.triggerGroup(this)),
             "crash", () -> triggerRandom(() -> CrashRandom.triggerCrash(this)),
             "message", () -> triggerRandom(() -> MessageRandom.triggerMessage(this, MESSAGES_SET)),
-            "vova", () -> triggerRandom(() -> StinkyRandom.triggerVova(this)),
+            "stinky", () -> triggerRandom(() -> StinkyRandom.triggerStinky(this)),
             "storm", () -> triggerRandom(() -> StormRandom.triggerStorm(this))
     );
 
@@ -187,7 +199,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         Runnable eventAction = debugEvents.get(event);
         if (eventAction != null) {
             eventAction.run();
-            if (sender != null) sender.sendMessage("Событие " + event + " выполнено.");
+            if (sender != null) sender.sendMessage("[DEBUG] Событие " + event + " выполнено.");
         }
     }
 
@@ -200,11 +212,11 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         if (players.isEmpty()) return;
 
         checkAndTriggerEvent(KickRandom::triggerKick, kickChance);
-        checkAndTriggerEvent(PrankRandom::triggerPrank, eschkereChance);
+        checkAndTriggerEvent(PrankRandom::triggerPrank, prankChance);
         checkAndTriggerEvent(() -> GroupRandom.triggerGroup(this), groupChance);
         checkAndTriggerEvent(() -> CrashRandom.triggerCrash(this), crashChance);
         checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this, MESSAGES_SET), messageChance);
-        checkAndTriggerEvent(() -> StinkyRandom.triggerVova(this), vovaChance);
+        checkAndTriggerEvent(() -> StinkyRandom.triggerStinky(this), stinkyChance);
         checkAndTriggerEvent(() -> StormRandom.triggerStorm(this), stormChance);
     }
 
