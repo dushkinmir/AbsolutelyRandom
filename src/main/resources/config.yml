@@ -1,10 +1,11 @@
-kick-chance: 3000
-group-chance: 500
-crash-chance: 10000
-message-chance: 1000
-vova-chance: 1000
-storm-chance: 5000
-eschkere-chance: 5000
+chances:
+  kick-chance: 3000
+  group-chance: 500
+  crash-chance: 10000
+  message-chance: 1000
+  vova-chance: 1000
+  storm-chance: 5000
+  eschkere-chance: 5000
 random-messages:
   - "Пэрсик упал в черный квадрат Малевича."
   - "Я не щавель, я подорожник с размахом крыльев!"

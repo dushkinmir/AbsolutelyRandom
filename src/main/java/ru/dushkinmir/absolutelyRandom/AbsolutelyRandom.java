@@ -30,7 +30,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>();
     private static final Set<String> MESSAGES_SET = new HashSet<>();
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Каждые 5 минут
-    private int kickChance, groupChance, crashChance, messageChance, stinkyChance, stormChance, prankChance;
+    private Map<String, Integer> eventChances = new HashMap<>();
     private ARDatabaseManager database;
     private AnalFissureHandler fissureHandler; // Объявляем как нестатическое поле
     private WarpManager warpManager;
@@ -81,10 +81,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private void enableWebSocketServer() {
         String serverIp = this.getServer().getIp().isEmpty() ? "localhost" : this.getServer().getIp();
         int port = this.getServer().getPort() + 1;
-
         wsserver = new ARWebSocketServer(serverIp, port, getLogger());
         wsserver.start();
-
         getLogger().info("WebSocket сервер запущен.");
     }
 
@@ -102,19 +100,18 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     }
 
     private void loadConfigValues() {
-        kickChance = getConfig().getInt("kick-chance");
-        groupChance = getConfig().getInt("group-chance");
-        crashChance = getConfig().getInt("crash-chance");
-        messageChance = getConfig().getInt("message-chance");
-        stinkyChance = getConfig().getInt("vova-chance");
-        stormChance = getConfig().getInt("storm-chance");
-        prankChance = getConfig().getInt("eschkere-chance");
+        eventChances.put("kick", getConfig().getInt("chances.kick-chance", -1));
+        eventChances.put("group", getConfig().getInt("chances.group-chance", -1));
+        eventChances.put("crash", getConfig().getInt("chances.crash-chance", -1));
+        eventChances.put("message", getConfig().getInt("chances.message-chance", -1));
+        eventChances.put("stinky", getConfig().getInt("chances.vova-chance", -1)); // vova -> stinky
+        eventChances.put("storm", getConfig().getInt("chances.storm-chance", -1));
+        eventChances.put("prank", getConfig().getInt("chances.eschkere-chance", -1)); // eschkere -> prank
     }
 
     private void reloadMessagesAsync() {
         this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
             List<String> configMessages = getConfig().getStringList("random-messages");
-
             if (!configMessages.isEmpty() && !configMessages.equals(new ArrayList<>(MESSAGES_SET))) {
                 synchronized (MESSAGES_SET) {
                     MESSAGES_SET.clear();
@@ -149,7 +146,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 new ConsentEvent(this),
                 fissureHandler
         );
-
         for (Listener event : events) {
             getServer().getPluginManager().registerEvents(event, this);
         }
@@ -199,7 +195,9 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         Runnable eventAction = debugEvents.get(event);
         if (eventAction != null) {
             eventAction.run();
-            if (sender != null) sender.sendMessage("[DEBUG] Событие " + event + " выполнено.");
+            if (sender != null) {
+                sender.sendMessage("[DEBUG] Событие " + event + " выполнено.");
+            }
         }
     }
 
@@ -211,17 +209,18 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         List<Player> players = new ArrayList<>(getServer().getOnlinePlayers());
         if (players.isEmpty()) return;
 
-        checkAndTriggerEvent(KickRandom::triggerKick, kickChance);
-        checkAndTriggerEvent(PrankRandom::triggerPrank, prankChance);
-        checkAndTriggerEvent(() -> GroupRandom.triggerGroup(this), groupChance);
-        checkAndTriggerEvent(() -> CrashRandom.triggerCrash(this), crashChance);
-        checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this, MESSAGES_SET), messageChance);
-        checkAndTriggerEvent(() -> StinkyRandom.triggerStinky(this), stinkyChance);
-        checkAndTriggerEvent(() -> StormRandom.triggerStorm(this), stormChance);
+        checkAndTriggerEvent(KickRandom::triggerKick, "kick");
+        checkAndTriggerEvent(PrankRandom::triggerPrank, "prank");
+        checkAndTriggerEvent(() -> GroupRandom.triggerGroup(this), "group");
+        checkAndTriggerEvent(() -> CrashRandom.triggerCrash(this), "crash");
+        checkAndTriggerEvent(() -> MessageRandom.triggerMessage(this, MESSAGES_SET), "message");
+        checkAndTriggerEvent(() -> StinkyRandom.triggerStinky(this), "stinky");
+        checkAndTriggerEvent(() -> StormRandom.triggerStorm(this), "storm");
     }
 
-    private void checkAndTriggerEvent(Runnable eventTrigger, int eventChance) {
-        if (RANDOM_GENERATOR.nextInt(eventChance) == 0) {
+    private void checkAndTriggerEvent(Runnable eventTrigger, String eventKey) {
+        Integer eventChance = eventChances.get(eventKey);
+        if (eventChance != null && eventChance > 0 && RANDOM_GENERATOR.nextInt(eventChance) == 0) {
             eventTrigger.run();
         }
     }
