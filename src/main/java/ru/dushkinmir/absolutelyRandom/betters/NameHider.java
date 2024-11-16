@@ -36,7 +36,7 @@ public class NameHider implements Listener {
                     plugin.getLogger().severe(e.getMessage());
                 }
             }
-        }.runTaskTimer(plugin, 0L, 20L); // Обновление каждые 20 тиков (1 секунда)
+        }.runTaskTimer(plugin, 0L, 3L); // Обновление каждые 20 тиков (1 секунда)
     }
 
     void updateVisibility() {

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -23,13 +24,29 @@ public class PlayerChatHandler implements Listener {
         this.plugin = plugin;
     }
 
+    private void decreaseRadioDurability(Player player) {
+        ItemStack radio = player.getInventory().getItemInMainHand();
+        if (radio.getItemMeta() instanceof Damageable damageable) {
+            if (radio.getType().getMaxDurability() - damageable.getDamage() > 1) {
+                damageable.setDamage(damageable.getDamage() + 1);
+                radio.setItemMeta(damageable);
+            } else {
+                player.getInventory().setItemInMainHand(null); // Remove item if it's out of durability
+            }
+        }
+    }
+
     @EventHandler
     public void onPlayerChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         String message = LegacyComponentSerializer.legacySection().serialize(event.message());
 
-        if (isInvalidMessage(event, message) || playerHasRadio(player)) {
+        if (isInvalidMessage(event, message)) {
             return;
+        }
+
+        if (playerHasRadio(player)) {
+            decreaseRadioDurability(player);
         }
 
         event.setCancelled(true);
@@ -39,7 +56,7 @@ public class PlayerChatHandler implements Listener {
             @Override
             public void run() {
                 ArmorStand armorStand = createArmorStand(player, message);
-                if (message.length() > 64) {
+                if (message.length() > 30) {
                     new MessageScroller(plugin).scrollMessageAboveHead(armorStand, message);
                 } else {
                     removeArmorStandLater(armorStand, 80L);
