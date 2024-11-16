@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.betters.CraftingRecipe;
+import ru.dushkinmir.absolutelyRandom.betters.NameHider;
 import ru.dushkinmir.absolutelyRandom.betters.PlayerChatHandler;
 import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
@@ -151,6 +152,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 new DrugsEvent(),
                 new StinkyRandom(this),
                 new ConsentEvent(this),
+                new NameHider(this),
                 new PlayerChatHandler(this),
                 fissureHandler
         );
