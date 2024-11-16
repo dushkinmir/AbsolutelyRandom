@@ -91,7 +91,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         int port = this.getServer().getPort() + 1;
         wsserver = new ARWebSocketServer(serverIp, port, getLogger());
         wsserver.start();
-        getLogger().info("WebSocket сервер запущен.");
     }
 
     private void logPluginActivation() {

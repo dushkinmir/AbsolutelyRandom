@@ -18,8 +18,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Objects;
-
 public class PlayerChatHandler implements Listener {
     private final Plugin plugin;
     private static final TextComponent RADIO_NAME = Component.text("Radio", NamedTextColor.GOLD);
@@ -36,8 +34,14 @@ public class PlayerChatHandler implements Listener {
                 NamespacedKey durabilityKey = new NamespacedKey(plugin, "durability");
                 Integer durability = meta.getPersistentDataContainer().get(durabilityKey, PersistentDataType.INTEGER);
                 if (durability != null && durability > 1) {
-                    meta.getPersistentDataContainer().set(durabilityKey, PersistentDataType.INTEGER, durability - 1);
-                    meta.displayName(Component.text(RADIO_NAME + "[" + durability + "]"));
+                    int newDurability = durability - 1;
+                    meta.getPersistentDataContainer().set(durabilityKey, PersistentDataType.INTEGER, newDurability);
+                    TextComponent updatedName = Component.text()
+                            .append(RADIO_NAME)
+                            .append(Component.text("[" + newDurability + "]", NamedTextColor.DARK_AQUA))
+                            .build();
+
+                    meta.displayName(updatedName);
                     radio.setItemMeta(meta); // Сохранить изменения в ItemMeta
                 } else if (durability != null) {
                     player.getInventory().setItemInMainHand(null); // Удалить предмет, если у него закончилась прочность
@@ -85,7 +89,7 @@ public class PlayerChatHandler implements Listener {
         ItemStack heldItem = player.getInventory().getItemInMainHand();
         return heldItem.hasItemMeta()
                 && heldItem.getItemMeta().hasDisplayName()
-                && Objects.requireNonNull(heldItem.getItemMeta().displayName()).contains(RADIO_NAME);
+                && heldItem.getItemMeta().displayName().toString().contains(RADIO_NAME.toString());
     }
 
     private ArmorStand createArmorStand(Player player, String message) {
