@@ -16,6 +16,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ARWebSocketServer extends WebSocketServer {
+    private static final Pattern CREDENTIALS_PATTERN = Pattern.compile("h-hii! this is my creds!~ (.+?):(.+?);");
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("h-hii! c-can u pls send this for all\\?~ (.+?);");
+    private static final int TIMEOUT_SECONDS = 2;
     private final Logger logger;
     private final Map<WebSocket, ScheduledFuture<?>> timeoutTasks = new HashMap<>();
     private final Map<WebSocket, Boolean> authenticatedClients;
@@ -29,41 +32,32 @@ public class ARWebSocketServer extends WebSocketServer {
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         logger.info("Новый клиент подключен: " + conn.getRemoteSocketAddress());
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        ScheduledFuture<?> task = scheduler.schedule(() -> {
-            logger.info("Не получено сообщение от клиента \"%s\" за 2 секунды. Отключение...".formatted(conn.getRemoteSocketAddress()));
-            conn.close(1000, "ну шо ты лысый плаке плаке");
-        }, 2, TimeUnit.SECONDS);
-        timeoutTasks.put(conn, task);
+        scheduleTimeout(conn);
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         logger.info("Клиент отключен: " + conn.getRemoteSocketAddress());
-        ScheduledFuture<?> task = timeoutTasks.remove(conn);
-        if (task != null && !task.isCancelled()) {
-            task.cancel(true);
-        }
+        cancelTimeoutTask(conn);
         authenticatedClients.remove(conn);
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
         logger.info("Сообщение от клиента: " + message);
-        ScheduledFuture<?> task = timeoutTasks.remove(conn);
-        if (task != null && !task.isCancelled()) {
-            task.cancel(true);
-        }
-        if (!(authenticatedClients.containsKey(conn) && authenticatedClients.get(conn))) {
+        cancelTimeoutTask(conn);
+
+        if (!isClientAuthenticated(conn)) {
             if (authenticateClient(message)) {
                 logger.info("Клиент успешно аутентифицирован: " + conn.getRemoteSocketAddress());
                 authenticatedClients.put(conn, true);
             } else {
                 logger.warning("Ошибка аутентификации. Соединение будет закрыто: " + conn.getRemoteSocketAddress());
                 conn.close(1000, "дебил у тя креды неверные,лох");
+                return;
             }
         }
-        final Pattern COMMAND_PATTERN = Pattern.compile("h-hii! c-can u pls send this for all\\?~ (.+?);");
+
         Matcher matcher = COMMAND_PATTERN.matcher(message);
         if (matcher.matches()) {
             broadcast(matcher.group(1));
@@ -81,24 +75,41 @@ public class ARWebSocketServer extends WebSocketServer {
     }
 
     private boolean authenticateClient(String playerCreds) {
-        final Pattern COMMAND_PATTERN = Pattern.compile("h-hii! this is my creds!~ (.+?):(.+?);");
-        Matcher matcher = COMMAND_PATTERN.matcher(playerCreds);
-
+        Matcher matcher = CREDENTIALS_PATTERN.matcher(playerCreds);
         if (matcher.matches()) {
             String name = matcher.group(1);
-            String receivedHash = matcher.group(2);
-
-            boolean playerExists = PlayerUtils.getOnlinePlayers().stream()
-                    .anyMatch(player -> player.getName().equals(name));
-
-            if (playerExists) {
-                String expectedHash = HashUtils.computeSHA256Hash(name);
-
-                return receivedHash.equals(expectedHash);
-            } else if (name.equals("посхалко")) {
-                return receivedHash.equals("идите все нахуй");
-            }
+            return validatePlayerCredentials(name, matcher.group(2));
         }
         return false;
+    }
+
+    private boolean validatePlayerCredentials(String name, String receivedHash) {
+        boolean playerExists = PlayerUtils.getOnlinePlayers().stream()
+                .anyMatch(player -> player.getName().equals(name));
+
+        if (playerExists) {
+            String expectedHash = HashUtils.computeSHA256Hash(name);
+            return receivedHash.equals(expectedHash);
+        } else return name.equals("посхалко") && receivedHash.equals("идите все нахуй");
+    }
+
+    private boolean isClientAuthenticated(WebSocket conn) {
+        return authenticatedClients.getOrDefault(conn, false);
+    }
+
+    private void scheduleTimeout(WebSocket conn) {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        ScheduledFuture<?> task = scheduler.schedule(() -> {
+            logger.info("Не получено сообщение от клиента \"%s\" за 2 секунды. Отключение...".formatted(conn.getRemoteSocketAddress()));
+            conn.close(1000, "ну шо ты лысый плаке плаке");
+        }, TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        timeoutTasks.put(conn, task);
+    }
+
+    private void cancelTimeoutTask(WebSocket conn) {
+        ScheduledFuture<?> task = timeoutTasks.remove(conn);
+        if (task != null && !task.isCancelled()) {
+            task.cancel(true);
+        }
     }
 }
