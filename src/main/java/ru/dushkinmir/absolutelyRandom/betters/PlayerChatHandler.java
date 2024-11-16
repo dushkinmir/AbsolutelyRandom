@@ -6,19 +6,23 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Objects;
+
 public class PlayerChatHandler implements Listener {
     private final Plugin plugin;
-    private static final TextComponent RADIO_NAME = Component.text("Радио", NamedTextColor.GOLD);
+    private static final TextComponent RADIO_NAME = Component.text("Radio", NamedTextColor.GOLD);
 
     public PlayerChatHandler(Plugin plugin) {
         this.plugin = plugin;
@@ -26,12 +30,18 @@ public class PlayerChatHandler implements Listener {
 
     private void decreaseRadioDurability(Player player) {
         ItemStack radio = player.getInventory().getItemInMainHand();
-        if (radio.getItemMeta() instanceof Damageable damageable) {
-            if (radio.getType().getMaxDurability() - damageable.getDamage() > 1) {
-                damageable.setDamage(damageable.getDamage() + 1);
-                radio.setItemMeta(damageable);
-            } else {
-                player.getInventory().setItemInMainHand(null); // Remove item if it's out of durability
+        ItemMeta meta = radio.getItemMeta();
+        if (radio.hasItemMeta()) {
+            if (meta != null) {
+                NamespacedKey durabilityKey = new NamespacedKey(plugin, "durability");
+                Integer durability = meta.getPersistentDataContainer().get(durabilityKey, PersistentDataType.INTEGER);
+                if (durability != null && durability > 1) {
+                    meta.getPersistentDataContainer().set(durabilityKey, PersistentDataType.INTEGER, durability - 1);
+                    meta.displayName(Component.text(RADIO_NAME + "[" + durability + "]"));
+                    radio.setItemMeta(meta); // Сохранить изменения в ItemMeta
+                } else if (durability != null) {
+                    player.getInventory().setItemInMainHand(null); // Удалить предмет, если у него закончилась прочность
+                }
             }
         }
     }
@@ -47,6 +57,7 @@ public class PlayerChatHandler implements Listener {
 
         if (playerHasRadio(player)) {
             decreaseRadioDurability(player);
+            return;
         }
 
         event.setCancelled(true);
@@ -56,7 +67,7 @@ public class PlayerChatHandler implements Listener {
             @Override
             public void run() {
                 ArmorStand armorStand = createArmorStand(player, message);
-                if (message.length() > 30) {
+                if (message.length() > 20) {
                     new MessageScroller(plugin).scrollMessageAboveHead(armorStand, message);
                 } else {
                     removeArmorStandLater(armorStand, 80L);
@@ -74,7 +85,7 @@ public class PlayerChatHandler implements Listener {
         ItemStack heldItem = player.getInventory().getItemInMainHand();
         return heldItem.hasItemMeta()
                 && heldItem.getItemMeta().hasDisplayName()
-                && RADIO_NAME.equals(heldItem.getItemMeta().displayName());
+                && Objects.requireNonNull(heldItem.getItemMeta().displayName()).contains(RADIO_NAME);
     }
 
     private ArmorStand createArmorStand(Player player, String message) {

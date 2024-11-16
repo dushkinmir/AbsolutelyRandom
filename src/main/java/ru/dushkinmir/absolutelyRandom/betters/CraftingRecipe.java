@@ -33,7 +33,7 @@ public class CraftingRecipe {
 
         radio.setItemMeta(meta);
 
-        NamespacedKey key = new NamespacedKey(plugin, "unique_key");
+        NamespacedKey key = new NamespacedKey(plugin, "radio");
         ShapedRecipe recipe = new ShapedRecipe(key, radio);
         recipe.shape("III", "IRI", "III");
         recipe.setIngredient('I', Material.IRON_INGOT);
@@ -62,7 +62,7 @@ public class CraftingRecipe {
 
         fixedRadio.setItemMeta(fixedMeta);
 
-        NamespacedKey key = new NamespacedKey(plugin, "unique_key");
+        NamespacedKey key = new NamespacedKey(plugin, "radioRepaired");
         // Создаем рецепт без определенной формы
         ShapelessRecipe recipe = new ShapelessRecipe(key, fixedRadio);
 
