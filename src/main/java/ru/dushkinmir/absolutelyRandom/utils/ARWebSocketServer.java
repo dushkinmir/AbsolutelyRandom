@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class ARWebSocketServer extends WebSocketServer {
     private static final Pattern CREDENTIALS_PATTERN = Pattern.compile("h-hii! this is my creds!~ (.+?):(.+?);");
-    private static final Pattern COMMAND_PATTERN = Pattern.compile("h-hii! c-can u pls send this for all\\?~ (.+?);");
+    private static final Pattern BROADCAST_PATTERN = Pattern.compile("h-hii! c-can u pls send this for all\\?~ (.+?);");
     private static final int TIMEOUT_SECONDS = 2;
     private final Logger logger;
     private final Map<WebSocket, ScheduledFuture<?>> timeoutTasks = new HashMap<>();
@@ -58,7 +58,7 @@ public class ARWebSocketServer extends WebSocketServer {
             }
         }
 
-        Matcher matcher = COMMAND_PATTERN.matcher(message);
+        Matcher matcher = BROADCAST_PATTERN.matcher(message);
         if (matcher.matches()) {
             broadcast(matcher.group(1));
         }
