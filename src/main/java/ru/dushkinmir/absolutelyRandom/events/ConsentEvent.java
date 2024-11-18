@@ -2,8 +2,7 @@ package ru.dushkinmir.absolutelyRandom.events;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -12,26 +11,37 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import ru.dushkinmir.absolutelyRandom.utils.ConsentMenu;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class ConsentEvent implements Listener {
     private final Map<Player, Block> playerBlockMap = new HashMap<>();
     private final Plugin plugin;
     private final Random random = new Random();
     private static final Component CONSENT_TITLE = Component.text("Согласие на обработку данных", NamedTextColor.YELLOW);
+    private final ConsentMenu consentMenu;
 
     public ConsentEvent(Plugin plugin) {
+        List<String> infoLore = Arrays.asList(
+                "Соглашаясь, вы добровольно передаете",
+                "себя в вечное рабство этому серверу",
+                "Отказ приведет к немедленному наказанию!",
+                "Соглашаясь, вы теряете свою свободу",
+                "и становитесь собственностью владельца сервера."
+        );
         this.plugin = plugin;
+        this.consentMenu = new ConsentMenu(
+                PlainTextComponentSerializer.plainText().serialize(CONSENT_TITLE), NamedTextColor.YELLOW,
+                "Договор о согласии", NamedTextColor.GOLD,
+                infoLore, NamedTextColor.DARK_PURPLE,
+                "Принять", NamedTextColor.GREEN,
+                "Отказаться", NamedTextColor.RED
+        );
     }
 
     @EventHandler
@@ -41,44 +51,9 @@ public class ConsentEvent implements Listener {
         if (random.nextBoolean() && block != null && event.getAction().isRightClick() && block.getState() instanceof Container) {
             if (player.isSneaking()) return;
             playerBlockMap.put(player, block);
-            openConsentMenu(player);
+            consentMenu.openConsentMenu(player);
             event.setCancelled(true);
         }
-    }
-
-    private void openConsentMenu(Player player) {
-        Inventory consentMenu = Bukkit.createInventory(null, 9, CONSENT_TITLE);
-        consentMenu.setItem(3, createItemStack(Material.GREEN_WOOL, "Принять", NamedTextColor.GREEN));
-        consentMenu.setItem(4, createInfoItem());
-        consentMenu.setItem(5, createItemStack(Material.RED_WOOL, "Отказаться", NamedTextColor.RED));
-        player.openInventory(consentMenu);
-    }
-
-    private ItemStack createItemStack(Material material, String displayName, NamedTextColor color) {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text(displayName, color, TextDecoration.BOLD));
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    private ItemStack createInfoItem() {
-        ItemStack item = new ItemStack(Material.OAK_LOG);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text("Договор о согласии", NamedTextColor.GOLD, TextDecoration.BOLD));
-        meta.lore(List.of(
-                createStyledText("Соглашаясь, вы добровольно передаете", TextDecoration.ITALIC),
-                createStyledText("себя в вечное рабство этому серверу", TextDecoration.ITALIC),
-                createStyledText("Отказ приведет к немедленному наказанию!", TextDecoration.ITALIC),
-                createStyledText("Соглашаясь, вы теряете свою свободу", TextDecoration.ITALIC),
-                createStyledText("и становитесь собственностью владельца сервера.", TextDecoration.ITALIC)
-        ));
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    private Component createStyledText(String text, TextDecoration... decorations) {
-        return Component.text(text, NamedTextColor.DARK_PURPLE, decorations);
     }
 
     @EventHandler
@@ -87,9 +62,8 @@ public class ConsentEvent implements Listener {
             Player player = (Player) event.getWhoClicked();
             event.setCancelled(true);
             ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR) {
-                return;
-            }
+            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+
             handleItemClick(player, clickedItem);
         }
     }
