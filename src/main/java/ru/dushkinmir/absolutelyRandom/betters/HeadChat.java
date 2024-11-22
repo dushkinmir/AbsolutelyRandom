@@ -18,11 +18,11 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class PlayerChatHandler implements Listener {
+public class HeadChat implements Listener {
     private final Plugin plugin;
     private static final TextComponent RADIO_NAME = Component.text("Radio", NamedTextColor.GOLD);
 
-    public PlayerChatHandler(Plugin plugin) {
+    public HeadChat(Plugin plugin) {
         this.plugin = plugin;
     }
 
@@ -132,12 +132,13 @@ public class PlayerChatHandler implements Listener {
     private record MessageScroller(Plugin plugin) {
         void scrollMessageAboveHead(ArmorStand armorStand, String message) {
             int messageLength = message.length();
+            int visibleLength = 30; // Максимальная длина видимого текста
             new BukkitRunnable() {
                 int offset = 0;
 
                 @Override
                 public void run() {
-                    if (offset + 64 >= messageLength) {
+                    if (offset >= messageLength) {
                         this.cancel();
                         new BukkitRunnable() {
                             @Override
@@ -146,7 +147,17 @@ public class PlayerChatHandler implements Listener {
                             }
                         }.runTaskLater(plugin, 20L);
                     } else {
-                        armorStand.customName(Component.text(message.substring(offset, Math.min(offset + 64, messageLength))));
+                        // Формируем видимую часть текста
+                        int endIndex = Math.min(offset + visibleLength, messageLength);
+                        String visibleText = message.substring(offset, endIndex);
+
+                        // Добавляем троеточие, если есть текст, который не уместился
+                        if (endIndex < messageLength) {
+                            visibleText += "...";
+                        }
+
+                        // Обновляем текст у ArmorStand
+                        armorStand.customName(Component.text(visibleText));
                         offset++;
                     }
                 }

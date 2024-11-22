@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -13,7 +13,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 import java.util.List;
 import java.util.Random;
 
-public class StormRandom {
+public class Storm {
     private static final Random RANDOM = new Random();
     private static final Component STORM_MESSAGE = Component.text("Гроза началась! Убегай!", NamedTextColor.YELLOW);
     private static final int STORM_DURATION_SECONDS = 60;
@@ -55,7 +55,7 @@ public class StormRandom {
                 cancel();
                 return;
             }
-            StormRandom.strikeRandomPlayer(players);
+            Storm.strikeRandomPlayer(players);
             elapsedSeconds += STRIKE_INTERVAL_SECONDS;
         }
     }

@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -12,7 +12,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.List;
 
-public class GroupRandom {
+public class Group {
 
     private static final Component EVENT_STARTING_MESSAGE =
             Component.text("ГРУППОВАЯ МАСТУРБАЦИЯ НАЧНЕТСЯ ЧЕРЕЗ...", NamedTextColor.RED);

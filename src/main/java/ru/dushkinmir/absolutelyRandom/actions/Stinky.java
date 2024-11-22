@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
@@ -19,7 +19,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.*;
 
-public class StinkyRandom implements Listener {
+public class Stinky implements Listener {
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!");
     private static final Component STINKY_PLAYER_MESSAGE = Component.text(
             "бля чел иди искупайся, а то от тебя весь сервер щарахается"
@@ -28,7 +28,7 @@ public class StinkyRandom implements Listener {
 
     private final Plugin plugin;
 
-    public StinkyRandom(Plugin plugin) {
+    public Stinky(Plugin plugin) {
         this.plugin = plugin;
     }
 

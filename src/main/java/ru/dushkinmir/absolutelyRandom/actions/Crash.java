@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -11,7 +11,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
-public class CrashRandom {
+public class Crash {
     private static volatile boolean isMaintenanceMode = false; // Добавлена volatile для синхронизации
     private static final Component MAINTENANCE_KICK_MSG =
             Component.text("The server is currently offline for maintenance. Please try again later.", NamedTextColor.RED);

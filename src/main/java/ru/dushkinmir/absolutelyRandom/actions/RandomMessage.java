@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class MessageRandom extends JavaPlugin {
+public class RandomMessage extends JavaPlugin {
     private static final Random RANDOM = new Random();
     private static final int MAX_MESSAGE_COUNT = 3;
     private static final long TASK_INTERVAL_TICKS = 20 * 4;

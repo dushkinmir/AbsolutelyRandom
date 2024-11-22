@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -10,7 +10,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.Random;
 
-public class PrankRandom {
+public class Prank {
     private static final Random random = new Random();
     private static final Sound[] sounds = {
             Sound.ENTITY_BLAZE_AMBIENT,
