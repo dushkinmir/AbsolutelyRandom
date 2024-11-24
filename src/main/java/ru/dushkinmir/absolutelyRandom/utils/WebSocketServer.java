@@ -41,6 +41,11 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
         listeners.remove(listener);
     }
 
+    public List<WebSocketMessageListener> getListeners() {
+        return new ArrayList<>(listeners); // Возвращаем копию списка слушателей для предотвращения изменений извне
+    }
+
+
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         logger.info("Новый клиент подключен: " + conn.getRemoteSocketAddress());

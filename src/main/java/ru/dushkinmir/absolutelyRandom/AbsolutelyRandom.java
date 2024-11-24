@@ -21,6 +21,7 @@ import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.sex.SexCommandManager;
 import ru.dushkinmir.absolutelyRandom.utils.DatabaseManager;
 import ru.dushkinmir.absolutelyRandom.utils.ServerControl;
+import ru.dushkinmir.absolutelyRandom.utils.WebSocketMessageListener;
 import ru.dushkinmir.absolutelyRandom.utils.WebSocketServer;
 import ru.dushkinmir.absolutelyRandom.warp.WarpCommandManager;
 import ru.dushkinmir.absolutelyRandom.warp.WarpManager;
@@ -94,14 +95,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         PLAYER_TASKS.values().forEach(BukkitRunnable::cancel);
         PLAYER_TASKS.clear();
         // Stop WebSocket server if it exists
-        if (wsserver != null) {
-            try {
-                wsserver.stop();
-            } catch (InterruptedException e) {
-                getLogger().severe("Ошибка остановки WebSocket-сервера: " + e.getMessage());
-            }
-        }
-
+        if (wsserver != null) disableWebSocketServer();
         CommandAPI.onDisable(); // Disable CommandAPI
         CommandAPI.unregister("debugrandom");
         CommandAPI.unregister("warp");
@@ -125,6 +119,21 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             this.getLogger().severe("Не удалось активировать слушателей WebSocket. " + e.getMessage());
         }
         wsserver.start(); // Start WebSocket server
+    }
+
+    private void disableWebSocketServer() {
+        // Stopping the WebSocket server
+        if (wsserver != null) {
+            try {
+                // Remove all listeners
+                for (WebSocketMessageListener listener : wsserver.getListeners()) {
+                    wsserver.removeListener(listener);
+                }
+                wsserver.stop(); // Stop the server
+            } catch (Exception e) {
+                this.getLogger().severe("Не удалось остановить WebSocket сервер: " + e.getMessage());
+            }
+        }
     }
 
     private void logPluginActivation() {
