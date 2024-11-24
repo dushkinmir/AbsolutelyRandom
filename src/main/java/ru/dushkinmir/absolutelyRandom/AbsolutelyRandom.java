@@ -106,13 +106,13 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         // Stop WebSocket server if it exists
         if (wsserver != null) disableWebSocketServer();
 
-        // Disable CommandAPI
-        CommandAPI.onDisable();
         // Unregister commands
         CommandAPI.unregister("debugrandom");
         CommandAPI.unregister("warp");
         CommandAPI.unregister("sex");
         getLogger().info("Команды CommandAPI отменены.");
+        // Disable CommandAPI
+        CommandAPI.onDisable();
 
         closeDatabase(); // Close the database
 
