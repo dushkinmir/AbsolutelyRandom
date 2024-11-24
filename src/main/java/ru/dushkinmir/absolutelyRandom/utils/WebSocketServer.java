@@ -92,7 +92,6 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     @Override
     public void onStart() {
-        logger.info("WebSocket сервер запущен на " + getAddress().getHostString() + ":" + getPort());
     }
 
     private boolean authenticateClient(String playerCreds) {
