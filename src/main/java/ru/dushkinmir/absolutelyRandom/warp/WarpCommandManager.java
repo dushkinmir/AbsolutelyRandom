@@ -1,7 +1,6 @@
 package ru.dushkinmir.absolutelyRandom.warp;
 
 import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
 import net.kyori.adventure.text.Component;
@@ -101,7 +100,6 @@ public class WarpCommandManager implements Listener {
 
         // Основная команда "warp" с подкомандами
         new CommandAPICommand("warp")
-                .withPermission(CommandPermission.fromString("absolutlyrandom.warp"))
                 .withSubcommand(warpCreate)
                 .withSubcommand(warpTeleport)
                 .withSubcommand(warpDelete)

@@ -97,6 +97,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         // Stop WebSocket server if it exists
         if (wsserver != null) disableWebSocketServer();
         CommandAPI.onDisable(); // Disable CommandAPI
+        // Unregister commands
         CommandAPI.unregister("debugrandom");
         CommandAPI.unregister("warp");
         CommandAPI.unregister("sex");
@@ -230,6 +231,14 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     }
 
     private void registerCommands() {
+        // Register the reloadconfig command
+        new CommandAPICommand("reloadconfig")
+                .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
+                .executes((sender, args) -> {
+                    reloadARConfig(); // Reload the config
+                    sender.sendMessage("Конфигурация перезагружена успешно!"); // Message indicating successful reload
+                })
+                .register(this);
         // Register debugrandom command
         new CommandAPICommand("debugrandom")
                 .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
@@ -252,6 +261,31 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         wcm.registerWarpCommands(); // Register warp commands
         scm.registerSexCommand(); // Register sex commands
     }
+
+    private void reloadARConfig() {
+        try {
+            // Reload config
+            reloadConfig();
+            loadConfigValues(); // Load config values into memory
+
+            // Reload messages from configuration
+            reloadMessagesAsync();
+
+            // Reload WebSocket if enabled
+            if (getConfig().getBoolean("betters.websocket.enabled", false)) {
+                if (wsserver != null) {
+                    disableWebSocketServer(); // Stop the old server
+                }
+                enableWebSocketServer(); // Start the new WebSocket server
+            }
+
+            getLogger().info("Конфигурация была успешно перезагружена!");
+
+        } catch (Exception e) {
+            getLogger().severe("Ошибка при перезагрузке конфигурации: " + e.getMessage());
+        }
+    }
+
 
     private final Map<String, Runnable> debugEvents = Map.of(
             "kick", () -> triggerRandom(Kick::triggerKick), // Kick event
