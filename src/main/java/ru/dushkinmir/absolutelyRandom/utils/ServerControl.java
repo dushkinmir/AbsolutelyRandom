@@ -18,6 +18,7 @@ public class ServerControl implements WebSocketMessageListener {
 
     public ServerControl(Plugin plugin) {
         this.plugin = plugin;
+        plugin.getLogger().info("ServerControl activated!");
     }
 
     @Override
