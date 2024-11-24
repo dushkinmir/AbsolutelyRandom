@@ -6,6 +6,12 @@ chances:
   vova-chance: 1000
   storm-chance: 5000
   eschkere-chance: 5000
+betters:
+  name-hider: true
+  head-chat: true
+  websocket:
+    enabled: true
+    server-control: true
 random-messages:
   - "Пэрсик упал в черный квадрат Малевича."
   - "Я не щавель, я подорожник с размахом крыльев!"
@@ -31,6 +37,3 @@ random-messages:
   - "Ты не видишь истину, потому что носишь очки с картофельным фильтром."
   - "Если тебя зовут, не отвечай, это может быть просто капуста."
   - "Я никогда не забуду тот день, когда карась предложил мне подработку."
-betters:
-  name-hider: true
-  head-chat: true
