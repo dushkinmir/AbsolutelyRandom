@@ -52,7 +52,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true)); // Load CommandAPI with verbose output
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true).usePluginNamespace()); // Load CommandAPI with verbose output
         try {
             openDatabase(); // Open the database
         } catch (SQLException e) {
@@ -81,7 +81,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             scheduleActionTrigger(); // Schedule action triggers
             CommandAPI.onEnable(); // Enable CommandAPI
 
-            getLogger().info("AbsolutelyRandomPlugin включён и работает корректно!");
+            logPluginActivation();
         } catch (Exception e) {
             getLogger().severe("Ошибка при включении плагина: " + e.getMessage());
             getServer().getPluginManager().disablePlugin(this); // Disable plugin on error
@@ -93,7 +93,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         // Cancel and clear player tasks
         PLAYER_TASKS.values().forEach(BukkitRunnable::cancel);
         PLAYER_TASKS.clear();
-
         // Stop WebSocket server if it exists
         if (wsserver != null) {
             try {
@@ -104,8 +103,11 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         }
 
         CommandAPI.onDisable(); // Disable CommandAPI
+        CommandAPI.unregister("debugrandom");
+        CommandAPI.unregister("warp");
+        CommandAPI.unregister("sex");
         closeDatabase(); // Close the database
-        getLogger().info("AbsolutelyRandomPlugin полностью отключён.");
+        logPluginDeactivation();
     }
 
     private void enableWebSocketServer() {
@@ -128,15 +130,10 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private void logPluginActivation() {
         getLogger().info("AbsolutelyRandomPlugin has been enabled!");
         getLogger().info("Пусть на вашем сервере царит рандом!!");
-        CommandAPI.onEnable(); // Enable CommandAPI
     }
 
     private void logPluginDeactivation() {
         getLogger().info("AbsolutelyRandomPlugin has been disabled!");
-        // Cancel and clear player tasks
-        PLAYER_TASKS.values().forEach(BukkitRunnable::cancel);
-        PLAYER_TASKS.clear();
-        CommandAPI.onDisable(); // Disable CommandAPI
     }
 
     private void loadConfigValues() {

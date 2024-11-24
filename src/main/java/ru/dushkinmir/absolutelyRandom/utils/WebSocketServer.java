@@ -2,10 +2,11 @@ package ru.dushkinmir.absolutelyRandom.utils;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,23 +16,35 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ARWebSocketServer extends WebSocketServer {
+public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     private static final Pattern CREDENTIALS_PATTERN = Pattern.compile("h-hii! this is my creds!~ (.+?):(.+?);");
     private static final Pattern BROADCAST_PATTERN = Pattern.compile("h-hii! c-can u pls send this for all\\?~ (.+?);");
     private static final int TIMEOUT_SECONDS = 2;
+
     private final Logger logger;
     private final Map<WebSocket, ScheduledFuture<?>> timeoutTasks = new HashMap<>();
     private final Map<WebSocket, Boolean> authenticatedClients;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final List<WebSocketMessageListener> listeners = new ArrayList<>();
 
-    public ARWebSocketServer(String ip, int port, Logger logger) {
+    public WebSocketServer(String ip, int port, Logger logger) {
         super(new InetSocketAddress(ip, port));
         this.logger = logger;
         this.authenticatedClients = new HashMap<>();
     }
 
+    public void addListener(WebSocketMessageListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(WebSocketMessageListener listener) {
+        listeners.remove(listener);
+    }
+
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         logger.info("Новый клиент подключен: " + conn.getRemoteSocketAddress());
+        listeners.forEach(listener -> listener.onClientConnected(conn));
         scheduleTimeout(conn);
     }
 
@@ -40,6 +53,7 @@ public class ARWebSocketServer extends WebSocketServer {
         logger.info("Клиент отключен: " + conn.getRemoteSocketAddress());
         cancelTimeoutTask(conn);
         authenticatedClients.remove(conn);
+        listeners.forEach(listener -> listener.onClientDisconnected(conn, code, reason));
     }
 
     @Override
@@ -62,6 +76,8 @@ public class ARWebSocketServer extends WebSocketServer {
         if (matcher.matches()) {
             broadcast(matcher.group(1));
         }
+
+        listeners.forEach(listener -> listener.onMessageReceived(conn, message));
     }
 
     @Override
@@ -98,7 +114,6 @@ public class ARWebSocketServer extends WebSocketServer {
     }
 
     private void scheduleTimeout(WebSocket conn) {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         ScheduledFuture<?> task = scheduler.schedule(() -> {
             logger.info("Не получено сообщение от клиента \"%s\" за 2 секунды. Отключение...".formatted(conn.getRemoteSocketAddress()));
             conn.close(1000, "ну шо ты лысый плаке плаке");
