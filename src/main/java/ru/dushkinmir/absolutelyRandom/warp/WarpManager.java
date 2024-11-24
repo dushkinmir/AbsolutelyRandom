@@ -7,7 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import ru.dushkinmir.absolutelyRandom.utils.ARDatabaseManager;
+import ru.dushkinmir.absolutelyRandom.utils.DatabaseManager;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.sql.*;
@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WarpManager {
-    private final ARDatabaseManager database;
+    private final DatabaseManager database;
     private final Plugin plugin;
 
-    public WarpManager(ARDatabaseManager database, Plugin plugin) {
+    public WarpManager(DatabaseManager database, Plugin plugin) {
         this.database = database;
         this.plugin = plugin;
         setupTable();
