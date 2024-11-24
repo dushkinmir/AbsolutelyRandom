@@ -6,6 +6,7 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -113,6 +114,9 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         getLogger().info("Команды CommandAPI отменены.");
         // Disable CommandAPI
         CommandAPI.onDisable();
+        
+        getServer().removeRecipe(new NamespacedKey(this, "radio"));
+        getServer().removeRecipe(new NamespacedKey(this, "radioRepaired"));
 
         closeDatabase(); // Close the database
 
