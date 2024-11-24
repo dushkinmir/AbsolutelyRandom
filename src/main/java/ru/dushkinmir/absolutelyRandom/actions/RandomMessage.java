@@ -22,10 +22,8 @@ public class RandomMessage extends JavaPlugin {
 
     public static void triggerMessage(Plugin plugin, Set<String> MESSAGES) {
         List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
-        if (!onlinePlayers.isEmpty()) {
-            Player randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers);
-            scheduleRandomMessagesTask(plugin, randomPlayer, MESSAGES);
-        }
+        Player randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers);
+        scheduleRandomMessagesTask(plugin, randomPlayer, MESSAGES);
     }
 
     private static void scheduleRandomMessagesTask(Plugin plugin, Player player, Set<String> MESSAGES) {

@@ -23,7 +23,7 @@ public class Group {
     private static boolean eventActive = false;
 
     public static void triggerGroup(Plugin plugin) {
-        if (eventActive || PlayerUtils.getOnlinePlayers().isEmpty()) {
+        if (eventActive) {
             return;
         }
         eventActive = true;

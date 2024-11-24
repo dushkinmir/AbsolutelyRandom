@@ -34,13 +34,11 @@ public class Stinky implements Listener {
 
     public static void triggerStinky(Plugin plugin) {
         List<Player> players = PlayerUtils.getOnlinePlayers();
-        if (!players.isEmpty()) {
-            Player randomPlayer = PlayerUtils.getRandomPlayer(players);
-            PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR);
-            sendPlayerWorldMessage(randomPlayer);
-            UUID playerUUID = randomPlayer.getUniqueId();
-            scheduleEffects(plugin, playerUUID);
-        }
+        Player randomPlayer = PlayerUtils.getRandomPlayer(players);
+        PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR);
+        sendPlayerWorldMessage(randomPlayer);
+        UUID playerUUID = randomPlayer.getUniqueId();
+        scheduleEffects(plugin, playerUUID);
     }
 
     private static void sendPlayerWorldMessage(Player player) {

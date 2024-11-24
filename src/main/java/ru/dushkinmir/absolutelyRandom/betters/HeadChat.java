@@ -133,35 +133,45 @@ public class HeadChat implements Listener {
         void scrollMessageAboveHead(ArmorStand armorStand, String message) {
             int messageLength = message.length();
             int visibleLength = 30; // Максимальная длина видимого текста
-            new BukkitRunnable() {
-                int offset = 0;
-
-                @Override
-                public void run() {
-                    if (offset >= messageLength) {
-                        this.cancel();
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                armorStand.remove();
-                            }
-                        }.runTaskLater(plugin, 20L);
-                    } else {
-                        // Формируем видимую часть текста
-                        int endIndex = Math.min(offset + visibleLength, messageLength);
-                        String visibleText = message.substring(offset, endIndex);
-
-                        // Добавляем троеточие, если есть текст, который не уместился
-                        if (endIndex < messageLength) {
-                            visibleText += "...";
-                        }
-
-                        // Обновляем текст у ArmorStand
-                        armorStand.customName(Component.text(visibleText));
-                        offset++;
+            if (messageLength <= visibleLength) {
+                armorStand.customName(Component.text(message));
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        armorStand.remove();
                     }
-                }
-            }.runTaskTimer(plugin, 0L, 7L);
+                }.runTaskLater(plugin, 80L);
+            } else {
+                new BukkitRunnable() {
+                    int offset = 0;
+
+                    @Override
+                    public void run() {
+                        if (offset >= messageLength) {
+                            this.cancel();
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    armorStand.remove();
+                                }
+                            }.runTaskLater(plugin, 20L);
+                        } else {
+                            // Формируем видимую часть текста
+                            int endIndex = Math.min(offset + visibleLength, messageLength);
+                            String visibleText = message.substring(offset, endIndex);
+
+                            // Добавляем троеточие, если есть текст, который не уместился
+                            if (endIndex < messageLength) {
+                                visibleText += "...";
+                            }
+
+                            // Обновляем текст у ArmorStand
+                            armorStand.customName(Component.text(visibleText));
+                            offset++;
+                        }
+                    }
+                }.runTaskTimer(plugin, 0L, 7L);
+            }
         }
     }
 }

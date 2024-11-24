@@ -53,12 +53,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true).usePluginNamespace()); // Load CommandAPI with verbose output
-        try {
-            openDatabase(); // Open the database
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true).usePluginNamespace());
     }
 
     @Override
@@ -66,18 +61,31 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         try {
             saveDefaultConfig(); // Save default config if not exist
             loadConfigValues(); // Load configuration values
-            openDatabase(); // Open the database
+            try {
+                openDatabase(); // Open the database
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            getLogger().info("Конфигурация загружена.");
 
             // Initialize managers
             warpManager = new WarpManager(database, this);
             fissureHandler = new AnalFissureHandler(database, this);
+            getLogger().info("Менеджеры инициализированы.");
 
-            registerEvents(); // Register events
+            // Register events
+            registerEvents();
+            getLogger().info("События зарегистрированы.");
+
             new CraftingRecipe(this); // Initialize crafting recipes
+
             registerCommands(); // Register commands
+            getLogger().info("Команды зарегистрированы.");
+
             if (getConfig().getBoolean("betters.websocket.enabled", false)) {
                 enableWebSocketServer(); // Enable WebSocket server if enabled in config
             }
+
             startAutoReloadTask(); // Start task for automatic reload
             scheduleActionTrigger(); // Schedule action triggers
             CommandAPI.onEnable(); // Enable CommandAPI
@@ -94,18 +102,25 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         // Cancel and clear player tasks
         PLAYER_TASKS.values().forEach(BukkitRunnable::cancel);
         PLAYER_TASKS.clear();
+
         // Stop WebSocket server if it exists
         if (wsserver != null) disableWebSocketServer();
-        CommandAPI.onDisable(); // Disable CommandAPI
+
+        // Disable CommandAPI
+        CommandAPI.onDisable();
         // Unregister commands
         CommandAPI.unregister("debugrandom");
         CommandAPI.unregister("warp");
         CommandAPI.unregister("sex");
+        getLogger().info("Команды CommandAPI отменены.");
+
         closeDatabase(); // Close the database
+
         logPluginDeactivation();
     }
 
     private void enableWebSocketServer() {
+        getLogger().info("Запуск веб-сокет сервера...");
         // Get server IP and port
         String serverIp = this.getServer().getIp().isEmpty() ? "localhost" : this.getServer().getIp();
         int port = this.getServer().getPort() + 1;
@@ -113,13 +128,16 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         // Initialize WebSocket server
         wsserver = new WebSocketServer(serverIp, port, getLogger());
         try {
+            getLogger().info("Конфигурация WebSocket успешно загружена.");
             if (getConfig().getBoolean("betters.websocket.server-control", false)) {
                 wsserver.addListener(new ServerControl(this)); // Add WebSocket listener if config is true
             }
+            getLogger().info("WebSocket сервер запущен успешно.");
         } catch (Exception e) {
             this.getLogger().severe("Не удалось активировать слушателей WebSocket. " + e.getMessage());
         }
         wsserver.start(); // Start WebSocket server
+        getLogger().info("WebSocket сервер запущен на IP " + serverIp + " и порту " + port);
     }
 
     private void disableWebSocketServer() {
@@ -130,23 +148,26 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 for (WebSocketMessageListener listener : wsserver.getListeners()) {
                     wsserver.removeListener(listener);
                 }
+                getLogger().info("Остановка WebSocket сервера.");
                 wsserver.stop(); // Stop the server
             } catch (Exception e) {
                 this.getLogger().severe("Не удалось остановить WebSocket сервер: " + e.getMessage());
             }
+            getLogger().info("WebSocket сервер остановлен.");
         }
     }
 
     private void logPluginActivation() {
-        getLogger().info("AbsolutelyRandomPlugin has been enabled!");
+        getLogger().info("Плагин AbsolutelyRandom активирован!");
         getLogger().info("Пусть на вашем сервере царит рандом!!");
     }
 
     private void logPluginDeactivation() {
-        getLogger().info("AbsolutelyRandomPlugin has been disabled!");
+        getLogger().info("Плагин AbsolutelyRandom деактивирован!");
     }
 
     private void loadConfigValues() {
+        getLogger().info("Загрузка значений конфигурации...");
         // Load chances for actions from config
         actionsChances.put("kick", getConfig().getInt("chances.kick-chance", -1));
         actionsChances.put("group", getConfig().getInt("chances.group-chance", -1));
@@ -170,6 +191,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                     MESSAGES_SET.clear();
                     MESSAGES_SET.addAll(configMessages);
                 }
+                getLogger().info("Сообщения конфигурации успешно перезагружены.");
             }
         });
     }
@@ -182,6 +204,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 reloadMessagesAsync(); // Автоматическая перезагрузка
             }
         }.runTaskTimer(this, 0L, RELOAD_INTERVAL);
+        getLogger().info("Автоматическая перезагрузка сообщений включена.");
     }
 
     private void scheduleActionTrigger() {
@@ -192,6 +215,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 executeRandomEvents(); // Execute random events
             }
         }.runTaskTimer(this, 0, SCHEDULE_PERIOD);
+        getLogger().info("Запланированные действия активированы.");
     }
 
     private void registerEvents() {
@@ -211,23 +235,27 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         for (Listener event : events) {
             getServer().getPluginManager().registerEvents(event, this);
         }
+        getLogger().info("События зарегистрированы...");
     }
 
     private void addConditionalEvent(List<Listener> events, String conditionKey, Listener listener) {
         // Add event to list if condition is met
         if (enabledBetters.get(conditionKey).equals(true)) {
             events.add(listener);
+            getLogger().info("Событие " + conditionKey + " добавлено согласно условию.");
         }
     }
 
     private void openDatabase() throws SQLException {
         database = new DatabaseManager(this); // Создаем экземпляр базы данных
+        getLogger().info("База данных открыта.");
     }
 
     private void closeDatabase() {
         if (database != null) {
             database.close(); // Закрываем пул соединений при отключении плагина
         }
+        getLogger().info("База данных закрыта.");
     }
 
     private void registerCommands() {
@@ -236,7 +264,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
                 .executes((sender, args) -> {
                     reloadARConfig(); // Reload the config
-                    sender.sendMessage("Конфигурация перезагружена успешно!"); // Message indicating successful reload
+                    getLogger().info("Команда reloadconfig выполнена.");
+                    sender.sendMessage("Конфигурация перезагружена успешно!");
                 })
                 .register(this);
         // Register debugrandom command
@@ -253,6 +282,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                     handleDebugRandom(sender, event); // Handle debug random event
                 })
                 .register(this);
+        getLogger().info("Команда debugrandom зарегистрирована.");
 
         // Initialize and register WarpCommandManager
         WarpCommandManager wcm = new WarpCommandManager(warpManager, this);
@@ -277,12 +307,14 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                     disableWebSocketServer(); // Stop the old server
                 }
                 enableWebSocketServer(); // Start the new WebSocket server
+                getLogger().info("WebSocket сервер переинициализирован.");
             }
 
-            getLogger().info("Конфигурация была успешно перезагружена!");
+            getLogger().info("Конфигурация переинициализирована успешно.");
 
         } catch (Exception e) {
             getLogger().severe("Ошибка при перезагрузке конфигурации: " + e.getMessage());
+            getLogger().info("Конфигурация перезагружена с ошибками.");
         }
     }
 

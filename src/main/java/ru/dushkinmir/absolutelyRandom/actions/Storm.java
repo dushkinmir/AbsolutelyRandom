@@ -22,9 +22,7 @@ public class Storm {
 
     public static void triggerStorm(Plugin plugin) {
         List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
-        if (!onlinePlayers.isEmpty()) {
-            startStorm(plugin, onlinePlayers);
-        }
+        startStorm(plugin, onlinePlayers);
     }
 
     private static void startStorm(Plugin plugin, List<Player> players) {
