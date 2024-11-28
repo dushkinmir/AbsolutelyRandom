@@ -6,14 +6,12 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.actions.*;
-import ru.dushkinmir.absolutelyRandom.betters.CraftingRecipe;
 import ru.dushkinmir.absolutelyRandom.betters.HeadChat;
 import ru.dushkinmir.absolutelyRandom.betters.NameHider;
 import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
@@ -21,7 +19,6 @@ import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
 import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.sex.SexCommandManager;
 import ru.dushkinmir.absolutelyRandom.utils.DatabaseManager;
-import ru.dushkinmir.absolutelyRandom.utils.ServerControl;
 import ru.dushkinmir.absolutelyRandom.utils.WebSocketMessageListener;
 import ru.dushkinmir.absolutelyRandom.utils.WebSocketServer;
 import ru.dushkinmir.absolutelyRandom.warp.WarpCommandManager;
@@ -78,8 +75,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             registerEvents();
             getLogger().info("События зарегистрированы.");
 
-            new CraftingRecipe(this); // Initialize crafting recipes
-
             registerCommands(); // Register commands
             getLogger().info("Команды зарегистрированы.");
 
@@ -105,7 +100,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         PLAYER_TASKS.clear();
 
         // Stop WebSocket server if it exists
-        if (wsserver != null) disableWebSocketServer();
+        disableWebSocketServer();
 
         // Unregister commands
         CommandAPI.unregister("debugrandom");
@@ -114,9 +109,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         getLogger().info("Команды CommandAPI отменены.");
         // Disable CommandAPI
         CommandAPI.onDisable();
-        
-        getServer().removeRecipe(new NamespacedKey(this, "radio"));
-        getServer().removeRecipe(new NamespacedKey(this, "radioRepaired"));
+
+        if (enabledBetters.get("head-chat")) HeadChat.onDisable(this);
 
         closeDatabase(); // Close the database
 
@@ -133,9 +127,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         wsserver = new WebSocketServer(serverIp, port, getLogger());
         try {
             getLogger().info("Конфигурация WebSocket успешно загружена.");
-            if (getConfig().getBoolean("betters.websocket.server-control", false)) {
-                wsserver.addListener(new ServerControl(this)); // Add WebSocket listener if config is true
-            }
             wsserver.start(); // Start WebSocket server
             getLogger().info("WebSocket сервер запущен на IP " + serverIp + " и порту " + port);
         } catch (Exception e) {

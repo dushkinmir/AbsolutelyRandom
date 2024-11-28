@@ -24,6 +24,12 @@ public class HeadChat implements Listener {
 
     public HeadChat(Plugin plugin) {
         this.plugin = plugin;
+        new CraftingRecipe(plugin); // Initialize crafting recipe
+    }
+
+    public static void onDisable(Plugin plugin) {
+        plugin.getServer().removeRecipe(new NamespacedKey(plugin, "radio"));
+        plugin.getServer().removeRecipe(new NamespacedKey(plugin, "radioRepaired"));
     }
 
     private void decreaseRadioDurability(Player player) {
