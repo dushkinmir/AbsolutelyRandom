@@ -277,7 +277,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
     private final Map<String, Runnable> debugEvents = Map.of(
             "kick", () -> triggerRandom(Kick::triggerKick), // Kick event
-            "eschkere", () -> triggerRandom(Prank::triggerPrank), // Prank event
+            "prank", () -> triggerRandom(Prank::triggerPrank), // Prank event
             "group", () -> triggerRandom(() -> Group.triggerGroup(this)), // Group event
             "crash", () -> triggerRandom(() -> Crash.triggerCrash(this)), // Crash event
             "message", () -> triggerRandom(() -> RandomMessage.triggerMessage(this, MESSAGES_SET)), // Message event
