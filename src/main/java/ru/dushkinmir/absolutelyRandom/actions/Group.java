@@ -55,7 +55,7 @@ public class Group {
         }
     }
 
-    private static class FallingBlocksTask extends BukkitRunnable {
+    public static class FallingBlocksTask extends BukkitRunnable {
         private final Plugin plugin;
         private final List<Player> players;
         private int remainingTicks = EVENT_DURATION_TICKS;
