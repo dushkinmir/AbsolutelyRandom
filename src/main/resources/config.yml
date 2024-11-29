@@ -6,6 +6,12 @@ chances:
   vova-chance: 1000
   storm-chance: 5000
   eschkere-chance: 5000
+betters:
+  name-hider: true
+  head-chat: true
+  websocket:
+    enabled: true
+    server-control: true
 random-messages:
   - "Пэрсик упал в черный квадрат Малевича."
   - "Я не щавель, я подорожник с размахом крыльев!"

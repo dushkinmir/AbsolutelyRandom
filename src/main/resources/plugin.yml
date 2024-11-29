@@ -1,6 +1,7 @@
 name: AbsolutelyRandom
 version: 1.5-ALPHA
 main: ru.dushkinmir.absolutelyRandom.AbsolutelyRandom
+prefix: AbsRand
 api-version: 1.21
 
 permissions:

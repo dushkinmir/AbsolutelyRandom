@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
@@ -19,7 +19,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.*;
 
-public class StinkyRandom implements Listener {
+public class Stinky implements Listener {
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!");
     private static final Component STINKY_PLAYER_MESSAGE = Component.text(
             "бля чел иди искупайся, а то от тебя весь сервер щарахается"
@@ -28,19 +28,17 @@ public class StinkyRandom implements Listener {
 
     private final Plugin plugin;
 
-    public StinkyRandom(Plugin plugin) {
+    public Stinky(Plugin plugin) {
         this.plugin = plugin;
     }
 
     public static void triggerStinky(Plugin plugin) {
         List<Player> players = PlayerUtils.getOnlinePlayers();
-        if (!players.isEmpty()) {
-            Player randomPlayer = PlayerUtils.getRandomPlayer(players);
-            PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR);
-            sendPlayerWorldMessage(randomPlayer);
-            UUID playerUUID = randomPlayer.getUniqueId();
-            scheduleEffects(plugin, playerUUID);
-        }
+        Player randomPlayer = PlayerUtils.getRandomPlayer(players);
+        PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR);
+        sendPlayerWorldMessage(randomPlayer);
+        UUID playerUUID = randomPlayer.getUniqueId();
+        scheduleEffects(plugin, playerUUID);
     }
 
     private static void sendPlayerWorldMessage(Player player) {

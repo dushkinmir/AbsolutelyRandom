@@ -18,12 +18,18 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class PlayerChatHandler implements Listener {
+public class HeadChat implements Listener {
     private final Plugin plugin;
     private static final TextComponent RADIO_NAME = Component.text("Radio", NamedTextColor.GOLD);
 
-    public PlayerChatHandler(Plugin plugin) {
+    public HeadChat(Plugin plugin) {
         this.plugin = plugin;
+        new CraftingRecipe(plugin); // Initialize crafting recipe
+    }
+
+    public static void onDisable(Plugin plugin) {
+        plugin.getServer().removeRecipe(new NamespacedKey(plugin, "radio"));
+        plugin.getServer().removeRecipe(new NamespacedKey(plugin, "radioRepaired"));
     }
 
     private void decreaseRadioDurability(Player player) {
@@ -132,25 +138,46 @@ public class PlayerChatHandler implements Listener {
     private record MessageScroller(Plugin plugin) {
         void scrollMessageAboveHead(ArmorStand armorStand, String message) {
             int messageLength = message.length();
-            new BukkitRunnable() {
-                int offset = 0;
-
-                @Override
-                public void run() {
-                    if (offset + 64 >= messageLength) {
-                        this.cancel();
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                armorStand.remove();
-                            }
-                        }.runTaskLater(plugin, 20L);
-                    } else {
-                        armorStand.customName(Component.text(message.substring(offset, Math.min(offset + 64, messageLength))));
-                        offset++;
+            int visibleLength = 30; // Максимальная длина видимого текста
+            if (messageLength <= visibleLength) {
+                armorStand.customName(Component.text(message));
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        armorStand.remove();
                     }
-                }
-            }.runTaskTimer(plugin, 0L, 7L);
+                }.runTaskLater(plugin, 80L);
+            } else {
+                new BukkitRunnable() {
+                    int offset = 0;
+
+                    @Override
+                    public void run() {
+                        if (offset >= messageLength) {
+                            this.cancel();
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    armorStand.remove();
+                                }
+                            }.runTaskLater(plugin, 20L);
+                        } else {
+                            // Формируем видимую часть текста
+                            int endIndex = Math.min(offset + visibleLength, messageLength);
+                            String visibleText = message.substring(offset, endIndex);
+
+                            // Добавляем троеточие, если есть текст, который не уместился
+                            if (endIndex < messageLength) {
+                                visibleText += "...";
+                            }
+
+                            // Обновляем текст у ArmorStand
+                            armorStand.customName(Component.text(visibleText));
+                            offset++;
+                        }
+                    }
+                }.runTaskTimer(plugin, 0L, 7L);
+            }
         }
     }
 }

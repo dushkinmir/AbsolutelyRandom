@@ -11,7 +11,11 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
+
+import static ru.dushkinmir.absolutelyRandom.actions.Group.FallingBlocksTask;
 
 public class SexManager {
 
@@ -46,11 +50,9 @@ public class SexManager {
         boolean initiatorMoves = new Random().nextBoolean(); // true - движется инициатор, false - целевой игрок
 
         if (initiatorMoves) {
-            performMovement(initiator, targetPlayer, plugin);
-            fissureHandler.checkForFissure(targetPlayer); // Проверяем фиссуры для целевого игрока
+            performMovement(initiator, targetPlayer, plugin, fissureHandler);
         } else {
-            performMovement(targetPlayer, initiator, plugin);
-            fissureHandler.checkForFissure(initiator); // Проверяем фиссуры для инициатора
+            performMovement(targetPlayer, initiator, plugin, fissureHandler);
         }
 
         // Включаем коллизии обратно через 15 секунд
@@ -64,9 +66,9 @@ public class SexManager {
         );
     }
 
-    private static void performMovement(Player movingPlayer, Player stationaryPlayer, Plugin plugin) {
+    private static void performMovement(Player movingPlayer, Player stationaryPlayer, Plugin plugin, AnalFissureHandler fissureHandler) {
         teleportBehind(stationaryPlayer, movingPlayer);
-        movePlayer(movingPlayer, plugin);
+        movePlayer(movingPlayer, stationaryPlayer, plugin, fissureHandler);
 
         PlayerUtils.sendMessageToPlayer(
                 movingPlayer,
@@ -80,7 +82,7 @@ public class SexManager {
 
 
     // Метод для движения игрока вперед-назад на ограниченное время (в секундах)
-    private static void movePlayer(Player player, Plugin plugin) {
+    private static void movePlayer(Player player, Player stationaryPlayer, Plugin plugin, AnalFissureHandler fissureHandler) {
         player.sendMessage("Вы будете двигаться вперед-назад!");
 
         // Устанавливаем движение вперед-назад
@@ -114,17 +116,22 @@ public class SexManager {
                     }
                 },
                 0L, // Начало сразу
-                5L  // Выполняем каждые 5 тиков (1/4 секунды)
+                2L
         ).getTaskId();
 
         // Останавливаем задачу через 15 секунд (300 тиков)
         Bukkit.getScheduler().runTaskLater(
                 plugin,
-                () -> Bukkit.getScheduler().cancelTask(taskId),
+                () -> {
+                    Bukkit.getScheduler().cancelTask(taskId);
+                    fissureHandler.checkForFissure(stationaryPlayer);
+                    new FallingBlocksTask(plugin, new ArrayList<>(Arrays.asList(player, stationaryPlayer))).runTaskTimer(plugin, 0L, 5L);
+                },
                 SEX_DURATION * 20L // 15 секунд = 300 тиков
         );
-    }    // Метод для телепортации игрока "движущегося" за спину "стоячего"
+    }
 
+    // Метод для телепортации игрока "движущегося" за спину "стоячего"
     private static void teleportBehind(Player stationaryPlayer, Player movingPlayer) {
         Location stationaryLocation = stationaryPlayer.getLocation();
         Vector backwardDirection = stationaryLocation.getDirection().multiply(-1); // Вектор, указывающий назад

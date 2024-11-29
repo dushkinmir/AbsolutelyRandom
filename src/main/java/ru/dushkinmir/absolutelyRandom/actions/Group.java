@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -12,7 +12,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.List;
 
-public class GroupRandom {
+public class Group {
 
     private static final Component EVENT_STARTING_MESSAGE =
             Component.text("ГРУППОВАЯ МАСТУРБАЦИЯ НАЧНЕТСЯ ЧЕРЕЗ...", NamedTextColor.RED);
@@ -23,7 +23,7 @@ public class GroupRandom {
     private static boolean eventActive = false;
 
     public static void triggerGroup(Plugin plugin) {
-        if (eventActive || PlayerUtils.getOnlinePlayers().isEmpty()) {
+        if (eventActive) {
             return;
         }
         eventActive = true;
@@ -55,7 +55,7 @@ public class GroupRandom {
         }
     }
 
-    private static class FallingBlocksTask extends BukkitRunnable {
+    public static class FallingBlocksTask extends BukkitRunnable {
         private final Plugin plugin;
         private final List<Player> players;
         private int remainingTicks = EVENT_DURATION_TICKS;

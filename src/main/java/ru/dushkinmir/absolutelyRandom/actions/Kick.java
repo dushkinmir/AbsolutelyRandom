@@ -1,11 +1,11 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
-public class KickRandom {
+public class Kick {
 
     private static final Component PLAYER_KICK_MESSAGE = Component.text("хахаха лошара", NamedTextColor.RED);
     private static final String BROADCAST_KICK_MESSAGE_TEMPLATE = "вот же %s лох!";

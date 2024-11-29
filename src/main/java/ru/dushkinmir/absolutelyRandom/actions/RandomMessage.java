@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.randoms;
+package ru.dushkinmir.absolutelyRandom.actions;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,17 +15,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class MessageRandom extends JavaPlugin {
+public class RandomMessage extends JavaPlugin {
     private static final Random RANDOM = new Random();
     private static final int MAX_MESSAGE_COUNT = 3;
     private static final long TASK_INTERVAL_TICKS = 20 * 4;
 
     public static void triggerMessage(Plugin plugin, Set<String> MESSAGES) {
         List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
-        if (!onlinePlayers.isEmpty()) {
-            Player randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers);
-            scheduleRandomMessagesTask(plugin, randomPlayer, MESSAGES);
-        }
+        Player randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers);
+        scheduleRandomMessagesTask(plugin, randomPlayer, MESSAGES);
     }
 
     private static void scheduleRandomMessagesTask(Plugin plugin, Player player, Set<String> MESSAGES) {
