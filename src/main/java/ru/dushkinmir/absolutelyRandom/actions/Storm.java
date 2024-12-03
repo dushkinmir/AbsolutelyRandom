@@ -13,14 +13,18 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 import java.util.List;
 import java.util.Random;
 
-public class Storm {
+public class Storm extends Action {
     private static final Random RANDOM = new Random();
     private static final Component STORM_MESSAGE = Component.text("Гроза началась! Убегай!", NamedTextColor.YELLOW);
     private static final int STORM_DURATION_SECONDS = 60;
     private static final int STRIKE_INTERVAL_SECONDS = 10;
     private static final double STRIKE_DISTANCE = 5.0;
 
-    public static void triggerStorm(Plugin plugin) {
+    protected Storm() {
+        super("storm");
+    }
+
+    public void execute(Plugin plugin) {
         List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
         startStorm(plugin, onlinePlayers);
     }

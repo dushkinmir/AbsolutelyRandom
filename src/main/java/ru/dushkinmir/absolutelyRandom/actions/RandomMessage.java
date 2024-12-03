@@ -6,8 +6,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import ru.dushkinmir.absolutelyRandom.AbsolutelyRandom;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.ArrayList;
@@ -15,18 +15,24 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class RandomMessage extends JavaPlugin {
+public class RandomMessage extends Action {
     private static final Random RANDOM = new Random();
     private static final int MAX_MESSAGE_COUNT = 3;
     private static final long TASK_INTERVAL_TICKS = 20 * 4;
+    private final Set<String> MESSAGES = AbsolutelyRandom.MESSAGES_SET;
 
-    public static void triggerMessage(Plugin plugin, Set<String> MESSAGES) {
-        List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
-        Player randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers);
-        scheduleRandomMessagesTask(plugin, randomPlayer, MESSAGES);
+    protected RandomMessage() {
+        super("message");
     }
 
-    private static void scheduleRandomMessagesTask(Plugin plugin, Player player, Set<String> MESSAGES) {
+    @Override
+    public void execute(Plugin plugin) {
+        List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
+        Player randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers);
+        scheduleRandomMessagesTask(plugin, randomPlayer);
+    }
+
+    private void scheduleRandomMessagesTask(Plugin plugin, Player player) {
         new MessageTask(player, RANDOM.nextBoolean(), MESSAGES).runTaskTimer(plugin, 0L, TASK_INTERVAL_TICKS);
     }
 

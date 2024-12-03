@@ -3,68 +3,119 @@ package ru.dushkinmir.absolutelyRandom.actions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
-public class Crash {
-    private static volatile boolean isMaintenanceMode = false; // Добавлена volatile для синхронизации
-    private static final Component MAINTENANCE_KICK_MSG =
-            Component.text("The server is currently offline for maintenance. Please try again later.", NamedTextColor.RED);
-    private static final int RESTART_DELAY_TICKS = 400; // 20 секунд
-    private static final Component MAINTENANCE_MOTD = Component.text("This server is offline for maintenance.");
-    private static final Component RESTART_KICK_MSG =
-            Component.text("Please wait a moment, the server is restarting...", NamedTextColor.YELLOW);
+import java.util.Random;
 
-    private static Listener joinListener;
+public class Crash extends Action {
+    private static final Random RANDOM = new Random();
+    private static final int GLITCH_DURATION_TICKS = 200; // Длительность хаоса
+    private static final Component DISCONNECT_MESSAGE = Component.text(
+            "Critical error: Server crashed. Please try again later.", NamedTextColor.RED);
+    private static final Component FINAL_MOTD = Component.text("System Failure: Rebooting...", NamedTextColor.RED);
+    private static final Material GLITCH_BLOCK = Material.BARRIER; // Используем барьер как эффект замены
 
-    public static void triggerCrash(Plugin plugin) {
-        PlayerUtils.kickAllPlayers(MAINTENANCE_KICK_MSG);
-        Component oldMotd = Bukkit.getServer().motd();
-        enableMaintenanceMode();
-        registerJoinListener(plugin);
-        scheduleServerRestart(plugin, oldMotd);
+    public Crash() {
+        super("crash");
     }
 
-    private static void enableMaintenanceMode() {
-        isMaintenanceMode = true;
-        Bukkit.getServer().motd(MAINTENANCE_MOTD);
-    }
+    @Override
+    public void execute(Plugin plugin) {
+        // Шаг 1: Стартуем визуальный хаос
+        startGlitches(plugin);
 
-    private static void registerJoinListener(Plugin plugin) {
-        if (joinListener != null) {
-            HandlerList.unregisterAll(joinListener);
-        }
-
-        joinListener = new Listener() {
-            @EventHandler
-            public void onPlayerJoin(PlayerJoinEvent event) {
-                kickPlayerOnJoin(event);
-            }
-        };
-
-        Bukkit.getPluginManager().registerEvents(joinListener, plugin);
-    }
-
-    private static void kickPlayerOnJoin(PlayerJoinEvent event) {
-        if (isMaintenanceMode) {
-            Player player = event.getPlayer();
-            PlayerUtils.kickPlayer(player, RESTART_KICK_MSG);
-        }
-    }
-
-    private static void scheduleServerRestart(Plugin plugin, Component oldMotd) {
+        // Шаг 2: Через некоторое время кикаем всех игроков
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            isMaintenanceMode = false;
-            restoreMotd(oldMotd);
-        }, RESTART_DELAY_TICKS);
+            kickAllPlayersWithStyle();
+            setMotd(FINAL_MOTD);
+        }, GLITCH_DURATION_TICKS);
     }
 
-    private static void restoreMotd(Component oldMotd) {
-        Bukkit.getServer().motd(oldMotd);
+    private static void startGlitches(Plugin plugin) {
+        new BukkitRunnable() {
+            int iterations = 0;
+
+            @Override
+            public void run() {
+                if (iterations++ > 10) {
+                    cancel(); // Останавливаем хаос через 10 итераций
+                    return;
+                }
+
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    createGlitchEffects(player);
+                }
+            }
+        }.runTaskTimer(plugin, 0, 20); // Повторяем каждую секунду
     }
+
+    private static void createGlitchEffects(Player player) {
+        // Телепортируем в случайную точку неподалёку
+        Location randomLocation = getRandomNearbyLocation(player.getLocation(), 20);
+        player.teleport(randomLocation);
+
+        // Отправляем "глючные" сообщения в чат
+        String glitchMessage = generateRandomGlitchMessage(player.getName());
+        PlayerUtils.sendMessageToPlayer(player, Component.text(glitchMessage, NamedTextColor.DARK_RED), PlayerUtils.MessageType.ACTION_BAR);
+
+        // Добавляем ослепление или другие эффекты
+        player.addPotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS.createEffect(40, 1));
+
+        // Спавним молнии рядом
+        World world = player.getWorld();
+        world.strikeLightning(randomLocation);
+
+        // Заменяем блоки вокруг игрока на блоки барьеров (только для него)
+        replaceNearbyBlocksWithGlitch(player);
+    }
+
+    private static void replaceNearbyBlocksWithGlitch(Player player) {
+        Location playerLocation = player.getLocation();
+        World world = playerLocation.getWorld();
+
+        if (world == null) return;
+
+        // Проверяем блоки вокруг игрока (в радиусе 5 блоков)
+        for (int x = -5; x <= 5; x++) {
+            for (int y = -2; y <= 2; y++) { // Небольшая высота для эффекта
+                for (int z = -5; z <= 5; z++) {
+                    Location loc = playerLocation.clone().add(x, y, z);
+
+                    // Заменяем блок только для этого игрока, на барьер (или другой блок)
+                    player.sendBlockChange(loc, GLITCH_BLOCK.createBlockData());
+                }
+            }
+        }
+    }
+
+    private static Location getRandomNearbyLocation(Location base, int range) {
+        World world = base.getWorld();
+        if (world == null) return base;
+
+        double offsetX = RANDOM.nextInt(range * 2) - range;
+        double offsetZ = RANDOM.nextInt(range * 2) - range;
+        return base.clone().add(offsetX, 0, offsetZ);
+    }
+
+    private static String generateRandomGlitchMessage(String playerName) {
+        return "ERROR_" + RANDOM.nextInt(9999) + " Player " + playerName + " disconnected";
+    }
+
+    private static void kickAllPlayersWithStyle() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            PlayerUtils.kickPlayer(player, DISCONNECT_MESSAGE);
+        }
+    }
+
+    private static void setMotd(Component motd) {
+        Bukkit.getServer().motd(motd);
+    }
+
+
 }

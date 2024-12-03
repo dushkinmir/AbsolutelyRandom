@@ -12,7 +12,7 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.List;
 
-public class Group {
+public class Group extends Action {
 
     private static final Component EVENT_STARTING_MESSAGE =
             Component.text("ГРУППОВАЯ МАСТУРБАЦИЯ НАЧНЕТСЯ ЧЕРЕЗ...", NamedTextColor.RED);
@@ -22,7 +22,12 @@ public class Group {
     private static final int EVENT_DURATION_TICKS = 60;
     private static boolean eventActive = false;
 
-    public static void triggerGroup(Plugin plugin) {
+    public Group() {
+        super("group");
+    }
+
+    @Override
+    public void execute(Plugin plugin) {
         if (eventActive) {
             return;
         }

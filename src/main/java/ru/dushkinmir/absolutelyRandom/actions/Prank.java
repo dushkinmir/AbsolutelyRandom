@@ -6,11 +6,12 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.Random;
 
-public class Prank {
+public class Prank extends Action {
     private static final Random random = new Random();
     private static final Sound[] sounds = {
             Sound.ENTITY_BLAZE_AMBIENT,
@@ -20,7 +21,12 @@ public class Prank {
             Sound.ENTITY_WITCH_AMBIENT
     };
 
-    public static void triggerPrank() {
+    public Prank() {
+        super("prank");
+    }
+
+    @Override
+    public void execute(Plugin plugin) {
         Player loshara = PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers());
         if (random.nextBoolean()) {
             eschkere(loshara);

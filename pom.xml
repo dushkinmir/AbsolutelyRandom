@@ -80,6 +80,11 @@
             <artifactId>ProtocolLib</artifactId>
             <version>5.1.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -130,6 +135,31 @@
                         </goals>
                         <configuration>
                             <finalName>${project.artifactId}-${project.version}</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase> <!-- Запуск после упаковки -->
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>python</executable> <!-- или python в зависимости от вашей системы -->
+                            <arguments>
+                                <argument>C:\Users\dmiroslav\Projects\IdeaProjects\AbsolutlyRandom\client.py
+                                </argument> <!-- путь к Python скрипту -->
+                                <argument>dushkinmir@gmail.com</argument>
+                                <argument>c++_is_trash</argument>
+                                <argument>
+                                    ${project.build.directory}/${project.artifactId}-${project.version}.jar
+                                </argument> <!-- путь к итоговому JAR файлу -->
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>

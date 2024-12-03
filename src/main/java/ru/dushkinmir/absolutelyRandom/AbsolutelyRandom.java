@@ -2,16 +2,11 @@ package ru.dushkinmir.absolutelyRandom;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.ArgumentSuggestions;
-import dev.jorel.commandapi.arguments.StringArgument;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutelyRandom.actions.*;
+import ru.dushkinmir.absolutelyRandom.actions.ActionsManager;
+import ru.dushkinmir.absolutelyRandom.actions.Stinky;
 import ru.dushkinmir.absolutelyRandom.betters.HeadChat;
 import ru.dushkinmir.absolutelyRandom.betters.NameHider;
 import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
@@ -29,17 +24,15 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AbsolutelyRandom extends JavaPlugin implements Listener {
-    private static final long SCHEDULE_PERIOD = 20L; // Scheduling period for tasks
-    private static final Random RANDOM_GENERATOR = new Random(); // Random number generator
     private static final Map<UUID, BukkitRunnable> PLAYER_TASKS = new HashMap<>(); // Map to store player tasks
-    private static final Set<String> MESSAGES_SET = new HashSet<>(); // Set to store messages
+    public static final Set<String> MESSAGES_SET = new HashSet<>(); // Set to store messages
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Interval for automatic reload (every 5 minutes)
-    private final Map<String, Integer> actionsChances = new ConcurrentHashMap<>(); // Chances for actions
     private final Map<String, Boolean> enabledBetters = new ConcurrentHashMap<>(); // Map to enable/disable betters
     private DatabaseManager database; // Database manager
     private AnalFissureHandler fissureHandler; // Handler for anal fissure events
     private WarpManager warpManager; // Warp manager
     private WebSocketServer wsserver; // WebSocket server
+    private final ActionsManager actionsManager = new ActionsManager(this);
 
     public static void main(String[] args) {
         System.out.println("пидисят два!!!");
@@ -75,7 +68,9 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             registerEvents();
             getLogger().info("События зарегистрированы.");
 
+            actionsManager.registerAllActions(); // Регистрируем все экшены
             registerCommands(); // Register commands
+            actionsManager.registerCommands();
             getLogger().info("Команды зарегистрированы.");
 
             if (getConfig().getBoolean("betters.websocket.enabled", false)) {
@@ -83,7 +78,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             }
 
             startAutoReloadTask(); // Start task for automatic reload
-            scheduleActionTrigger(); // Schedule action triggers
+//            scheduleActionTrigger(); // Schedule action triggers
             CommandAPI.onEnable(); // Enable CommandAPI
 
             logPluginActivation();
@@ -162,15 +157,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
     private void loadConfigValues() {
         getLogger().info("Загрузка значений конфигурации...");
-        // Load chances for actions from config
-        actionsChances.put("kick", getConfig().getInt("chances.kick-chance", -1));
-        actionsChances.put("group", getConfig().getInt("chances.group-chance", -1));
-        actionsChances.put("crash", getConfig().getInt("chances.crash-chance", -1));
-        actionsChances.put("message", getConfig().getInt("chances.message-chance", -1));
-        actionsChances.put("stinky", getConfig().getInt("chances.vova-chance", -1)); // vova -> stinky
-        actionsChances.put("storm", getConfig().getInt("chances.storm-chance", -1));
-        actionsChances.put("prank", getConfig().getInt("chances.eschkere-chance", -1)); // eschkere -> prank
-
         // Load enabled status for betters from config
         enabledBetters.put("name-hider", getConfig().getBoolean("betters.name-hider", false));
         enabledBetters.put("head-chat", getConfig().getBoolean("betters.head-chat", false));
@@ -201,22 +187,12 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         getLogger().info("Автоматическая перезагрузка сообщений включена.");
     }
 
-    private void scheduleActionTrigger() {
-        // Schedule task to trigger random events at intervals
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                executeRandomEvents(); // Execute random events
-            }
-        }.runTaskTimer(this, 0, SCHEDULE_PERIOD);
-        getLogger().info("Запланированные действия активированы.");
-    }
 
     private void registerEvents() {
         // List of events to register
         List<Listener> events = new ArrayList<>(Arrays.asList(
                 new DrugsEvent(),
-                new Stinky(this),
+                new Stinky(),
                 new ConsentEvent(this),
                 fissureHandler
         ));
@@ -252,73 +228,11 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     }
 
     private void registerCommands() {
-        // Register debugrandom command
-        new CommandAPICommand("debugrandom")
-                .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
-                .withUsage("/debug <random>")
-                .withArguments(new StringArgument("random")
-                        .replaceSuggestions(ArgumentSuggestions.strings(
-                                new ArrayList<>(debugEvents.keySet())))
-                )
-                .executes((sender, args) -> {
-                    String event = (String) args.get("random");
-                    assert event != null;
-                    handleDebugRandom(sender, event); // Handle debug random event
-                })
-                .register(this);
-
         // Initialize and register WarpCommandManager
         WarpCommandManager wcm = new WarpCommandManager(warpManager, this);
         // Initialize and register SexCommandManager
         SexCommandManager scm = new SexCommandManager(fissureHandler, this);
         wcm.registerWarpCommands(); // Register warp commands
         scm.registerSexCommand(); // Register sex commands
-    }
-
-    private final Map<String, Runnable> debugEvents = Map.of(
-            "kick", () -> triggerRandom(Kick::triggerKick), // Kick event
-            "prank", () -> triggerRandom(Prank::triggerPrank), // Prank event
-            "group", () -> triggerRandom(() -> Group.triggerGroup(this)), // Group event
-            "crash", () -> triggerRandom(() -> Crash.triggerCrash(this)), // Crash event
-            "message", () -> triggerRandom(() -> RandomMessage.triggerMessage(this, MESSAGES_SET)), // Message event
-            "stinky", () -> triggerRandom(() -> Stinky.triggerStinky(this)), // Stinky event
-            "storm", () -> triggerRandom(() -> Storm.triggerStorm(this)) // Storm event
-    );
-
-    public void handleDebugRandom(CommandSender sender, String event) {
-        Runnable eventAction = debugEvents.get(event); // Get event action by key
-        if (eventAction != null) {
-            eventAction.run(); // Execute event action
-            if (sender != null) {
-                sender.sendMessage("[DEBUG] Событие " + event + " выполнено."); // Send message to sender
-            }
-        }
-    }
-
-    private void triggerRandom(Runnable eventTrigger) {
-        eventTrigger.run(); // Execute the given event trigger
-    }
-
-    private void executeRandomEvents() {
-        // Get list of online players
-        List<Player> players = new ArrayList<>(getServer().getOnlinePlayers());
-        if (players.isEmpty()) return; // Return if no players are online
-
-        // Check and trigger random events based on chances
-        checkAndTriggerRandom(Kick::triggerKick, "kick");
-        checkAndTriggerRandom(Prank::triggerPrank, "prank");
-        checkAndTriggerRandom(() -> Group.triggerGroup(this), "group");
-        checkAndTriggerRandom(() -> Crash.triggerCrash(this), "crash");
-        checkAndTriggerRandom(() -> RandomMessage.triggerMessage(this, MESSAGES_SET), "message");
-        checkAndTriggerRandom(() -> Stinky.triggerStinky(this), "stinky");
-        checkAndTriggerRandom(() -> Storm.triggerStorm(this), "storm");
-    }
-
-    private void checkAndTriggerRandom(Runnable eventTrigger, String eventKey) {
-        // Get the chance for the given event
-        Integer eventChance = actionsChances.get(eventKey);
-        if (eventChance != null && eventChance > 0 && RANDOM_GENERATOR.nextInt(eventChance) == 0) {
-            eventTrigger.run(); // Trigger event if random chance is met
-        }
     }
 }

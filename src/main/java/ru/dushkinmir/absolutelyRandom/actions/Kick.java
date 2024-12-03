@@ -3,15 +3,21 @@ package ru.dushkinmir.absolutelyRandom.actions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
-public class Kick {
+public class Kick extends Action {
 
     private static final Component PLAYER_KICK_MESSAGE = Component.text("хахаха лошара", NamedTextColor.RED);
     private static final String BROADCAST_KICK_MESSAGE_TEMPLATE = "вот же %s лох!";
     private static final NamedTextColor BROADCAST_KICK_MESSAGE_COLOR = NamedTextColor.YELLOW;
 
-    public static void triggerKick() {
+    public Kick() {
+        super("kick");
+    }
+
+    @Override
+    public void execute(Plugin plugin) {
         kickPlayer(PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers()));
     }
 

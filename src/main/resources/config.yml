@@ -3,9 +3,9 @@ chances:
   group-chance: 500
   crash-chance: 10000
   message-chance: 1000
-  vova-chance: 1000
+  stinky-chance: 1000
   storm-chance: 5000
-  eschkere-chance: 5000
+  prank-chance: 5000
 betters:
   name-hider: true
   head-chat: true

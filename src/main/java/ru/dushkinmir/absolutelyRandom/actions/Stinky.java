@@ -19,26 +19,27 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.*;
 
-public class Stinky implements Listener {
+public class Stinky extends Action implements Listener {
     private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!");
     private static final Component STINKY_PLAYER_MESSAGE = Component.text(
             "бля чел иди искупайся, а то от тебя весь сервер щарахается"
     );
     private static final Component NORMAL_PLAYER_MESSAGE = Component.text("воо, молодец!");
+    private Plugin plugin;
 
-    private final Plugin plugin;
-
-    public Stinky(Plugin plugin) {
-        this.plugin = plugin;
+    public Stinky() {
+        super("stinky");
     }
 
-    public static void triggerStinky(Plugin plugin) {
+    @Override
+    public void execute(Plugin plugin) {
         List<Player> players = PlayerUtils.getOnlinePlayers();
         Player randomPlayer = PlayerUtils.getRandomPlayer(players);
         PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR);
         sendPlayerWorldMessage(randomPlayer);
         UUID playerUUID = randomPlayer.getUniqueId();
         scheduleEffects(plugin, playerUUID);
+        this.plugin = plugin;
     }
 
     private static void sendPlayerWorldMessage(Player player) {
