@@ -1,36 +1,29 @@
-package ru.dushkinmir.absolutelyRandom.core;
+package ru.dushkinmir.absolutelyRandom.core
 
-import dev.jorel.commandapi.CommandAPI;
-import org.bukkit.plugin.Plugin;
-import ru.dushkinmir.absolutelyRandom.features.sex.SexCommands;
-import ru.dushkinmir.absolutelyRandom.features.warp.WarpCommands;
+import dev.jorel.commandapi.CommandAPI
+import org.bukkit.plugin.Plugin
+import ru.dushkinmir.absolutelyRandom.features.sex.SexCommands
+import ru.dushkinmir.absolutelyRandom.features.warp.WarpCommands
 
-public class CommandsManager {
-    private final Plugin plugin;
-    private final ExtensionManager extensionManager;
+class CommandsManager(private val plugin: Plugin, private val extensionManager: ExtensionManager) {
 
-    public CommandsManager(Plugin plugin, ExtensionManager extensionManager) {
-        this.plugin = plugin;
-        this.extensionManager = extensionManager;
-    }
-
-    public void registerCommands() {
+    fun registerCommands() {
         // Initialize and register WarpCommandManager
-        WarpCommands wcm = new WarpCommands(extensionManager.getWarpManager(), plugin);
+        val wcm = WarpCommands(extensionManager.getWarpManager(), plugin)
         // Initialize and register SexCommandManager
-        SexCommands scm = new SexCommands(extensionManager.getFissureHandler(), plugin);
-        wcm.registerWarpCommands(); // Register warp commands
-        scm.registerSexCommand(); // Register sex commands
-        CommandAPI.onEnable(); // Enable CommandAPI
+        val scm = SexCommands(extensionManager.getFissureHandler(), plugin)
+        wcm.registerWarpCommands() // Register warp commands
+        scm.registerSexCommand() // Register sex commands
+        CommandAPI.onEnable() // Enable CommandAPI
     }
 
-    public void unregisterCommands() {
+    fun unregisterCommands() {
         // Unregister commands
-        CommandAPI.unregister("debugrandom");
-        CommandAPI.unregister("warp");
-        CommandAPI.unregister("sex");
-        plugin.getLogger().info("Команды CommandAPI отменены.");
+        CommandAPI.unregister("debugrandom")
+        CommandAPI.unregister("warp")
+        CommandAPI.unregister("sex")
+        plugin.logger.info("Команды CommandAPI отменены.")
         // Disable CommandAPI
-        CommandAPI.onDisable();
+        CommandAPI.onDisable()
     }
 }

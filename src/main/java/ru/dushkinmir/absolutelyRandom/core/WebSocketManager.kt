@@ -1,53 +1,47 @@
-package ru.dushkinmir.absolutelyRandom.core;
+package ru.dushkinmir.absolutelyRandom.core
 
-import org.bukkit.plugin.Plugin;
-import ru.dushkinmir.absolutelyRandom.network.WebSocketMessageListener;
-import ru.dushkinmir.absolutelyRandom.network.WebSocketServer;
+import org.bukkit.plugin.Plugin
+import ru.dushkinmir.absolutelyRandom.network.WebSocketServer
 
-public class WebSocketManager {
-    private final Plugin plugin;
-    private WebSocketServer wsserver;
+class WebSocketManager(private val plugin: Plugin) {
+    private var wsserver: WebSocketServer? = null
 
-    public WebSocketManager(Plugin plugin) {
-        this.plugin = plugin;
-    }
-
-    public void enableWebSocketServer() {
-        if (!plugin.getConfig().getBoolean("betters.websocket.enabled", false)) {
-            plugin.getLogger().info("WebSocket отключен в конфиге");
-            return;
+    fun enableWebSocketServer() {
+        if (!plugin.config.getBoolean("betters.websocket.enabled", false)) {
+            plugin.logger.info("WebSocket отключен в конфиге")
+            return
         }
 
-        plugin.getLogger().info("Запуск веб-сокет сервера...");
+        plugin.logger.info("Запуск веб-сокет сервера...")
         // Get server IP and port
-        String serverIp = plugin.getServer().getIp().isEmpty() ? "localhost" : plugin.getServer().getIp();
-        int port = plugin.getServer().getPort() + 1;
+        val serverIp = if (plugin.server.ip.isEmpty()) "localhost" else plugin.server.ip
+        val port = plugin.server.port + 1
 
         // Initialize WebSocket server
-        wsserver = new WebSocketServer(serverIp, port, plugin.getLogger());
+        wsserver = WebSocketServer(serverIp, port, plugin.logger)
         try {
-            plugin.getLogger().info("Конфигурация WebSocket успешно загружена.");
-            wsserver.start(); // Start WebSocket server
-            plugin.getLogger().info("WebSocket сервер запущен на IP " + serverIp + " и порту " + port);
-        } catch (Exception e) {
-            plugin.getLogger().severe("Не удалось активировать слушателей WebSocket. " + e.getMessage());
+            plugin.logger.info("Конфигурация WebSocket успешно загружена.")
+            wsserver?.start() // Start WebSocket server
+            plugin.logger.info("WebSocket сервер запущен на IP $serverIp и порту $port")
+        } catch (e: Exception) {
+            plugin.logger.severe("Не удалось активировать слушателей WebSocket. " + e.message)
         }
     }
 
-    public void disableWebSocketServer() {
+    fun disableWebSocketServer() {
         // Stopping the WebSocket server
         if (wsserver != null) {
             try {
                 // Remove all listeners
-                for (WebSocketMessageListener listener : wsserver.getListeners()) {
-                    wsserver.removeListener(listener);
+                for (listener in wsserver!!.listeners) {
+                    wsserver?.removeListener(listener)
                 }
-                plugin.getLogger().info("Остановка WebSocket сервера.");
-                wsserver.stop(); // Stop the server
-            } catch (Exception e) {
-                plugin.getLogger().severe("Не удалось остановить WebSocket сервер: " + e.getMessage());
+                plugin.logger.info("Остановка WebSocket сервера.")
+                wsserver?.stop() // Stop the server
+            } catch (e: Exception) {
+                plugin.logger.severe("Не удалось остановить WebSocket сервер: " + e.message)
             }
-            plugin.getLogger().info("WebSocket сервер остановлен.");
+            plugin.logger.info("WebSocket сервер остановлен.")
         }
     }
 }

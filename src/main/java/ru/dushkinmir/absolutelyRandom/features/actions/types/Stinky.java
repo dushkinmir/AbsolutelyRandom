@@ -14,7 +14,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutelyRandom.AbsolutelyRandom;
+import ru.dushkinmir.absolutelyRandom.AbsRand;
 import ru.dushkinmir.absolutelyRandom.features.actions.Action;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
@@ -51,7 +51,7 @@ public class Stinky extends Action implements Listener {
     private static void scheduleEffects(Plugin plugin, UUID playerUUID) {
         Player player = plugin.getServer().getPlayer(playerUUID);
         if (player != null) {
-            Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
+            Map<UUID, BukkitRunnable> playerTasks = AbsRand.Companion.getPlayerTasks();
             PlayerEffectTask task = new PlayerEffectTask(player);
             task.runTaskTimer(plugin, 0, 20L);
             if (!playerTasks.containsKey(playerUUID)) playerTasks.put(playerUUID, task);
@@ -69,7 +69,7 @@ public class Stinky extends Action implements Listener {
     }
 
     private boolean isPlayerTracked(UUID playerUUID) {
-        return AbsolutelyRandom.getPlayerTasks().containsKey(playerUUID);
+        return AbsRand.Companion.getPlayerTasks().containsKey(playerUUID);
     }
 
     private static class PlayerEffectTask extends BukkitRunnable {
@@ -81,7 +81,7 @@ public class Stinky extends Action implements Listener {
 
         @Override
         public void run() {
-            Map<UUID, BukkitRunnable> playerTasks = AbsolutelyRandom.getPlayerTasks();
+            Map<UUID, BukkitRunnable> playerTasks = AbsRand.Companion.getPlayerTasks();
             UUID playerUUID = player.getUniqueId();
             if (isPlayerInWater(player)) {
                 PlayerUtils.sendMessageToPlayer(player, NORMAL_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT);
