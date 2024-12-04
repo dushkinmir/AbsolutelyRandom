@@ -1,139 +1,127 @@
-package ru.dushkinmir.absolutelyRandom.features.events;
+package ru.dushkinmir.absolutelyRandom.features.events
 
-import de.tr7zw.changeme.nbtapi.NBT;
-import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
-import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBTCompoundList;
-import net.kyori.adventure.text.Component;
-import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import de.tr7zw.changeme.nbtapi.NBT
+import net.kyori.adventure.text.Component
+import org.bukkit.Color
+import org.bukkit.GameMode
+import org.bukkit.Material
+import org.bukkit.Sound
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerItemConsumeEvent
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
 
-import java.util.Map;
+class DrugsEvent : Listener {
 
-public class DrugsEvent implements Listener {
-
-    private void applyDrugEffects(ItemStack item, String drugName, Map<String, Integer> effects, int nutrition,
-                                  float saturation, Block clickedBlock, Player player) {
-        player.getWorld().spawnParticle(
-                Particle.DUST,
-                clickedBlock.getLocation(),
-                75, 1, 1, 1,
-                new Particle.DustOptions(Color.GRAY, 1.7f));
-        player.getWorld().playSound(clickedBlock.getLocation(), Sound.ENTITY_CREEPER_PRIMED, 1.0f, 1.0f);
-        ItemMeta meta = item.getItemMeta();
-        meta.displayName(Component.text(drugName));
-        item.setItemMeta(meta);
-        NBT.modify(item, nbt -> {
-            nbt.setString("drug", "вова хорошенький");
-        });
-
-        NBT.modifyComponents(item, nbt -> {
-            ReadWriteNBT foodTag = nbt.getOrCreateCompound("minecraft:food");
-            foodTag.setInteger("nutrition", nutrition);
-            foodTag.setFloat("saturation", saturation);
-            foodTag.setBoolean("can_always_eat", true);
-
-            ReadWriteNBTCompoundList effectsTag = foodTag.getCompoundList("effects");
-            effects.forEach((effectId, duration) -> {
-                ReadWriteNBT effectTag = effectsTag.addCompound().getOrCreateCompound("effect");
-                effectTag.setString("id", effectId);
-                effectTag.setInteger("duration", duration);
-            });
-        });
-    }
-
-    @EventHandler
-    public void onPlayerRightClick(PlayerInteractEvent event) {
-        if (event.getAction().isRightClick() && event.getPlayer().isSneaking()) {
-            Block clickedBlock = event.getClickedBlock();
-            ItemStack item = event.getItem();
-            if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND && item != null) {
-                NBT.get(item, nbt -> {
-                    if (!nbt.hasTag("drug")) {
-                        switch (item.getType()) {
-                            case SUGAR:
-                                applyDrugEffects(item, "Кокаин", Map.of(
-                                        "minecraft:speed", 100,
-                                        "minecraft:haste", 100,
-                                        "minecraft:weakness", 100,
-                                        "minecraft:hunger", 100
-                                ), 0, 0.0f, clickedBlock, event.getPlayer());
-                                break;
-                            case WHITE_DYE:
-                                applyDrugEffects(item, "Мефедрон", Map.of(
-                                        "minecraft:speed", 100,
-                                        "minecraft:strength", 100,
-                                        "minecraft:nausea", 100,
-                                        "minecraft:blindness", 100
-                                ), 0, 0.0f, clickedBlock, event.getPlayer());
-                                break;
-                            case FERN:
-                                applyDrugEffects(item, "Марихуана", Map.of(
-                                        "minecraft:regeneration", 100,
-                                        "minecraft:hunger", 100,
-                                        "minecraft:slowness", 100,
-                                        "minecraft:weakness", 100
-                                ), 0, 0.0f, clickedBlock, event.getPlayer());
-                                break;
-                            case HONEY_BOTTLE:
-                                applyDrugEffects(item, "Пиво", Map.of(
-                                        "minecraft:nausea", 100,
-                                        "minecraft:resistance", 100,
-                                        "minecraft:mining_fatigue", 100,
-                                        "minecraft:weakness", 100
-                                ), 6, 1.0f, clickedBlock, event.getPlayer());
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                });
-            }
-        }
-    }
+    private val drugs = mapOf(
+        Material.SUGAR to Drug(
+            name = "Кокаин",
+            effects = mapOf(
+                "minecraft:speed" to 100,
+                "minecraft:haste" to 100,
+                "minecraft:weakness" to 100,
+                "minecraft:hunger" to 100
+            ),
+            nutrition = 0,
+            saturation = 0.0f,
+            particleColor = Color.GRAY,
+            sound = Sound.ENTITY_CREEPER_PRIMED
+        ),
+        Material.WHITE_DYE to Drug(
+            name = "Мефедрон",
+            effects = mapOf(
+                "minecraft:speed" to 100,
+                "minecraft:strength" to 100,
+                "minecraft:nausea" to 100,
+                "minecraft:blindness" to 100
+            ),
+            nutrition = 0,
+            saturation = 0.0f,
+            particleColor = Color.WHITE,
+            sound = Sound.ENTITY_CREEPER_PRIMED
+        ),
+        Material.FERN to Drug(
+            name = "Марихуана",
+            effects = mapOf(
+                "minecraft:regeneration" to 100,
+                "minecraft:hunger" to 100,
+                "minecraft:slowness" to 100,
+                "minecraft:weakness" to 100
+            ),
+            nutrition = 0,
+            saturation = 0.0f,
+            particleColor = Color.GREEN,
+            sound = Sound.ENTITY_CREEPER_PRIMED
+        ),
+        Material.HONEY_BOTTLE to Drug(
+            name = "Пиво",
+            effects = mapOf(
+                "minecraft:nausea" to 100,
+                "minecraft:resistance" to 100,
+                "minecraft:mining_fatigue" to 100,
+                "minecraft:weakness" to 100
+            ),
+            nutrition = 6,
+            saturation = 1.0f,
+            particleColor = Color.YELLOW,
+            sound = Sound.ENTITY_CREEPER_PRIMED
+        )
+    )
 
     @EventHandler
-    public void onPlayerLeftClick(PlayerInteractEvent event) {
-        if (event.getAction().isLeftClick()) {
-            Block clickedBlock = event.getClickedBlock();
-            if (clickedBlock != null && clickedBlock.getType() == Material.BREWING_STAND) {
-                GameMode gameMode = event.getPlayer().getGameMode();
-                if (!gameMode.equals(GameMode.CREATIVE) && !gameMode.equals(GameMode.SPECTATOR)) {
-                    PlayerUtils.sendMessageToPlayer(event.getPlayer(), Component.text("дебил хули ты тычешь, совсем уже под солями объебан"), PlayerUtils.MessageType.CHAT);
+    fun onPlayerRightClick(event: PlayerInteractEvent) {
+        val player = event.player
+        val clickedBlock = event.clickedBlock
+        val item = event.item
+
+        if (event.action.isRightClick && player.isSneaking && clickedBlock?.type == Material.BREWING_STAND && item != null) {
+            NBT.get(item) { nbt ->
+                if (!nbt.hasTag("drug")) {
+                    drugs[item.type]?.apply(item, clickedBlock, player)
                 }
             }
         }
     }
 
     @EventHandler
-    public void onPlayerConsumeDrug(PlayerItemConsumeEvent event) {
-        ItemStack item = event.getItem();
-        NBT.get(item, nbt -> {
-            if ("вова хорошенький".equals(nbt.getString("drug"))) {
-                String rawDruggedPlayer = "агаа!! %s у нас тут оказыватся балуется %s";
-                String druggedPlayer = rawDruggedPlayer.formatted(event.getPlayer().getName(), "%s");
-                rawDruggedPlayer = "уф бляя мощненько так закинулся %s";
-                Map<Material, String> drugMessages = Map.of(
-                        Material.WHITE_DYE, "мефедрончиком",
-                        Material.SUGAR, "кокаинчиком",
-                        Material.FERN, "марихуаной",
-                        Material.HONEY_BOTTLE, "пивком"
-                );
+    fun onPlayerLeftClick(event: PlayerInteractEvent) {
+        val clickedBlock = event.clickedBlock
+        if (event.action.isLeftClick && clickedBlock?.type == Material.BREWING_STAND) {
+            val player = event.player
+            if (player.gameMode != GameMode.CREATIVE && player.gameMode != GameMode.SPECTATOR) {
+                PlayerUtils.sendMessageToPlayer(
+                    player,
+                    Component.text("дебил хули ты тычешь, совсем уже под солями объебан"),
+                    PlayerUtils.MessageType.CHAT
+                )
+            }
+        }
+    }
 
-                if (drugMessages.containsKey(item.getType())) {
-                    String drugType = drugMessages.get(item.getType());
-                    PlayerUtils.sendMessageToPlayer(event.getPlayer(), Component.text(druggedPlayer.formatted(drugType)), PlayerUtils.MessageType.CHAT);
-                    druggedPlayer = rawDruggedPlayer.formatted(drugType);
-                    PlayerUtils.sendMessageToPlayer(event.getPlayer(), Component.text(druggedPlayer), PlayerUtils.MessageType.ACTION_BAR);
+    @EventHandler
+    fun onPlayerConsumeDrug(event: PlayerItemConsumeEvent) {
+        val item = event.item
+        NBT.get(item) { nbt ->
+            if ("вова хорошенький" == nbt.getString("drug")) {
+                val player = event.player
+                val drugMessages = mapOf(
+                    Material.WHITE_DYE to "мефедрончиком",
+                    Material.SUGAR to "кокаинчиком",
+                    Material.FERN to "марихуаной",
+                    Material.HONEY_BOTTLE to "пивком"
+                )
+                drugMessages[item.type]?.let { drugType ->
+                    val chatMessage = "агаа!! ${player.name} у нас тут оказывается балуется $drugType"
+                    val actionBarMessage = "уф бляя мощненько так закинулся $drugType"
+                    PlayerUtils.sendMessageToPlayer(player, Component.text(chatMessage), PlayerUtils.MessageType.CHAT)
+                    PlayerUtils.sendMessageToPlayer(
+                        player,
+                        Component.text(actionBarMessage),
+                        PlayerUtils.MessageType.ACTION_BAR
+                    )
                 }
             }
-        });
+        }
     }
 }

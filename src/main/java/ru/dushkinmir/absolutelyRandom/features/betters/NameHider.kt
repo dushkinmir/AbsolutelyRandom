@@ -1,62 +1,56 @@
-package ru.dushkinmir.absolutelyRandom.features.betters;
+package ru.dushkinmir.absolutelyRandom.features.betters
 
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.plugin.Plugin
+import org.bukkit.scheduler.BukkitRunnable
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+class NameHider(private val plugin: Plugin) : Listener {
+    private val visibilityMap: MutableMap<UUID, MutableMap<UUID, Boolean>> = ConcurrentHashMap()
 
-public class NameHider implements Listener {
-    private final Map<UUID, Map<UUID, Boolean>> visibilityMap = new ConcurrentHashMap<>();
-    private final Plugin plugin;
-
-    public NameHider(Plugin plugin) {
-        this.plugin = plugin;
-        startVisibilityTask();
+    init {
+        startVisibilityTask()
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        UUID playerId = event.getPlayer().getUniqueId();
-        visibilityMap.putIfAbsent(playerId, new ConcurrentHashMap<>());
+    fun onPlayerJoin(event: PlayerJoinEvent) {
+        val playerId = event.player.uniqueId
+        visibilityMap.putIfAbsent(playerId, ConcurrentHashMap())
     }
 
-    private void startVisibilityTask() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
+    private fun startVisibilityTask() {
+        object : BukkitRunnable() {
+            override fun run() {
                 try {
-                    updateVisibility();
-                } catch (Exception e) {
-                    plugin.getLogger().severe(e.getMessage());
+                    updateVisibility()
+                } catch (e: Exception) {
+                    plugin.logger.severe(e.message)
                 }
             }
-        }.runTaskTimer(plugin, 0L, 3L); // Обновление каждые 20 тиков (1 секунда)
+        }.runTaskTimer(plugin, 0L, 3L) // Обновление каждые 20 тиков (1 секунда)
     }
 
-    void updateVisibility() {
-        for (Player viewer : plugin.getServer().getOnlinePlayers()) {
-            UUID viewerId = viewer.getUniqueId();
-            visibilityMap.putIfAbsent(viewerId, new ConcurrentHashMap<>());
-            Map<UUID, Boolean> viewerVisibilityMap = visibilityMap.get(viewerId);
+    fun updateVisibility() {
+        for (viewer in plugin.server.onlinePlayers) {
+            val viewerId = viewer.uniqueId
+            visibilityMap.putIfAbsent(viewerId, ConcurrentHashMap())
+            val viewerVisibilityMap = visibilityMap[viewerId]!!
 
-            for (Player target : plugin.getServer().getOnlinePlayers()) {
-                if (viewer.equals(target)) continue;
+            for (target in plugin.server.onlinePlayers) {
+                if (viewer == target) continue
 
-                UUID targetId = target.getUniqueId();
-                boolean canSee = viewer.hasLineOfSight(target);
+                val targetId = target.uniqueId
+                val canSee = viewer.hasLineOfSight(target)
 
-                if (canSee && (!viewerVisibilityMap.containsKey(targetId) || !viewerVisibilityMap.get(targetId))) {
-                    viewer.showPlayer(plugin, target);
-                    viewerVisibilityMap.put(targetId, true);
-                } else if (!canSee && (!viewerVisibilityMap.containsKey(targetId) || viewerVisibilityMap.get(targetId))) {
-                    viewer.hidePlayer(plugin, target);
-                    viewerVisibilityMap.put(targetId, false);
+                if (canSee && (!viewerVisibilityMap.containsKey(targetId) || viewerVisibilityMap[targetId] == false)) {
+                    viewer.showPlayer(plugin, target)
+                    viewerVisibilityMap[targetId] = true
+                } else if (!canSee && (!viewerVisibilityMap.containsKey(targetId) || viewerVisibilityMap[targetId] == true)) {
+                    viewer.hidePlayer(plugin, target)
+                    viewerVisibilityMap[targetId] = false
                 }
             }
         }

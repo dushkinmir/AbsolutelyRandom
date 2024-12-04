@@ -1,94 +1,79 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types;
+package ru.dushkinmir.absolutelyRandom.features.actions.types
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutelyRandom.AbsolutelyRandom;
-import ru.dushkinmir.absolutelyRandom.features.actions.Action;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.title.Title
+import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
+import org.bukkit.scheduler.BukkitRunnable
+import ru.dushkinmir.absolutelyRandom.features.actions.Action
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+class RandomMessage : Action("message") {
+    private val MESSAGES = ArrayList(listOf("bruh"))
 
-public class RandomMessage extends Action {
-    private static final Random RANDOM = new Random();
-    private static final int MAX_MESSAGE_COUNT = 3;
-    private static final long TASK_INTERVAL_TICKS = 20 * 4;
-    private final Set<String> MESSAGES = AbsolutelyRandom.MESSAGES_SET;
-
-    public RandomMessage() {
-        super("message");
+    override fun execute(plugin: Plugin) {
+        val onlinePlayers = PlayerUtils.getOnlinePlayers()
+        val randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers)
+        scheduleRandomMessagesTask(plugin, randomPlayer)
     }
 
-    @Override
-    public void execute(Plugin plugin) {
-        List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
-        Player randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers);
-        scheduleRandomMessagesTask(plugin, randomPlayer);
+    private fun scheduleRandomMessagesTask(plugin: Plugin, player: Player) {
+        MessageTask(player, RANDOM.nextBoolean(), MESSAGES).runTaskTimer(plugin, 0L, TASK_INTERVAL_TICKS)
     }
 
-    private void scheduleRandomMessagesTask(Plugin plugin, Player player) {
-        new MessageTask(player, RANDOM.nextBoolean(), MESSAGES).runTaskTimer(plugin, 0L, TASK_INTERVAL_TICKS);
-    }
+    private class MessageTask(
+        private val player: Player,
+        private val isPlayerMessage: Boolean,
+        private val MESSAGES: List<String>
+    ) : BukkitRunnable() {
+        private var messageCount = 0
 
-    private static class MessageTask extends BukkitRunnable {
-        private final Player player;
-        private int messageCount;
-        private final boolean isPlayerMessage;
-        private final Set<String> MESSAGES;
-
-        public MessageTask(Player player, boolean isPlayerMessage, Set<String> MESSAGES) {
-            this.player = player;
-            this.messageCount = 0;
-            this.isPlayerMessage = isPlayerMessage;
-            this.MESSAGES = MESSAGES;
-        }
-
-        @Override
-        public void run() {
+        override fun run() {
             if (messageCount < MAX_MESSAGE_COUNT) {
-                showRandomMessageToPlayer();
-                messageCount++;
+                showRandomMessageToPlayer()
+                messageCount++
             } else {
-                this.cancel();
+                this.cancel()
             }
         }
 
-        private void showRandomMessageToPlayer() {
-            List<String> messageList = new ArrayList<>(MESSAGES);
-            String randomMessage = messageList.get(RANDOM.nextInt(MESSAGES.size()));
+        private fun showRandomMessageToPlayer() {
+            val messageList = ArrayList(MESSAGES)
+            val randomMessage = messageList[RANDOM.nextInt(MESSAGES.size)]
             if (isPlayerMessage) {
-                sendPlayerMessage(player, randomMessage);
+                sendPlayerMessage(player, randomMessage)
             } else {
-                showTitleMessage(player, randomMessage);
+                showTitleMessage(player, randomMessage)
             }
-            MESSAGES.remove(randomMessage);
         }
 
-        private Component createTitleText() {
-            return Component.text("пениспиздасиськи", NamedTextColor.GRAY, TextDecoration.OBFUSCATED);
+        private fun createTitleText(): Component {
+            return Component.text("пениспиздасиськи", NamedTextColor.GRAY, TextDecoration.OBFUSCATED)
         }
 
-        private Component createSubTitleText(String message) {
-            return Component.text(message, NamedTextColor.GOLD);
+        private fun createSubTitleText(message: String): Component {
+            return Component.text(message, NamedTextColor.GOLD)
         }
 
-        private void showTitleMessage(Player player, String message) {
-            Component titleText = createTitleText();
-            Component subTitleText = createSubTitleText(message);
-            player.showTitle(Title.title(titleText, subTitleText));
-            PlayerUtils.sendMessageToPlayer(player, titleText, PlayerUtils.MessageType.ACTION_BAR);
+        private fun showTitleMessage(player: Player, message: String) {
+            val titleText = createTitleText()
+            val subTitleText = createSubTitleText(message)
+            player.showTitle(Title.title(titleText, subTitleText))
+            PlayerUtils.sendMessageToPlayer(player, titleText, PlayerUtils.MessageType.ACTION_BAR)
         }
 
-        private void sendPlayerMessage(Player player, String message) {
-            Component messageFromPlayer = Component.text(String.format("<%s> %s", player.getName(), message));
-            PlayerUtils.sendMessageToAllPlayers(messageFromPlayer, PlayerUtils.MessageType.CHAT);
+        private fun sendPlayerMessage(player: Player, message: String) {
+            val messageFromPlayer = Component.text("<${player.name}> $message")
+            PlayerUtils.sendMessageToAllPlayers(messageFromPlayer, PlayerUtils.MessageType.CHAT)
         }
+    }
+
+    companion object {
+        private val RANDOM = Random()
+        private const val MAX_MESSAGE_COUNT = 3
+        private const val TASK_INTERVAL_TICKS: Long = 20 * 4
     }
 }

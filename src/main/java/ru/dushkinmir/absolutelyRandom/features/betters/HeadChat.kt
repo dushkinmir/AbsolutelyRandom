@@ -1,249 +1,239 @@
-package ru.dushkinmir.absolutelyRandom.features.betters;
+package ru.dushkinmir.absolutelyRandom.features.betters
 
-import io.papermc.paper.event.player.AsyncChatEvent;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
+import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import org.bukkit.Bukkit
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
+import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.ShapedRecipe
+import org.bukkit.inventory.ShapelessRecipe
+import org.bukkit.persistence.PersistentDataType
+import org.bukkit.plugin.Plugin
+import org.bukkit.scheduler.BukkitRunnable
+import kotlin.math.min
 
-public class HeadChat implements Listener {
-    private final Plugin plugin;
-    private static final TextComponent RADIO_NAME = Component.text("Radio", NamedTextColor.GOLD);
-
-    public HeadChat(Plugin plugin) {
-        this.plugin = plugin;
-        new CraftingRecipe(plugin); // Initialize crafting recipe
+class HeadChat(private val plugin: Plugin) : Listener {
+    init {
+        CraftingRecipe(plugin) // Initialize crafting recipe
     }
 
-    public static void onDisable(Plugin plugin) {
-        plugin.getServer().removeRecipe(new NamespacedKey(plugin, "radio"));
-        plugin.getServer().removeRecipe(new NamespacedKey(plugin, "radioRepaired"));
-    }
-
-    private void decreaseRadioDurability(Player player) {
-        ItemStack radio = player.getInventory().getItemInMainHand();
-        ItemMeta meta = radio.getItemMeta();
+    private fun decreaseRadioDurability(player: Player) {
+        val radio = player.inventory.itemInMainHand
+        val meta = radio.itemMeta
         if (radio.hasItemMeta()) {
             if (meta != null) {
-                NamespacedKey durabilityKey = new NamespacedKey(plugin, "durability");
-                Integer durability = meta.getPersistentDataContainer().get(durabilityKey, PersistentDataType.INTEGER);
+                val durabilityKey = NamespacedKey(plugin, "durability")
+                val durability = meta.persistentDataContainer.get(durabilityKey, PersistentDataType.INTEGER)
                 if (durability != null && durability > 1) {
-                    int newDurability = durability - 1;
-                    meta.getPersistentDataContainer().set(durabilityKey, PersistentDataType.INTEGER, newDurability);
-                    TextComponent updatedName = Component.text()
-                            .append(RADIO_NAME)
-                            .append(Component.text("[" + newDurability + "]", NamedTextColor.DARK_AQUA))
-                            .build();
+                    val newDurability = durability - 1
+                    meta.persistentDataContainer.set(durabilityKey, PersistentDataType.INTEGER, newDurability)
+                    val updatedName = Component.text()
+                        .append(RADIO_NAME)
+                        .append(Component.text("[$newDurability]", NamedTextColor.DARK_AQUA))
+                        .build()
 
-                    meta.displayName(updatedName);
-                    radio.setItemMeta(meta); // Сохранить изменения в ItemMeta
+                    meta.displayName(updatedName)
+                    radio.itemMeta = meta // Сохранить изменения в ItemMeta
                 } else if (durability != null) {
-                    player.getInventory().setItemInMainHand(null); // Удалить предмет, если у него закончилась прочность
+                    player.inventory.setItemInMainHand(null) // Удалить предмет, если у него закончилась прочность
                 }
             }
         }
     }
 
     @EventHandler
-    public void onPlayerChat(AsyncChatEvent event) {
-        Player player = event.getPlayer();
-        String message = LegacyComponentSerializer.legacySection().serialize(event.message());
+    fun onPlayerChat(event: AsyncChatEvent) {
+        val player = event.player
+        val message = LegacyComponentSerializer.legacySection().serialize(event.message())
 
         if (isInvalidMessage(event, message)) {
-            return;
+            return
         }
 
         if (playerHasRadio(player)) {
-            decreaseRadioDurability(player);
-            return;
+            decreaseRadioDurability(player)
+            return
         }
 
-        event.setCancelled(true);
+        event.isCancelled = true
 
         // Переносим создание ArmorStand в основной поток
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                ArmorStand armorStand = createArmorStand(player, message);
-                if (message.length() > 20) {
-                    new MessageScroller(plugin).scrollMessageAboveHead(armorStand, message);
+        object : BukkitRunnable() {
+            override fun run() {
+                val armorStand = createArmorStand(player, message)
+                if (message.length > 20) {
+                    MessageScroller(plugin).scrollMessageAboveHead(armorStand, message)
                 } else {
-                    removeArmorStandLater(armorStand, 80L);
+                    removeArmorStandLater(armorStand, 80L)
                 }
-                new ArmorStandFollower(plugin).followPlayer(player, armorStand, 1L);
+                ArmorStandFollower(plugin).followPlayer(player, armorStand, 1L)
             }
-        }.runTask(plugin);
+        }.runTask(plugin)
     }
 
-    private boolean isInvalidMessage(AsyncChatEvent event, String message) {
-        return message.startsWith("/") || event.isCancelled();
+    private fun isInvalidMessage(event: AsyncChatEvent, message: String): Boolean {
+        return message.startsWith("/") || event.isCancelled
     }
 
-    private boolean playerHasRadio(Player player) {
-        ItemStack heldItem = player.getInventory().getItemInMainHand();
-        return heldItem.hasItemMeta()
-                && heldItem.getItemMeta().hasDisplayName()
-                && heldItem.getItemMeta().displayName().toString().contains(RADIO_NAME.toString());
+    private fun playerHasRadio(player: Player): Boolean {
+        val heldItem = player.inventory.itemInMainHand
+        return heldItem.hasItemMeta() &&
+                heldItem.itemMeta!!.hasDisplayName() &&
+                heldItem.itemMeta!!.displayName().toString().contains(RADIO_NAME.toString())
     }
 
-    private ArmorStand createArmorStand(Player player, String message) {
-        Location location = player.getLocation().add(0, 2.25, 0);
-        ArmorStand armorStand = (ArmorStand) player.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-        armorStand.setInvisible(true);
-        armorStand.customName(Component.text(message));
-        armorStand.setCustomNameVisible(true);
-        armorStand.setMarker(true);
-        armorStand.setGravity(false);
-        return armorStand;
+    private fun createArmorStand(player: Player, message: String): ArmorStand {
+        val location = player.location.add(0.0, 2.25, 0.0)
+        val armorStand = player.world.spawnEntity(location, EntityType.ARMOR_STAND) as ArmorStand
+        armorStand.isInvisible = true
+        armorStand.customName(Component.text(message))
+        armorStand.isCustomNameVisible = true
+        armorStand.isMarker = true
+        armorStand.setGravity(false)
+        return armorStand
     }
 
-    private void removeArmorStandLater(ArmorStand armorStand, long delay) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                armorStand.remove();
+    private fun removeArmorStandLater(armorStand: ArmorStand, delay: Long) {
+        object : BukkitRunnable() {
+            override fun run() {
+                armorStand.remove()
             }
-        }.runTaskLater(plugin, delay);
+        }.runTaskLater(plugin, delay)
     }
 
-    private record ArmorStandFollower(Plugin plugin) {
-        void followPlayer(Player player, ArmorStand armorStand, long interval) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (!armorStand.isValid() || !player.isOnline()) {
-                        armorStand.remove();
-                        this.cancel();
-                        return;
+    private data class ArmorStandFollower(val plugin: Plugin) {
+        fun followPlayer(player: Player, armorStand: ArmorStand, interval: Long) {
+            object : BukkitRunnable() {
+                override fun run() {
+                    if (!armorStand.isValid || !player.isOnline) {
+                        armorStand.remove()
+                        this.cancel()
+                        return
                     }
-                    Location location = player.getLocation().add(0, 2.25, 0);
-                    armorStand.teleport(location);
+                    val location = player.location.add(0.0, 2.25, 0.0)
+                    armorStand.teleport(location)
                 }
-            }.runTaskTimer(plugin, 0L, interval);
+            }.runTaskTimer(plugin, 0L, interval)
         }
     }
 
-    private record MessageScroller(Plugin plugin) {
-        void scrollMessageAboveHead(ArmorStand armorStand, String message) {
-            int messageLength = message.length();
-            int visibleLength = 30; // Максимальная длина видимого текста
+    private data class MessageScroller(val plugin: Plugin) {
+        fun scrollMessageAboveHead(armorStand: ArmorStand, message: String) {
+            val messageLength = message.length
+            val visibleLength = 30 // Максимальная длина видимого текста
             if (messageLength <= visibleLength) {
-                armorStand.customName(Component.text(message));
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        armorStand.remove();
+                armorStand.customName(Component.text(message))
+                object : BukkitRunnable() {
+                    override fun run() {
+                        armorStand.remove()
                     }
-                }.runTaskLater(plugin, 80L);
+                }.runTaskLater(plugin, 80L)
             } else {
-                new BukkitRunnable() {
-                    int offset = 0;
+                object : BukkitRunnable() {
+                    var offset = 0
 
-                    @Override
-                    public void run() {
+                    override fun run() {
                         if (offset >= messageLength) {
-                            this.cancel();
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    armorStand.remove();
+                            this.cancel()
+                            object : BukkitRunnable() {
+                                override fun run() {
+                                    armorStand.remove()
                                 }
-                            }.runTaskLater(plugin, 20L);
+                            }.runTaskLater(plugin, 20L)
                         } else {
                             // Формируем видимую часть текста
-                            int endIndex = Math.min(offset + visibleLength, messageLength);
-                            String visibleText = message.substring(offset, endIndex);
+                            val endIndex = min(offset + visibleLength, messageLength)
+                            var visibleText = message.substring(offset, endIndex)
 
                             // Добавляем троеточие, если есть текст, который не уместился
                             if (endIndex < messageLength) {
-                                visibleText += "...";
+                                visibleText += "..."
                             }
 
                             // Обновляем текст у ArmorStand
-                            armorStand.customName(Component.text(visibleText));
-                            offset++;
+                            armorStand.customName(Component.text(visibleText))
+                            offset++
                         }
                     }
-                }.runTaskTimer(plugin, 0L, 7L);
+                }.runTaskTimer(plugin, 0L, 7L)
             }
         }
     }
 
-    public static class CraftingRecipe {
-        private final Plugin plugin;
+    companion object {
+        private val RADIO_NAME: TextComponent = Component.text("Radio", NamedTextColor.GOLD)
 
-        public CraftingRecipe(Plugin plugin) {
-            this.plugin = plugin;
-            createRadioRecipe();
-            createRadioRepairRecipe();
+        fun onDisable(plugin: Plugin) {
+            plugin.server.removeRecipe(NamespacedKey(plugin, "radio"))
+            plugin.server.removeRecipe(NamespacedKey(plugin, "radioRepaired"))
+        }
+    }
+
+    class CraftingRecipe(private val plugin: Plugin) {
+        init {
+            createRadioRecipe()
+            createRadioRepairRecipe()
         }
 
-        private void createRadioRecipe() {
-            ItemStack radio = new ItemStack(Material.NOTE_BLOCK);
-            ItemMeta meta = radio.getItemMeta();
-            meta.displayName(Component.text("Radio", NamedTextColor.GOLD));
+        private fun createRadioRecipe() {
+            val radio = ItemStack(Material.NOTE_BLOCK)
+            val meta = radio.itemMeta
+            meta!!.displayName(Component.text("Radio", NamedTextColor.GOLD))
 
             // Внимание: здесь радио получает начальную прочность в 30 единиц
-            NamespacedKey durabilityKey = new NamespacedKey(plugin, "durability");
-            meta.getPersistentDataContainer().set(durabilityKey, PersistentDataType.INTEGER, 30);
+            val durabilityKey = NamespacedKey(plugin, "durability")
+            meta.persistentDataContainer.set(durabilityKey, PersistentDataType.INTEGER, 30)
 
-            radio.setItemMeta(meta);
+            radio.itemMeta = meta
 
-            NamespacedKey key = new NamespacedKey(plugin, "radio");
-            ShapedRecipe recipe = new ShapedRecipe(key, radio);
-            recipe.shape("III", "IRI", "III");
-            recipe.setIngredient('I', Material.IRON_INGOT);
-            recipe.setIngredient('R', Material.REDSTONE);
+            val key = NamespacedKey(plugin, "radio")
+            val recipe = ShapedRecipe(key, radio)
+            recipe.shape("III", "IRI", "III")
+            recipe.setIngredient('I', Material.IRON_INGOT)
+            recipe.setIngredient('R', Material.REDSTONE)
 
-            Bukkit.addRecipe(recipe);
+            Bukkit.addRecipe(recipe)
         }
 
-        private void createRadioRepairRecipe() {
-            ItemStack brokenRadio = new ItemStack(Material.NOTE_BLOCK);
-            ItemMeta meta = brokenRadio.getItemMeta();
-            meta.displayName(Component.text("Radio", NamedTextColor.GOLD));
+        private fun createRadioRepairRecipe() {
+            val brokenRadio = ItemStack(Material.NOTE_BLOCK)
+            val meta = brokenRadio.itemMeta
+            meta!!.displayName(Component.text("Radio", NamedTextColor.GOLD))
 
             // Внимание: изначальная прочность радио равна 0, поскольку оно сломано
-            NamespacedKey durabilityKey = new NamespacedKey(plugin, "durability");
-            meta.getPersistentDataContainer().set(durabilityKey, PersistentDataType.INTEGER, 0);
+            val durabilityKey = NamespacedKey(plugin, "durability")
+            meta.persistentDataContainer.set(durabilityKey, PersistentDataType.INTEGER, 0)
 
-            brokenRadio.setItemMeta(meta);
+            brokenRadio.itemMeta = meta
 
-            ItemStack fixedRadio = new ItemStack(Material.NOTE_BLOCK);
-            ItemMeta fixedMeta = fixedRadio.getItemMeta();
-            fixedMeta.displayName(Component.text("Radio", NamedTextColor.GOLD));
+            val fixedRadio = ItemStack(Material.NOTE_BLOCK)
+            val fixedMeta = fixedRadio.itemMeta
+            fixedMeta!!.displayName(Component.text("Radio", NamedTextColor.GOLD))
 
             // Внимание: прочность радио восстанавливается до 30, поскольку оно ремонтируется
-            fixedMeta.getPersistentDataContainer().set(durabilityKey, PersistentDataType.INTEGER, 30);
+            fixedMeta.persistentDataContainer.set(durabilityKey, PersistentDataType.INTEGER, 30)
 
-            fixedRadio.setItemMeta(fixedMeta);
+            fixedRadio.itemMeta = fixedMeta
 
-            NamespacedKey key = new NamespacedKey(plugin, "radioRepaired");
+            val key = NamespacedKey(plugin, "radioRepaired")
             // Создаем рецепт без определенной формы
-            ShapelessRecipe recipe = new ShapelessRecipe(key, fixedRadio);
+            val recipe = ShapelessRecipe(key, fixedRadio)
 
             // Добавляем ингредиенты в любом порядке
-            recipe.addIngredient(Material.IRON_INGOT);
-            recipe.addIngredient(Material.IRON_INGOT);
-            recipe.addIngredient(brokenRadio.getType());
+            recipe.addIngredient(Material.IRON_INGOT)
+            recipe.addIngredient(Material.IRON_INGOT)
+            recipe.addIngredient(brokenRadio.type)
 
-            Bukkit.addRecipe(recipe);
+            Bukkit.addRecipe(recipe)
         }
     }
 }

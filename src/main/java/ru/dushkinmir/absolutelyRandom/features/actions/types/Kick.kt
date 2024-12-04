@@ -1,34 +1,35 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types;
+package ru.dushkinmir.absolutelyRandom.features.actions.types
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import ru.dushkinmir.absolutelyRandom.features.actions.Action;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
+import ru.dushkinmir.absolutelyRandom.features.actions.Action
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
 
-public class Kick extends Action {
+class Kick : Action("kick") {
 
-    private static final Component PLAYER_KICK_MESSAGE = Component.text("хахаха лошара", NamedTextColor.RED);
-    private static final String BROADCAST_KICK_MESSAGE_TEMPLATE = "вот же %s лох!";
-    private static final NamedTextColor BROADCAST_KICK_MESSAGE_COLOR = NamedTextColor.YELLOW;
+    companion object {
+        private val PLAYER_KICK_MESSAGE = Component.text("хахаха лошара", NamedTextColor.RED)
+        private const val BROADCAST_KICK_MESSAGE_TEMPLATE = "вот же %s лох!"
+        private val BROADCAST_KICK_MESSAGE_COLOR = NamedTextColor.YELLOW
 
-    public Kick() {
-        super("kick");
     }
 
-    @Override
-    public void execute(Plugin plugin) {
-        kickPlayer(PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers()));
+    override fun execute(plugin: Plugin) {
+        kickPlayer(PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers()))
     }
 
-    private static void kickPlayer(Player player) {
-        Component broadcastMessage = generateKickMessage(player.getName());
-        PlayerUtils.sendMessageToAllPlayers(broadcastMessage, PlayerUtils.MessageType.CHAT);
-        PlayerUtils.kickPlayer(player, PLAYER_KICK_MESSAGE);
+    private fun kickPlayer(player: Player) {
+        val broadcastMessage = generateKickMessage(player.name)
+        PlayerUtils.sendMessageToAllPlayers(broadcastMessage, PlayerUtils.MessageType.CHAT)
+        PlayerUtils.kickPlayer(player, PLAYER_KICK_MESSAGE)
     }
 
-    private static Component generateKickMessage(String playerName) {
-        return Component.text(String.format(BROADCAST_KICK_MESSAGE_TEMPLATE, playerName), BROADCAST_KICK_MESSAGE_COLOR);
+    private fun generateKickMessage(playerName: String): Component {
+        return Component.text(
+            String.format(BROADCAST_KICK_MESSAGE_TEMPLATE, playerName),
+            BROADCAST_KICK_MESSAGE_COLOR
+        )
     }
 }

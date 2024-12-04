@@ -1,136 +1,154 @@
-package ru.dushkinmir.absolutelyRandom.features.warp;
+package ru.dushkinmir.absolutelyRandom.features.warp
 
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.ArgumentSuggestions;
-import dev.jorel.commandapi.arguments.StringArgument;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-import ru.dushkinmir.absolutelyRandom.utils.ConsentMenu;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.arguments.ArgumentSuggestions
+import dev.jorel.commandapi.arguments.StringArgument
+import dev.jorel.commandapi.executors.PlayerCommandExecutor
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.inventory.ItemStack
+import org.bukkit.plugin.Plugin
+import ru.dushkinmir.absolutelyRandom.utils.ConsentMenu
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
 
-import java.util.List;
+class WarpCommands(private val warpManager: WarpManager, plugin: Plugin) : Listener {
 
-public class WarpCommands implements Listener {
+    private val consentMenu: ConsentMenu
 
-    private final WarpManager warpManager;
-    private final ConsentMenu consentMenu;
-
-    public WarpCommands(WarpManager warpManager, Plugin plugin) {
-        this.warpManager = warpManager;
-        Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
-        this.consentMenu = new ConsentMenu(
-                "Подтверждение", NamedTextColor.YELLOW,
-                "Внимание: валюта не будет возвращена!", NamedTextColor.GOLD,
-                List.of("Подтвердите удаление всех варпов."), NamedTextColor.DARK_PURPLE,
-                "Подтвердить", NamedTextColor.GREEN,
-                "Отменить", NamedTextColor.RED
-        );
+    init {
+        Bukkit.getServer().pluginManager.registerEvents(this, plugin)
+        this.consentMenu = ConsentMenu(
+            "Подтверждение", NamedTextColor.YELLOW,
+            "Внимание: валюта не будет возвращена!", NamedTextColor.GOLD,
+            listOf("Подтвердите удаление всех варпов."), NamedTextColor.DARK_PURPLE,
+            "Подтвердить", NamedTextColor.GREEN,
+            "Отменить", NamedTextColor.RED
+        )
     }
 
-    public void registerWarpCommands() {
+    fun registerWarpCommands() {
         // Подкоманда "create"
-        CommandAPICommand warpCreate = new CommandAPICommand("create")
-                .withArguments(new StringArgument("warpName"))
-                .executesPlayer((player, args) -> {
-                    String warpName = (String) args.get("warpName");
-                    Location location = player.getLocation();
-                    warpManager.createWarp(player, warpName, location);
-                });
+        val warpCreate = CommandAPICommand("create")
+            .withArguments(StringArgument("warpName"))
+            .executesPlayer(PlayerCommandExecutor { player, args ->
+                val warpName = args["warpName"] as String
+                val location: Location = player.location
+                warpManager.createWarp(player, warpName, location)
+            })
 
         // Подкоманда "teleport"
-        CommandAPICommand warpTeleport = new CommandAPICommand("tp")
-                .withArguments(new StringArgument("warpName")
-                        .replaceSuggestions(ArgumentSuggestions.strings(info -> {
-                            Player player = (Player) info.sender();
-                            return warpManager.getWarps(player, false).toArray(new String[0]);
-                        })))
-                .executesPlayer((player, args) -> {
-                    String warpName = (String) args.get("warpName");
-                    warpManager.teleportToWarp(player, warpName);
-                });
+        val warpTeleport = CommandAPICommand("tp")
+            .withArguments(
+                StringArgument("warpName")
+                    .replaceSuggestions(ArgumentSuggestions.strings { info ->
+                        val player = info.sender() as Player
+                        warpManager.getWarps(player, false).toTypedArray()
+                    })
+            )
+            .executesPlayer(PlayerCommandExecutor { player, args ->
+                val warpName = args["warpName"] as String
+                warpManager.teleportToWarp(player, warpName)
+            })
 
         // Подкоманда "delete"
-        CommandAPICommand warpDelete = new CommandAPICommand("del")
-                .withArguments(new StringArgument("warpName")
-                        .replaceSuggestions(ArgumentSuggestions.strings(info -> {
-                            Player player = (Player) info.sender();
-                            return warpManager.getWarps(player, false).toArray(new String[0]);
-                        })))
-                .executesPlayer((player, args) -> {
-                    String warpName = (String) args.get("warpName");
-                    warpManager.deleteWarp(player, warpName);
-                });
+        val warpDelete = CommandAPICommand("del")
+            .withArguments(
+                StringArgument("warpName")
+                    .replaceSuggestions(ArgumentSuggestions.strings { info ->
+                        val player = info.sender() as Player
+                        warpManager.getWarps(player, false).toTypedArray()
+                    })
+            )
+            .executesPlayer(PlayerCommandExecutor { player, args ->
+                val warpName = args["warpName"] as String
+                warpManager.deleteWarp(player, warpName)
+            })
 
 // Подкоманда "deleteall"
-        CommandAPICommand warpDeleteAll = new CommandAPICommand("delall")
-                .executesPlayer((player, args) -> {
-                    PlayerUtils.sendMessageToPlayer(player, Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
-                    consentMenu.openConsentMenu(player);
-                });
+        val warpDeleteAll = CommandAPICommand("delall")
+            .executesPlayer(PlayerCommandExecutor { player, args ->
+                PlayerUtils.sendMessageToPlayer(
+                    player,
+                    Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.RED),
+                    PlayerUtils.MessageType.CHAT
+                )
+                consentMenu.openConsentMenu(player)
+            })
 
-        CommandAPICommand warpList = new CommandAPICommand("list")
-                .executesPlayer((player, args) -> {
-                    List<String> warps = warpManager.getWarps(player, true);
+        val warpList = CommandAPICommand("list")
+            .executesPlayer(PlayerCommandExecutor { player, args ->
+                val warps = warpManager.getWarps(player, true)
 
-                    if (warps.isEmpty()) {
-                        PlayerUtils.sendMessageToPlayer(
-                                player,
-                                Component.text("У вас нет созданных варпов.")
-                                        .color(NamedTextColor.RED),
-                                PlayerUtils.MessageType.CHAT);
-                    } else {
-                        String formattedWarps = String.join("\n ", warps);
-                        PlayerUtils.sendMessageToPlayer(
-                                player,
-                                Component.text("Ваши варпы: \n " + formattedWarps)
-                                        .color(NamedTextColor.GREEN),
-                                PlayerUtils.MessageType.CHAT);
-                    }
-                });
-
+                if (warps.isEmpty()) {
+                    PlayerUtils.sendMessageToPlayer(
+                        player,
+                        Component.text("У вас нет созданных варпов.")
+                            .color(NamedTextColor.RED),
+                        PlayerUtils.MessageType.CHAT
+                    )
+                } else {
+                    val formattedWarps = warps.joinToString("\n ")
+                    PlayerUtils.sendMessageToPlayer(
+                        player,
+                        Component.text("Ваши варпы: \n $formattedWarps")
+                            .color(NamedTextColor.GREEN),
+                        PlayerUtils.MessageType.CHAT
+                    )
+                }
+            })
 
         // Основная команда "warp" с подкомандами
-        new CommandAPICommand("warp")
-                .withSubcommand(warpCreate)
-                .withSubcommand(warpTeleport)
-                .withSubcommand(warpDelete)
-                .withSubcommand(warpDeleteAll)
-                .withSubcommand(warpList)
-                .register();
+        CommandAPICommand("warp")
+            .withSubcommand(warpCreate)
+            .withSubcommand(warpTeleport)
+            .withSubcommand(warpDelete)
+            .withSubcommand(warpDeleteAll)
+            .withSubcommand(warpList)
+            .register()
     }
 
     // Обработка кликов в меню подтверждения удаления всех варпов
     @EventHandler
-    public void handleInventoryClick(InventoryClickEvent event) {
-        if (event.getView().title().equals(Component.text(
+    fun handleInventoryClick(event: InventoryClickEvent) {
+        if (event.view.title() == Component.text(
                 "Подтверждение",
-                NamedTextColor.YELLOW))) {
-            Player player = (Player) event.getWhoClicked();
-            event.setCancelled(true);
-            ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+                NamedTextColor.YELLOW
+            )
+        ) {
+            val player = event.whoClicked as Player
+            event.isCancelled = true
+            val clickedItem = event.currentItem
+            if (clickedItem == null || clickedItem.type == Material.AIR) return
 
-            handleItemClick(player, clickedItem);
+            handleItemClick(player, clickedItem)
         }
     }
 
-    private void handleItemClick(Player player, ItemStack clickedItem) {
+    private fun handleItemClick(player: Player, clickedItem: ItemStack) {
         // Обработка нажатия на кнопки
-        if (clickedItem.getType() == Material.GREEN_WOOL) {
-            warpManager.deleteAllWarps(player);
-            player.closeInventory();
-        } else if (clickedItem.getType() == Material.RED_WOOL) {
-            player.closeInventory();
-            PlayerUtils.sendMessageToPlayer(player, Component.text("Удаление всех варпов отменено.").color(NamedTextColor.GREEN), PlayerUtils.MessageType.CHAT);
+        when (clickedItem.type) {
+            Material.GREEN_WOOL -> {
+                warpManager.deleteAllWarps(player)
+                player.closeInventory()
+            }
+
+            Material.RED_WOOL -> {
+                player.closeInventory()
+                PlayerUtils.sendMessageToPlayer(
+                    player,
+                    Component.text("Удаление всех варпов отменено.").color(NamedTextColor.GREEN),
+                    PlayerUtils.MessageType.CHAT
+                )
+            }
+
+            else -> {}
         }
     }
 }

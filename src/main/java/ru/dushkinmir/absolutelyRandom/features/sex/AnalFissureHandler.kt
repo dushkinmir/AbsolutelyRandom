@@ -1,194 +1,200 @@
-package ru.dushkinmir.absolutelyRandom.features.sex;
+package ru.dushkinmir.absolutelyRandom.features.sex
 
-import dev.geco.gsit.api.event.PreEntitySitEvent;
-import dev.geco.gsit.api.event.PrePlayerPlayerSitEvent;
-import dev.geco.gsit.api.event.PrePlayerPoseEvent;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.bossbar.BossBar.Color;
-import net.kyori.adventure.bossbar.BossBar.Overlay;
-import net.kyori.adventure.text.Component;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.plugin.Plugin;
-import ru.dushkinmir.absolutelyRandom.utils.DatabaseManager;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import dev.geco.gsit.api.event.PreEntitySitEvent
+import dev.geco.gsit.api.event.PrePlayerPlayerSitEvent
+import dev.geco.gsit.api.event.PrePlayerPoseEvent
+import net.kyori.adventure.bossbar.BossBar
+import net.kyori.adventure.bossbar.BossBar.Color
+import net.kyori.adventure.bossbar.BossBar.Overlay
+import net.kyori.adventure.text.Component
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerBedEnterEvent
+import org.bukkit.event.vehicle.VehicleEnterEvent
+import org.bukkit.plugin.Plugin
+import ru.dushkinmir.absolutelyRandom.utils.DatabaseManager
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import java.sql.SQLException
+import java.util.*
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+class AnalFissureHandler(private val database: DatabaseManager, private val plugin: Plugin) : Listener {
+    private val random = Random()
+    private val playerBossBars: MutableMap<Player, BossBar> = HashMap()
 
-public class AnalFissureHandler implements Listener {
-    private static final Random random = new Random();
-    private final DatabaseManager database;
-    private final Plugin plugin;
-    private final Map<Player, BossBar> playerBossBars = new HashMap<>();
-
-    public AnalFissureHandler(DatabaseManager database, Plugin plugin) throws SQLException {
-        this.database = database;
-        this.plugin = plugin;
-        createTable();
-
+    init {
+        createTable()
         if (isGsitPluginAvailable()) {
-            plugin.getServer().getPluginManager().registerEvents(new GSitEventHandlers(), plugin);
+            plugin.server.pluginManager.registerEvents(GSitEventHandlers(), plugin)
         }
     }
 
-    private void createTable() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS analFissures ("
-                + "playerName TEXT PRIMARY KEY,"
-                + "sleeps INTEGER DEFAULT 0"
-                + ");";
-        try (Connection conn = database.getConnection();
-             Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
+    @Throws(SQLException::class)
+    private fun createTable() {
+        val sql = "CREATE TABLE IF NOT EXISTS analFissures (" +
+                "playerName TEXT PRIMARY KEY," +
+                "sleeps INTEGER DEFAULT 0" +
+                ");"
+        database.connection.use { conn ->
+            conn.createStatement().use { stmt ->
+                stmt.execute(sql)
+            }
         }
     }
 
-    private boolean isGsitPluginAvailable() {
-        return plugin.getServer().getPluginManager().getPlugin("GSit") != null;
+    private fun isGsitPluginAvailable(): Boolean {
+        return plugin.server.pluginManager.getPlugin("GSit") != null
     }
 
-
-    public void checkForFissure(Player player) {
+    fun checkForFissure(player: Player) {
         if (random.nextInt(100) < 33) {
-            try (Connection conn = database.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                stmt.executeUpdate("INSERT OR REPLACE INTO analFissures (playerName, sleeps) VALUES ('" + player.getName() + "', 0)");
+            try {
+                database.connection.use { conn ->
+                    conn.createStatement().use { stmt ->
+                        stmt.executeUpdate("INSERT OR REPLACE INTO analFissures (playerName, sleeps) VALUES ('${player.name}', 0)")
 
-                // Создание и регистрация нового боссбара
-                BossBar bossBar = BossBar.bossBar(
-                        Component.text("Оставшиеся дни до выздоровления"),
-                        1.0f, // стартовое значение прогресса (например 100%)
-                        Color.RED,
-                        Overlay.PROGRESS
-                );
-                playerBossBars.put(player, bossBar);
-                plugin.getServer().showBossBar(bossBar);
+                        // Создание и регистрация нового боссбара
+                        val bossBar = BossBar.bossBar(
+                            Component.text("Оставшиеся дни до выздоровления"),
+                            1.0f, // стартовое значение прогресса (например 100%)
+                            Color.RED,
+                            Overlay.PROGRESS
+                        )
+                        playerBossBars[player] = bossBar
+                        plugin.server.showBossBar(bossBar)
 
-                PlayerUtils.sendMessageToPlayer(
-                        player,
-                        Component.text("боже, лох, у тебя анальная трещина теперь!"),
-                        PlayerUtils.MessageType.ACTION_BAR
-                );
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Не удалось checkForFissure в базу данных!");
-                plugin.getLogger().severe("Ошибка: " + e.getMessage());
-            }
-        }
-    }
-
-    public void incrementSleepCount(Player player) {
-        try (Connection conn = database.getConnection();
-             Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("UPDATE analFissures SET sleeps = sleeps + 1 WHERE playerName = '" + player.getName() + "'");
-            checkFissureState(player);
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Не удалось incrementSleepCount в базу данных!");
-            plugin.getLogger().severe("Ошибка: " + e.getMessage());
-        }
-    }
-
-    public void checkFissureState(Player player) {
-        try (Connection conn = database.getConnection();
-             Statement stmt = conn.createStatement()) {
-            var resultSet = stmt.executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
-            if (resultSet.next()) {
-                int sleeps = resultSet.getInt("sleeps");
-                float progress = (2 - sleeps) / 2.0f; // обновление прогресса
-
-                BossBar bossBar = playerBossBars.get(player);
-                if (bossBar != null) {
-                    bossBar.progress(progress);
-                }
-
-                if (sleeps >= 2) {
-                    PlayerUtils.sendMessageToPlayer(
+                        PlayerUtils.sendMessageToPlayer(
                             player,
-                            Component.text("анальная трещина зажила, радуйся"),
+                            Component.text("боже, лох, у тебя анальная трещина теперь!"),
                             PlayerUtils.MessageType.ACTION_BAR
-                    );
-                    stmt.executeUpdate("DELETE FROM analFissures WHERE playerName = '" + player.getName() + "'");
+                        )
+                    }
+                }
+            } catch (e: SQLException) {
+                plugin.logger.severe("Не удалось checkForFissure в базу данных!")
+                plugin.logger.severe("Ошибка: " + e.message)
+            }
+        }
+    }
 
-                    // Удаление боссбара
-                    plugin.getServer().hideBossBar(bossBar);
-                    playerBossBars.remove(player);
+    fun incrementSleepCount(player: Player) {
+        try {
+            database.connection.use { conn ->
+                conn.createStatement().use { stmt ->
+                    stmt.executeUpdate("UPDATE analFissures SET sleeps = sleeps + 1 WHERE playerName = '${player.name}'")
+                    checkFissureState(player)
                 }
             }
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Не удалось checkFissureState в базу данных!");
-            plugin.getLogger().severe("Ошибка: " + e.getMessage());
+        } catch (e: SQLException) {
+            plugin.logger.severe("Не удалось incrementSleepCount в базу данных!")
+            plugin.logger.severe("Ошибка: " + e.message)
         }
     }
 
-    private boolean isFissureActive(Player player) {
-        try (Connection conn = database.getConnection();
-             Statement stmt = conn.createStatement()) {
-            var resultSet = stmt.executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '" + player.getName() + "'");
-            return resultSet.next() && resultSet.getInt("sleeps") <= 2;
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Ошибка при проверке состояния анальной трещины: " + e.getMessage());
-            return false;
+    fun checkFissureState(player: Player) {
+        try {
+            database.connection.use { conn ->
+                conn.createStatement().use { stmt ->
+                    val resultSet =
+                        stmt.executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '${player.name}'")
+                    if (resultSet.next()) {
+                        val sleeps = resultSet.getInt("sleeps")
+                        val progress = (2 - sleeps) / 2.0f // обновление прогресса
+
+                        playerBossBars[player]?.progress(progress)
+
+                        if (sleeps >= 2) {
+                            PlayerUtils.sendMessageToPlayer(
+                                player,
+                                Component.text("анальная трещина зажила, радуйся"),
+                                PlayerUtils.MessageType.ACTION_BAR
+                            )
+                            stmt.executeUpdate("DELETE FROM analFissures WHERE playerName = '${player.name}'")
+
+                            // Удаление боссбара
+                            playerBossBars[player]?.let { plugin.server.hideBossBar(it) }
+                            playerBossBars.remove(player)
+                        }
+                    }
+                }
+            }
+        } catch (e: SQLException) {
+            plugin.logger.severe("Не удалось checkFissureState в базу данных!")
+            plugin.logger.severe("Ошибка: " + e.message)
+        }
+    }
+
+    private fun isFissureActive(player: Player): Boolean {
+        try {
+            database.connection.use { conn ->
+                conn.createStatement().use { stmt ->
+                    val resultSet =
+                        stmt.executeQuery("SELECT sleeps FROM analFissures WHERE playerName = '${player.name}'")
+                    return resultSet.next() && resultSet.getInt("sleeps") <= 2
+                }
+            }
+        } catch (e: SQLException) {
+            plugin.logger.severe("Ошибка при проверке состояния анальной трещины: " + e.message)
+            return false
         }
     }
 
     @EventHandler
-    public void onPlayerSleep(PlayerBedEnterEvent event) {
-        Player player = event.getPlayer();
-        incrementSleepCount(player);
+    fun onPlayerSleep(event: PlayerBedEnterEvent) {
+        val player = event.player
+        incrementSleepCount(player)
     }
 
     @EventHandler
-    public void onPlayerEnterVehicle(VehicleEnterEvent event) {
-        if (event.getEntered() instanceof Player player) {
-            plugin.getLogger().info(player.getName() + " пытается сесть в транспорт.");
+    fun onPlayerEnterVehicle(event: VehicleEnterEvent) {
+        if (event.entered is Player) {
+            val player = event.entered as Player
+            plugin.logger.info("${player.name} пытается сесть в транспорт.")
             if (isFissureActive(player)) {
-                event.setCancelled(true);
+                event.isCancelled = true
                 PlayerUtils.sendMessageToPlayer(
-                        player,
-                        Component.text("у тя трещина, дурачок"),
-                        PlayerUtils.MessageType.ACTION_BAR
-                );
+                    player,
+                    Component.text("у тя трещина, дурачок"),
+                    PlayerUtils.MessageType.ACTION_BAR
+                )
             }
         }
     }
 
     // GSit Events
-    private class GSitEventHandlers implements Listener {
+    private inner class GSitEventHandlers : Listener {
         @EventHandler
-        public void onGSitPlayerSit(PreEntitySitEvent event) {
-            if (event.getEntity() instanceof Player player) {
-                handleGSitEvent(player, event);
+        fun onGSitPlayerSit(event: PreEntitySitEvent) {
+            if (event.entity is Player) {
+                val player = event.entity as Player
+                handleGSitEvent(player, event)
             }
         }
 
         @EventHandler
-        public void onGSitPlayerPlayerSit(PrePlayerPlayerSitEvent event) {
-            Player player = event.getPlayer();
-            handleGSitEvent(player, event);
+        fun onGSitPlayerPlayerSit(event: PrePlayerPlayerSitEvent) {
+            val player = event.player
+            handleGSitEvent(player, event)
         }
 
         @EventHandler
-        public void onGSitPlayerPose(PrePlayerPoseEvent event) {
-            Player player = event.getPlayer();
-            handleGSitEvent(player, event);
+        fun onGSitPlayerPose(event: PrePlayerPoseEvent) {
+            val player = event.player
+            handleGSitEvent(player, event)
         }
 
-        private void handleGSitEvent(Player player, org.bukkit.event.Event event) {
+        private fun handleGSitEvent(player: Player, event: org.bukkit.event.Event) {
             if (isFissureActive(player)) {
-                if (event instanceof PreEntitySitEvent) {
-                    ((PreEntitySitEvent) event).setCancelled(true);
-                } else if (event instanceof PrePlayerPlayerSitEvent) {
-                    ((PrePlayerPlayerSitEvent) event).setCancelled(true);
-                } else if (event instanceof PrePlayerPoseEvent) {
-                    ((PrePlayerPoseEvent) event).setCancelled(true);
+                when (event) {
+                    is PreEntitySitEvent -> event.isCancelled = true
+                    is PrePlayerPlayerSitEvent -> event.isCancelled = true
+                    is PrePlayerPoseEvent -> event.isCancelled = true
                 }
-                PlayerUtils.sendMessageToPlayer(player, Component.text("у тя трещина, дурачок"), PlayerUtils.MessageType.ACTION_BAR);
+                PlayerUtils.sendMessageToPlayer(
+                    player,
+                    Component.text("у тя трещина, дурачок"),
+                    PlayerUtils.MessageType.ACTION_BAR
+                )
             }
         }
     }

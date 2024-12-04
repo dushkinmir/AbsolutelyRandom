@@ -1,182 +1,192 @@
-package ru.dushkinmir.absolutelyRandom.features.sex;
+package ru.dushkinmir.absolutelyRandom.features.sex
 
-import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
-import org.bukkit.scoreboard.Team;
-import org.bukkit.util.Vector;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
+import org.bukkit.scoreboard.Team
+import ru.dushkinmir.absolutelyRandom.features.actions.types.Group.FallingBlocksTask
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+object SexManager {
 
-import static ru.dushkinmir.absolutelyRandom.features.actions.types.Group.FallingBlocksTask;
+    private val collisionManager = CollisionManager()
+    private val SEX_DURATION: Long = 15
 
-public class SexManager {
-
-    private static final CollisionManager collisionManager = new CollisionManager();
-    private static final long SEX_DURATION = 15;
-
-    public static void triggerSexEvent(Player initiator, Player targetPlayer, Plugin plugin, AnalFissureHandler fissureHandler) {
+    fun triggerSexEvent(initiator: Player, targetPlayer: Player?, plugin: Plugin, fissureHandler: AnalFissureHandler) {
 
         // Проверяем, что целевой игрок существует и в сети
-        if (targetPlayer == null || !targetPlayer.isOnline()) {
+        if (targetPlayer == null || !targetPlayer.isOnline) {
             PlayerUtils.sendMessageToPlayer(
-                    initiator,
-                    Component.text("Игрок не найден или не в сети."),
-                    PlayerUtils.MessageType.CHAT);
-            return;
+                initiator,
+                Component.text("Игрок не найден или не в сети."),
+                PlayerUtils.MessageType.CHAT
+            )
+            return
         }
 
         // Проверяем расстояние между игроками
-        if (initiator.getLocation().distance(targetPlayer.getLocation()) > 1.5) {
+        if (initiator.location.distance(targetPlayer.location) > 1.5) {
             PlayerUtils.sendMessageToPlayer(
-                    initiator,
-                    Component.text("Игрок слишком далеко. Подойдите ближе."),
-                    PlayerUtils.MessageType.CHAT);
-            return;
+                initiator,
+                Component.text("Игрок слишком далеко. Подойдите ближе."),
+                PlayerUtils.MessageType.CHAT
+            )
+            return
         }
 
         // Отключаем коллизии для обоих игроков
-        collisionManager.addPlayerToNoCollision(initiator);
-        collisionManager.addPlayerToNoCollision(targetPlayer);
+        collisionManager.addPlayerToNoCollision(initiator)
+        collisionManager.addPlayerToNoCollision(targetPlayer)
 
         // Определяем, кто из них будет двигаться
-        boolean initiatorMoves = new Random().nextBoolean(); // true - движется инициатор, false - целевой игрок
+        val initiatorMoves = Random().nextBoolean() // true - движется инициатор, false - целевой игрок
 
         if (initiatorMoves) {
-            performMovement(initiator, targetPlayer, plugin, fissureHandler);
+            performMovement(initiator, targetPlayer, plugin, fissureHandler)
         } else {
-            performMovement(targetPlayer, initiator, plugin, fissureHandler);
+            performMovement(targetPlayer, initiator, plugin, fissureHandler)
         }
 
         // Включаем коллизии обратно через 15 секунд
         Bukkit.getScheduler().runTaskLater(
-                plugin,
-                () -> {
-                    collisionManager.removePlayerFromNoCollision(initiator);
-                    collisionManager.removePlayerFromNoCollision(targetPlayer);
-                },
-                SEX_DURATION * 20L // 15 секунд
-        );
+            plugin,
+            Runnable {
+                collisionManager.removePlayerFromNoCollision(initiator)
+                collisionManager.removePlayerFromNoCollision(targetPlayer)
+            },
+            SEX_DURATION * 20L // 15 секунд
+        )
     }
 
-    private static void performMovement(Player movingPlayer, Player stationaryPlayer, Plugin plugin, AnalFissureHandler fissureHandler) {
-        teleportBehind(stationaryPlayer, movingPlayer);
-        movePlayer(movingPlayer, stationaryPlayer, plugin, fissureHandler);
+    private fun performMovement(
+        movingPlayer: Player,
+        stationaryPlayer: Player,
+        plugin: Plugin,
+        fissureHandler: AnalFissureHandler
+    ) {
+        teleportBehind(stationaryPlayer, movingPlayer)
+        movePlayer(movingPlayer, stationaryPlayer, plugin, fissureHandler)
 
         PlayerUtils.sendMessageToPlayer(
-                movingPlayer,
-                Component.text("<%s> даа мой папочка, накажи меня!!~".formatted(stationaryPlayer.getName())),
-                PlayerUtils.MessageType.CHAT);
+            movingPlayer,
+            Component.text("<%s> даа мой папочка, накажи меня!!~".format(stationaryPlayer.name)),
+            PlayerUtils.MessageType.CHAT
+        )
         PlayerUtils.sendMessageToPlayer(
-                stationaryPlayer,
-                Component.text("<%s> ода, давай сучка, нагибайся)".formatted(movingPlayer.getName())),
-                PlayerUtils.MessageType.CHAT);
+            stationaryPlayer,
+            Component.text("<%s> ода, давай сучка, нагибайся)".format(movingPlayer.name)),
+            PlayerUtils.MessageType.CHAT
+        )
     }
 
 
     // Метод для движения игрока вперед-назад на ограниченное время (в секундах)
-    private static void movePlayer(Player player, Player stationaryPlayer, Plugin plugin, AnalFissureHandler fissureHandler) {
-        player.sendMessage("Вы будете двигаться вперед-назад!");
+    private fun movePlayer(
+        player: Player,
+        stationaryPlayer: Player,
+        plugin: Plugin,
+        fissureHandler: AnalFissureHandler
+    ) {
+        player.sendMessage("Вы будете двигаться вперед-назад!")
 
         // Устанавливаем движение вперед-назад
-        int taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(
-                plugin,
-                new Runnable() {
-                    private boolean moveForward = true;
+        val taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(
+            plugin,
+            object : Runnable {
+                private var moveForward = true
 
-                    @Override
-                    public void run() {
-                        if (!player.isOnline()) {
-                            return;
-                        }
-
-                        // Получаем вектор скорости игрока (текущий вектор движения)
-                        Location currentLocation = player.getLocation();
-                        Vector direction = currentLocation.getDirection().normalize(); // Получаем направление взгляда и нормализуем
-
-                        // Обнуляем вертикальную составляющую
-                        direction.setY(0); // Убираем вертикальную составляющую
-                        direction = direction.normalize(); // Нормализуем снова после обнуления Y
-
-
-                        if (moveForward) {
-                            player.setVelocity(direction.multiply(0.25)); // Двигаем вперед
-                        } else {
-                            player.setVelocity(direction.multiply(-0.25)); // Двигаем назад
-                        }
-
-                        moveForward = !moveForward; // Меняем направление
+                override fun run() {
+                    if (!player.isOnline) {
+                        return
                     }
-                },
-                0L, // Начало сразу
-                2L
-        ).getTaskId();
+
+                    // Получаем вектор скорости игрока (текущий вектор движения)
+                    val currentLocation = player.location
+                    var direction = currentLocation.direction.normalize() // Получаем направление взгляда и нормализуем
+
+                    // Обнуляем вертикальную составляющую
+                    direction.y = 0.0 // Убираем вертикальную составляющую
+                    direction = direction.normalize() // Нормализуем снова после обнуления Y
+
+
+                    if (moveForward) {
+                        player.velocity = direction.multiply(0.25) // Двигаем вперед
+                    } else {
+                        player.velocity = direction.multiply(-0.25) // Двигаем назад
+                    }
+
+                    moveForward = !moveForward // Меняем направление
+                }
+            },
+            0L, // Начало сразу
+            2L
+        ).taskId
 
         // Останавливаем задачу через 15 секунд (300 тиков)
         Bukkit.getScheduler().runTaskLater(
-                plugin,
-                () -> {
-                    Bukkit.getScheduler().cancelTask(taskId);
-                    fissureHandler.checkForFissure(stationaryPlayer);
-                    new FallingBlocksTask(plugin, new ArrayList<>(Arrays.asList(player, stationaryPlayer))).runTaskTimer(plugin, 0L, 5L);
-                },
-                SEX_DURATION * 20L // 15 секунд = 300 тиков
-        );
+            plugin,
+            Runnable {
+                Bukkit.getScheduler().cancelTask(taskId)
+                fissureHandler.checkForFissure(stationaryPlayer)
+                FallingBlocksTask(plugin, ArrayList(Arrays.asList(player, stationaryPlayer))).runTaskTimer(
+                    plugin,
+                    0L,
+                    5L
+                )
+            },
+            SEX_DURATION * 20L // 15 секунд = 300 тиков
+        )
     }
 
     // Метод для телепортации игрока "движущегося" за спину "стоячего"
-    private static void teleportBehind(Player stationaryPlayer, Player movingPlayer) {
-        Location stationaryLocation = stationaryPlayer.getLocation();
-        Vector backwardDirection = stationaryLocation.getDirection().multiply(-1); // Вектор, указывающий назад
+    private fun teleportBehind(stationaryPlayer: Player, movingPlayer: Player) {
+        val stationaryLocation = stationaryPlayer.location
+        val backwardDirection = stationaryLocation.direction.multiply(-1.0) // Вектор, указывающий назад
 
         // Рассчитываем новую позицию для телепортации игрока на 1.5 блока позади
-        Location teleportLocation = stationaryLocation.clone().add(backwardDirection.normalize().multiply(1.1));
-        teleportLocation.setY(stationaryLocation.getY()); // Оставляем высоту на том же уровне
+        val teleportLocation = stationaryLocation.clone().add(backwardDirection.normalize().multiply(1.1))
+        teleportLocation.y = stationaryLocation.y // Оставляем высоту на том же уровне
 
         // Телепортируем игрока
-        movingPlayer.teleport(teleportLocation);
+        movingPlayer.teleport(teleportLocation)
     }
 
-    private static class CollisionManager {
+    private class CollisionManager {
 
-        private Team noCollisionTeam;
+        private var noCollisionTeam: Team?
 
-        public CollisionManager() {
-            setupNoCollisionTeam();
+        init {
+            noCollisionTeam = setupNoCollisionTeam()
         }
 
         // Создаём команду с отключёнными коллизиями
-        private void setupNoCollisionTeam() {
-            ScoreboardManager manager = Bukkit.getScoreboardManager();
-            Scoreboard board = manager.getMainScoreboard();
+        private fun setupNoCollisionTeam(): Team? {
+            val manager = Bukkit.getScoreboardManager()
+            val board = manager.mainScoreboard
 
             // Проверяем, существует ли команда уже
-            noCollisionTeam = board.getTeam("noCollision");
-            if (noCollisionTeam == null) {
+            var team = board.getTeam("noCollision")
+            if (team == null) {
                 // Создаём новую команду с именем "noCollision"
-                noCollisionTeam = board.registerNewTeam("noCollision");
-                noCollisionTeam.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER); // Отключаем коллизии
+                team = board.registerNewTeam("noCollision")
+                team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER) // Отключаем коллизии
             }
+            return team
         }
 
         // Добавляем игрока в команду без коллизий
-        public void addPlayerToNoCollision(Player player) {
-            if (noCollisionTeam != null && !noCollisionTeam.hasEntry(player.getName())) {
-                noCollisionTeam.addEntry(player.getName());
+        fun addPlayerToNoCollision(player: Player) {
+            if (noCollisionTeam != null && !noCollisionTeam!!.hasEntry(player.name)) {
+                noCollisionTeam!!.addEntry(player.name)
             }
         }
 
         // Удаляем игрока из команды (включение коллизий)
-        public void removePlayerFromNoCollision(Player player) {
-            if (noCollisionTeam != null && noCollisionTeam.hasEntry(player.getName())) {
-                noCollisionTeam.removeEntry(player.getName());
+        fun removePlayerFromNoCollision(player: Player) {
+            if (noCollisionTeam != null && noCollisionTeam!!.hasEntry(player.name)) {
+                noCollisionTeam!!.removeEntry(player.name)
             }
         }
     }

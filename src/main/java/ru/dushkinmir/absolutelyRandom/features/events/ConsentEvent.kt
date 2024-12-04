@@ -1,87 +1,91 @@
-package ru.dushkinmir.absolutelyRandom.features.events;
+package ru.dushkinmir.absolutelyRandom.features.events
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.Container;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutelyRandom.utils.ConsentMenu;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Material
+import org.bukkit.block.Block
+import org.bukkit.block.Container
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.ItemStack
+import org.bukkit.plugin.Plugin
+import org.bukkit.scheduler.BukkitRunnable
+import ru.dushkinmir.absolutelyRandom.utils.ConsentMenu
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import java.util.*
 
-import java.util.*;
+class ConsentEvent(private val plugin: Plugin) : Listener {
+    private val playerBlockMap: MutableMap<Player, Block> = HashMap()
+    private val random = Random()
 
-public class ConsentEvent implements Listener {
-    private final Map<Player, Block> playerBlockMap = new HashMap<>();
-    private final Plugin plugin;
-    private final Random random = new Random();
-    private static final Component CONSENT_TITLE = Component.text("Согласие на обработку данных", NamedTextColor.YELLOW);
-    private final ConsentMenu consentMenu;
+    companion object {
+        private val CONSENT_TITLE = Component.text("Согласие на обработку данных", NamedTextColor.YELLOW)
+    }
 
-    public ConsentEvent(Plugin plugin) {
-        List<String> infoLore = Arrays.asList(
-                "Соглашаясь, вы добровольно передаете",
-                "себя в вечное рабство этому серверу",
-                "Отказ приведет к немедленному наказанию!",
-                "Соглашаясь, вы теряете свою свободу",
-                "и становитесь собственностью владельца сервера."
-        );
-        this.plugin = plugin;
-        this.consentMenu = new ConsentMenu(
-                PlainTextComponentSerializer.plainText().serialize(CONSENT_TITLE), NamedTextColor.YELLOW,
-                "Договор о согласии", NamedTextColor.GOLD,
-                infoLore, NamedTextColor.DARK_PURPLE,
-                "Принять", NamedTextColor.GREEN,
-                "Отказаться", NamedTextColor.RED
-        );
+    private val consentMenu: ConsentMenu
+
+    init {
+        val infoLore = listOf(
+            "Соглашаясь, вы добровольно передаете",
+            "себя в вечное рабство этому серверу",
+            "Отказ приведет к немедленному наказанию!",
+            "Соглашаясь, вы теряете свою свободу",
+            "и становитесь собственностью владельца сервера."
+        )
+        consentMenu = ConsentMenu(
+            PlainTextComponentSerializer.plainText().serialize(CONSENT_TITLE),
+            NamedTextColor.YELLOW,
+            "Договор о согласии", NamedTextColor.GOLD,
+            infoLore, NamedTextColor.DARK_PURPLE,
+            "Принять", NamedTextColor.GREEN,
+            "Отказаться", NamedTextColor.RED
+        )
     }
 
     @EventHandler
-    public void handlePlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getClickedBlock();
-        if (random.nextBoolean() && block != null && event.getAction().isRightClick() && block.getState() instanceof Container) {
-            if (player.isSneaking()) return;
-            playerBlockMap.put(player, block);
-            consentMenu.openConsentMenu(player);
-            event.setCancelled(true);
+    fun handlePlayerInteract(event: PlayerInteractEvent) {
+        val player = event.player
+        val block = event.clickedBlock
+        if (random.nextBoolean() && block != null && event.action.isRightClick && block.state is Container) {
+            if (player.isSneaking) return
+            playerBlockMap[player] = block
+            consentMenu.openConsentMenu(player)
+            event.isCancelled = true
         }
     }
 
     @EventHandler
-    public void handleInventoryClick(InventoryClickEvent event) {
-        if (event.getView().title().equals(CONSENT_TITLE)) {
-            Player player = (Player) event.getWhoClicked();
-            event.setCancelled(true);
-            ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+    fun handleInventoryClick(event: InventoryClickEvent) {
+        if (event.view.title() == CONSENT_TITLE) {
+            val player = event.whoClicked as Player
+            event.isCancelled = true
+            val clickedItem = event.currentItem
+            if (clickedItem == null || clickedItem.type == Material.AIR) return
 
-            handleItemClick(player, clickedItem);
+            handleItemClick(player, clickedItem)
         }
     }
 
-    private void handleItemClick(Player player, ItemStack clickedItem) {
-        if (clickedItem.getType() == Material.GREEN_WOOL) {
-            Block block = playerBlockMap.remove(player);
+    private fun handleItemClick(player: Player, clickedItem: ItemStack) {
+        if (clickedItem.type == Material.GREEN_WOOL) {
+            val block = playerBlockMap.remove(player)
             if (block != null) {
-                player.closeInventory();
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        player.openInventory(((Container) block.getState()).getInventory());
+                player.closeInventory()
+                object : BukkitRunnable() {
+                    override fun run() {
+                        player.openInventory((block.state as Container).inventory)
                     }
-                }.runTaskLater(plugin, 1L);
+                }.runTaskLater(plugin, 1L)
             }
-        } else if (clickedItem.getType() == Material.RED_WOOL) {
-            PlayerUtils.kickPlayer(player, Component.text("Китай партия вами не доволен! \uD83D\uDE21", NamedTextColor.RED));
+        } else if (clickedItem.type == Material.RED_WOOL) {
+            PlayerUtils.kickPlayer(
+                player,
+                Component.text("Китай партия вами не доволен! \uD83D\uDE21", NamedTextColor.RED)
+            )
         }
     }
 }

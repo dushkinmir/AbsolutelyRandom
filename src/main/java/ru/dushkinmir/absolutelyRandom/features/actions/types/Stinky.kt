@@ -1,121 +1,111 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types;
+package ru.dushkinmir.absolutelyRandom.features.actions.types
 
-import net.kyori.adventure.text.Component;
-import org.bukkit.Color;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutelyRandom.AbsRand;
-import ru.dushkinmir.absolutelyRandom.features.actions.Action;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import net.kyori.adventure.text.Component
+import org.bukkit.Color
+import org.bukkit.Material
+import org.bukkit.Particle
+import org.bukkit.entity.LivingEntity
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.plugin.Plugin
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
+import org.bukkit.scheduler.BukkitRunnable
+import ru.dushkinmir.absolutelyRandom.AbsRand
+import ru.dushkinmir.absolutelyRandom.features.actions.Action
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import java.util.*
 
-import java.util.*;
+class Stinky : Action("stinky"), Listener {
+    private var plugin: Plugin? = null
 
-public class Stinky extends Action implements Listener {
-    private static final Component ACTION_BAR_TEXT = Component.text("фуу ты вонючка!");
-    private static final Component STINKY_PLAYER_MESSAGE = Component.text(
-            "бля чел иди искупайся, а то от тебя весь сервер щарахается"
-    );
-    private static final Component NORMAL_PLAYER_MESSAGE = Component.text("воо, молодец!");
-    private Plugin plugin;
-
-    public Stinky() {
-        super("stinky");
+    override fun execute(plugin: Plugin) {
+        val players = PlayerUtils.getOnlinePlayers()
+        val randomPlayer = PlayerUtils.getRandomPlayer(players)
+        PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR)
+        sendPlayerWorldMessage(randomPlayer)
+        val playerUUID = randomPlayer.uniqueId
+        scheduleEffects(plugin, playerUUID)
+        this.plugin = plugin
     }
 
-    @Override
-    public void execute(Plugin plugin) {
-        List<Player> players = PlayerUtils.getOnlinePlayers();
-        Player randomPlayer = PlayerUtils.getRandomPlayer(players);
-        PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR);
-        sendPlayerWorldMessage(randomPlayer);
-        UUID playerUUID = randomPlayer.getUniqueId();
-        scheduleEffects(plugin, playerUUID);
-        this.plugin = plugin;
-    }
-
-    private static void sendPlayerWorldMessage(Player player) {
-        String message = "a %s теперь воняет".formatted(Objects.requireNonNull(player.getPlayer()).getName());
-        PlayerUtils.sendMessageToAllPlayers(Component.text(message), PlayerUtils.MessageType.CHAT);
-    }
-
-    private static void scheduleEffects(Plugin plugin, UUID playerUUID) {
-        Player player = plugin.getServer().getPlayer(playerUUID);
-        if (player != null) {
-            Map<UUID, BukkitRunnable> playerTasks = AbsRand.Companion.getPlayerTasks();
-            PlayerEffectTask task = new PlayerEffectTask(player);
-            task.runTaskTimer(plugin, 0, 20L);
-            if (!playerTasks.containsKey(playerUUID)) playerTasks.put(playerUUID, task);
-            PlayerUtils.sendMessageToPlayer(player, STINKY_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT);
-        }
+    private fun isPlayerTracked(playerUUID: UUID): Boolean {
+        return AbsRand.getPlayerTasks().containsKey(playerUUID)
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        UUID playerUUID = player.getUniqueId();
+    fun onPlayerJoin(event: PlayerJoinEvent) {
+        val player = event.player
+        val playerUUID = player.uniqueId
         if (isPlayerTracked(playerUUID)) {
-            scheduleEffects(plugin, playerUUID);
+            scheduleEffects(plugin!!, playerUUID)
         }
     }
 
-    private boolean isPlayerTracked(UUID playerUUID) {
-        return AbsRand.Companion.getPlayerTasks().containsKey(playerUUID);
-    }
-
-    private static class PlayerEffectTask extends BukkitRunnable {
-        private final Player player;
-
-        public PlayerEffectTask(Player player) {
-            this.player = player;
-        }
-
-        @Override
-        public void run() {
-            Map<UUID, BukkitRunnable> playerTasks = AbsRand.Companion.getPlayerTasks();
-            UUID playerUUID = player.getUniqueId();
+    private class PlayerEffectTask(private val player: Player) : BukkitRunnable() {
+        override fun run() {
+            val playerTasks = AbsRand.getPlayerTasks()
+            val playerUUID = player.uniqueId
             if (isPlayerInWater(player)) {
-                PlayerUtils.sendMessageToPlayer(player, NORMAL_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT);
-                this.cancel();
-                playerTasks.remove(playerUUID);
-                return;
+                PlayerUtils.sendMessageToPlayer(player, NORMAL_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT)
+                this.cancel()
+                playerTasks.remove(playerUUID)
+                return
             }
-            applyPoisonEffect(player);
-            applySmokeEffect(player);
-            if (!player.isOnline()) {
-                this.cancel();
+            applyPoisonEffect(player)
+            applySmokeEffect(player)
+            if (!player.isOnline) {
+                this.cancel()
             }
         }
 
-        private boolean isPlayerInWater(Player player) {
-            return player.getLocation().getBlock().getType() == Material.WATER;
-        }
-    }
-
-    private static void applyPoisonEffect(Player player) {
-        for (Entity entity : player.getNearbyEntities(1, 1, 1)) {
-            if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
-                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 60, 1, true, true));
-            }
+        private fun isPlayerInWater(player: Player): Boolean {
+            return player.location.block.type == Material.WATER
         }
     }
 
-    private static void applySmokeEffect(Player player) {
-        Random random = new Random();
-        float particleSize = random.nextFloat(0.5f, 2.0f);
-        player.getWorld().spawnParticle(
+    companion object {
+        private val ACTION_BAR_TEXT = Component.text("фуу ты вонючка!")
+        private val STINKY_PLAYER_MESSAGE = Component.text(
+            "бля чел иди искупайся, а то от тебя весь сервер щарахается"
+        )
+        private val NORMAL_PLAYER_MESSAGE = Component.text("воо, молодец!")
+
+        private fun sendPlayerWorldMessage(player: Player) {
+            val message = "a %s теперь воняет".format(Objects.requireNonNull(player).name)
+            PlayerUtils.sendMessageToAllPlayers(Component.text(message), PlayerUtils.MessageType.CHAT)
+        }
+
+        private fun scheduleEffects(plugin: Plugin, playerUUID: UUID) {
+            val player = plugin.server.getPlayer(playerUUID)
+            if (player != null) {
+                val playerTasks = AbsRand.getPlayerTasks()
+                val task = PlayerEffectTask(player)
+                task.runTaskTimer(plugin, 0, 20L)
+                if (!playerTasks.containsKey(playerUUID)) playerTasks[playerUUID] = task
+                PlayerUtils.sendMessageToPlayer(player, STINKY_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT)
+            }
+        }
+
+        private fun applyPoisonEffect(player: Player) {
+            for (entity in player.getNearbyEntities(1.0, 1.0, 1.0)) {
+                if (entity is LivingEntity && entity != player) {
+                    entity.addPotionEffect(PotionEffect(PotionEffectType.POISON, 60, 1, true, true))
+                }
+            }
+        }
+
+        private fun applySmokeEffect(player: Player) {
+            val random = Random()
+            val particleSize = random.nextFloat(0.5f, 2.0f)
+            player.world.spawnParticle(
                 Particle.DUST,
-                player.getLocation(),
-                75, 1, 1, 1,
-                new Particle.DustOptions(Color.GREEN, particleSize));
+                player.location,
+                75, 1.0, 1.0, 1.0,
+                Particle.DustOptions(Color.GREEN, particleSize)
+            )
+        }
     }
 }

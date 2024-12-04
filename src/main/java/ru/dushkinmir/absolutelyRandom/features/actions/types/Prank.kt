@@ -1,57 +1,51 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types;
+package ru.dushkinmir.absolutelyRandom.features.actions.types
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import ru.dushkinmir.absolutelyRandom.features.actions.Action;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Location
+import org.bukkit.Particle
+import org.bukkit.Sound
+import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
+import ru.dushkinmir.absolutelyRandom.features.actions.Action
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import java.util.*
 
-import java.util.Random;
+class Prank : Action("prank") {
+    private val random = Random()
+    private val sounds = arrayOf(
+        Sound.ENTITY_BLAZE_AMBIENT,
+        Sound.ENTITY_GHAST_SCREAM,
+        Sound.ENTITY_ENDERMAN_TELEPORT,
+        Sound.ENTITY_WITHER_SPAWN,
+        Sound.ENTITY_WITCH_AMBIENT
+    )
 
-public class Prank extends Action {
-    private static final Random random = new Random();
-    private static final Sound[] sounds = {
-            Sound.ENTITY_BLAZE_AMBIENT,
-            Sound.ENTITY_GHAST_SCREAM,
-            Sound.ENTITY_ENDERMAN_TELEPORT,
-            Sound.ENTITY_WITHER_SPAWN,
-            Sound.ENTITY_WITCH_AMBIENT
-    };
-
-    public Prank() {
-        super("prank");
-    }
-
-    @Override
-    public void execute(Plugin plugin) {
-        Player loshara = PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers());
+    override fun execute(plugin: Plugin) {
+        val loshara = PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers())
         if (random.nextBoolean()) {
-            eschkere(loshara);
+            eschkere(loshara)
         } else {
-            spookyScarySkeleton(loshara);
+            spookyScarySkeleton(loshara)
         }
     }
 
-    public static void eschkere(Player target) {
-        target.getWorld().strikeLightning(target.getLocation());
-        target.getWorld().createExplosion(target, 2F, false, false);
+    private fun eschkere(target: Player) {
+        target.world.strikeLightning(target.location)
+        target.world.createExplosion(target, 2f, false, false)
 
-        Component message = Component.text("ЕЩКЕРЕЕЕ!!! 1488", NamedTextColor.DARK_GREEN);
+        val message = Component.text("ЕЩКЕРЕЕЕ!!! 1488", NamedTextColor.DARK_GREEN)
 
-        PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.CHAT);
-        PlayerUtils.sendMessageToPlayer(target, message, message);
-        PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.ACTION_BAR);
+        PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.CHAT)
+        PlayerUtils.sendMessageToPlayer(target, message, message)
+        PlayerUtils.sendMessageToPlayer(target, message, PlayerUtils.MessageType.ACTION_BAR)
     }
 
-    private static void spookyScarySkeleton(Player target) {
-        Location location = target.getLocation();
-        Sound sound = sounds[random.nextInt(sounds.length)];
+    private fun spookyScarySkeleton(target: Player) {
+        val location: Location = target.location
+        val sound: Sound = sounds[random.nextInt(sounds.size)]
 
-        target.getWorld().playSound(location, sound, 1.0f, 1.0f);
-        location.getWorld().spawnParticle(Particle.EXPLOSION, location, 20);
+        target.world.playSound(location, sound, 1.0f, 1.0f)
+        location.world.spawnParticle(Particle.EXPLOSION, location, 20)
     }
 }

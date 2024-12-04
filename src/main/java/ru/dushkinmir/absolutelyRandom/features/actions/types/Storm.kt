@@ -1,86 +1,76 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types;
+package ru.dushkinmir.absolutelyRandom.features.actions.types
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutelyRandom.features.actions.Action;
-import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Location
+import org.bukkit.Particle
+import org.bukkit.Sound
+import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
+import org.bukkit.scheduler.BukkitRunnable
+import ru.dushkinmir.absolutelyRandom.features.actions.Action
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.random.Random
 
-import java.util.List;
-import java.util.Random;
+class Storm : Action("storm") {
+    companion object {
+        private val STORM_MESSAGE = Component.text("Гроза началась! Убегай!", NamedTextColor.YELLOW)
+        private const val STORM_DURATION_SECONDS = 60
+        private const val STRIKE_INTERVAL_SECONDS = 10
+        private const val STRIKE_DISTANCE = 5.0
 
-public class Storm extends Action {
-    private static final Random RANDOM = new Random();
-    private static final Component STORM_MESSAGE = Component.text("Гроза началась! Убегай!", NamedTextColor.YELLOW);
-    private static final int STORM_DURATION_SECONDS = 60;
-    private static final int STRIKE_INTERVAL_SECONDS = 10;
-    private static final double STRIKE_DISTANCE = 5.0;
-
-    protected Storm() {
-        super("storm");
-    }
-
-    public void execute(Plugin plugin) {
-        List<Player> onlinePlayers = PlayerUtils.getOnlinePlayers();
-        startStorm(plugin, onlinePlayers);
-    }
-
-    private static void startStorm(Plugin plugin, List<Player> players) {
-        players.forEach(player -> player.getWorld().setStorm(true));
-        sendStormWarningToPlayers(players);
-        new StormTask(players).runTaskTimer(plugin, 60, 20 * STRIKE_INTERVAL_SECONDS);
-        players.forEach(player -> player.getWorld().setStorm(false));
-
-    }
-
-    private static void sendStormWarningToPlayers(List<Player> players) {
-        for (Player player : players) {
-            PlayerUtils.sendMessageToPlayer(player, STORM_MESSAGE, PlayerUtils.MessageType.ACTION_BAR);
-        }
-    }
-
-    private static class StormTask extends BukkitRunnable {
-        private final List<Player> players;
-        private int elapsedSeconds = 0;
-
-        public StormTask(List<Player> players) {
-            this.players = players;
+        private fun startStorm(plugin: Plugin, players: List<Player>) {
+            players.forEach { it.world.setStorm(true) }
+            sendStormWarningToPlayers(players)
+            StormTask(players).runTaskTimer(plugin, 60, 20L * STRIKE_INTERVAL_SECONDS)
+            players.forEach { it.world.setStorm(false) }
         }
 
-        @Override
-        public void run() {
-            if (elapsedSeconds >= STORM_DURATION_SECONDS) {
-                cancel();
-                return;
+        private fun sendStormWarningToPlayers(players: List<Player>) {
+            for (player in players) {
+                PlayerUtils.sendMessageToPlayer(player, STORM_MESSAGE, PlayerUtils.MessageType.ACTION_BAR)
             }
-            Storm.strikeRandomPlayer(players);
-            elapsedSeconds += STRIKE_INTERVAL_SECONDS;
+        }
+
+        private fun strikeRandomPlayer(players: List<Player>) {
+            val randomPlayer = PlayerUtils.getRandomPlayer(players)
+            val strikeLocation = calculateStrikeLocation(randomPlayer.location)
+            createWeatherEffect(strikeLocation)
+        }
+
+        private fun calculateStrikeLocation(location: Location): Location {
+            // Получаем случайный угол для определения направления
+            val angle = Random.nextDouble() * 2 * Math.PI // Угол в радианах
+            val xOffset = cos(angle) * STRIKE_DISTANCE // X смещение
+            val zOffset = sin(angle) * STRIKE_DISTANCE // Z смещение
+            return location.clone().add(xOffset, 0.0, zOffset) // Возвращаем новую локацию
+        }
+
+        private fun createWeatherEffect(strikeLocation: Location) {
+            strikeLocation.world.strikeLightning(strikeLocation)
+            strikeLocation.world.createExplosion(strikeLocation, 4.0f, false, false)
+            strikeLocation.world.spawnParticle(Particle.EXPLOSION, strikeLocation, 10)
+            strikeLocation.world.playSound(strikeLocation, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1.0f, 1.0f)
         }
     }
 
-    private static void strikeRandomPlayer(List<Player> players) {
-        Player randomPlayer = PlayerUtils.getRandomPlayer(players);
-        Location strikeLocation = calculateStrikeLocation(randomPlayer.getLocation());
-        createWeatherEffect(strikeLocation);
+    override fun execute(plugin: Plugin) {
+        val onlinePlayers = PlayerUtils.getOnlinePlayers()
+        startStorm(plugin, onlinePlayers)
     }
 
-    private static Location calculateStrikeLocation(Location location) {
-        // Получаем случайный угол для определения направления
-        double angle = RANDOM.nextDouble() * 2 * Math.PI;  // Угол в радианах
-        double xOffset = Math.cos(angle) * STRIKE_DISTANCE;  // X смещение
-        double zOffset = Math.sin(angle) * STRIKE_DISTANCE;  // Z смещение
-        return location.clone().add(xOffset, 0, zOffset);  // Возвращаем новую локацию
-    }
+    private class StormTask(private val players: List<Player>) : BukkitRunnable() {
+        private var elapsedSeconds = 0
 
-    private static void createWeatherEffect(Location strikeLocation) {
-        strikeLocation.getWorld().strikeLightning(strikeLocation);
-        strikeLocation.getWorld().createExplosion(strikeLocation, 4.0f, false, false);
-        strikeLocation.getWorld().spawnParticle(Particle.EXPLOSION, strikeLocation, 10);
-        strikeLocation.getWorld().playSound(strikeLocation, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1.0f, 1.0f);
+        override fun run() {
+            if (elapsedSeconds >= STORM_DURATION_SECONDS) {
+                cancel()
+                return
+            }
+            strikeRandomPlayer(players)
+            elapsedSeconds += STRIKE_INTERVAL_SECONDS
+        }
     }
 }

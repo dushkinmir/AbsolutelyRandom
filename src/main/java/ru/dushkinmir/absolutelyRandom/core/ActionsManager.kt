@@ -29,7 +29,7 @@ class ActionsManager(private val plugin: Plugin) {
                 actions[action.name] = action
                 actions.forEach { (aname, _) -> debugActions[aname] = Runnable { executeAction(aname) } }
             } catch (e: Exception) {
-                plugin.logger.severe("An error has been occurred:\n" + e.message)
+                plugin.logger.severe("An error has been occurred:\n${e.message}")
             }
         }
         scheduleActionTrigger()

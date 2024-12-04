@@ -1,17 +1,7 @@
-package ru.dushkinmir.absolutelyRandom.features.actions;
+package ru.dushkinmir.absolutelyRandom.features.actions
 
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.Plugin
 
-public abstract class Action {
-    private final String name;
-
-    protected Action(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name.toLowerCase();
-    }
-
-    public abstract void execute(Plugin plugin);
+abstract class Action(internal val name: String) {
+    abstract fun execute(plugin: Plugin)
 }
