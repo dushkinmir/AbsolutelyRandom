@@ -1,5 +1,8 @@
 package ru.dushkinmir.absolutelyRandom.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
@@ -13,12 +16,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
-    private static final Pattern CREDENTIALS_PATTERN = Pattern.compile("h-hii! this is my creds!~ (.+?):(.+?);");
-    private static final Pattern BROADCAST_PATTERN = Pattern.compile("h-hii! c-can u pls send this for all\\?~ (.+?);");
     private static final int TIMEOUT_SECONDS = 2;
 
     private final Logger logger;
@@ -26,6 +25,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     private final Map<WebSocket, Boolean> authenticatedClients;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final List<WebSocketMessageListener> listeners = new ArrayList<>();
+    private final Gson gson = new Gson();
 
     public WebSocketServer(String ip, int port, Logger logger) {
         super(new InetSocketAddress(ip, port));
@@ -42,7 +42,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     }
 
     public List<WebSocketMessageListener> getListeners() {
-        return new ArrayList<>(listeners); // Возвращаем копию списка слушателей для предотвращения изменений извне
+        return new ArrayList<>(listeners);
     }
 
 
@@ -77,10 +77,11 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
             }
         }
 
-        Matcher matcher = BROADCAST_PATTERN.matcher(message);
-        if (matcher.matches()) {
-            broadcast(matcher.group(1));
+        JsonObject jsonMessage = parseJson(message);
+        if (jsonMessage != null && jsonMessage.has("broadcast")) {
+            broadcast(jsonMessage.get("broadcast").getAsString());
         }
+
 
         listeners.forEach(listener -> listener.onMessageReceived(conn, message));
     }
@@ -94,13 +95,16 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     public void onStart() {
     }
 
-    private boolean authenticateClient(String playerCreds) {
-        Matcher matcher = CREDENTIALS_PATTERN.matcher(playerCreds);
-        if (matcher.matches()) {
-            String name = matcher.group(1);
-            return validatePlayerCredentials(name, matcher.group(2));
+    private boolean authenticateClient(String jsonMessage) {
+        JsonObject json = parseJson(jsonMessage);
+        if (json == null || !json.has("name") || !json.has("hash")) {
+            return false;
         }
-        return false;
+
+        String name = json.get("name").getAsString();
+        String receivedHash = json.get("hash").getAsString();
+
+        return validatePlayerCredentials(name, receivedHash);
     }
 
     private boolean validatePlayerCredentials(String name, String receivedHash) {
@@ -129,6 +133,15 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
         ScheduledFuture<?> task = timeoutTasks.remove(conn);
         if (task != null && !task.isCancelled()) {
             task.cancel(true);
+        }
+    }
+
+    private JsonObject parseJson(String jsonString) {
+        try {
+            return gson.fromJson(jsonString, JsonObject.class);
+        } catch (JsonSyntaxException e) {
+            logger.warning("Неверный формат JSON: " + e.getMessage());
+            return null;
         }
     }
 }
