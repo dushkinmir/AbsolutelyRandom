@@ -4,11 +4,11 @@ import org.bukkit.plugin.Plugin;
 import ru.dushkinmir.absolutelyRandom.network.WebSocketMessageListener;
 import ru.dushkinmir.absolutelyRandom.network.WebSocketServer;
 
-public class WebSocketHandler {
+public class WebSocketManager {
     private final Plugin plugin;
     private WebSocketServer wsserver;
 
-    public WebSocketHandler(Plugin plugin) {
+    public WebSocketManager(Plugin plugin) {
         this.plugin = plugin;
     }
 

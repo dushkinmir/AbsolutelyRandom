@@ -7,11 +7,11 @@ import dev.jorel.commandapi.arguments.SafeSuggestions;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-public class SexCommandManager {
+public class SexCommands {
     AnalFissureHandler fissureHandler;
     Plugin plugin;
 
-    public SexCommandManager(AnalFissureHandler fissureHandler, Plugin plugin) {
+    public SexCommands(AnalFissureHandler fissureHandler, Plugin plugin) {
         this.fissureHandler = fissureHandler;
         this.plugin = plugin;
     }

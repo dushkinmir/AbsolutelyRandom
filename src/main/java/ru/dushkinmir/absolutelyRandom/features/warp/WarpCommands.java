@@ -19,12 +19,12 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.List;
 
-public class WarpCommandManager implements Listener {
+public class WarpCommands implements Listener {
 
     private final WarpManager warpManager;
     private final ConsentMenu consentMenu;
 
-    public WarpCommandManager(WarpManager warpManager, Plugin plugin) {
+    public WarpCommands(WarpManager warpManager, Plugin plugin) {
         this.warpManager = warpManager;
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
         this.consentMenu = new ConsentMenu(

@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.features.actions;
+package ru.dushkinmir.absolutelyRandom.core;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.reflections.Reflections;
+import ru.dushkinmir.absolutelyRandom.features.actions.Action;
 
 import java.util.*;
 
@@ -40,6 +41,7 @@ public class ActionsManager {
             }
         });
         scheduleActionTrigger();
+        registerCommands();
     }
 
     private void scheduleActionTrigger() {
