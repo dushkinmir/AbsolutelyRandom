@@ -19,7 +19,7 @@ public class Group extends Action {
     private static final Component EVENT_END_MESSAGE =
             Component.text("ГРУППОВАЯ МАСТУРБАЦИЯ ОКОНЧЕНА, СПАСИБО ЗА УЧАСТИЕ", NamedTextColor.GREEN);
     private static final int COUNTDOWN_SECONDS = 5;
-    private static final int EVENT_DURATION_TICKS = 60;
+    private static final int EVENT_DURATION_TICKS = 100;
     private static boolean eventActive = false;
 
     public Group() {
@@ -36,6 +36,12 @@ public class Group extends Action {
         PlayerUtils.sendMessageToAllPlayers(EVENT_STARTING_MESSAGE, PlayerUtils.MessageType.CHAT);
 
         new EventCountdownTask(plugin, PlayerUtils.getOnlinePlayers()).runTaskTimer(plugin, 0L, 20L);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                PlayerUtils.sendMessageToAllPlayers(EVENT_END_MESSAGE, PlayerUtils.MessageType.CHAT);
+            }
+        }.runTaskLater(plugin, COUNTDOWN_SECONDS * 20 + EVENT_DURATION_TICKS);
     }
 
     private static class EventCountdownTask extends BukkitRunnable {
@@ -54,7 +60,7 @@ public class Group extends Action {
                 PlayerUtils.sendMessageToAllPlayers(Component.text(countdown + "...", NamedTextColor.RED), PlayerUtils.MessageType.CHAT);
                 countdown--;
             } else {
-                new FallingBlocksTask(plugin, players).runTaskTimer(plugin, 0L, 5L);
+                new FallingBlocksTask(plugin, players).runTaskTimer(plugin, 0L, 1L);
                 this.cancel();
             }
         }
@@ -78,16 +84,15 @@ public class Group extends Action {
                 }
                 remainingTicks--;
             } else {
-                PlayerUtils.sendMessageToAllPlayers(EVENT_END_MESSAGE, PlayerUtils.MessageType.CHAT);
                 eventActive = false;
                 this.cancel();
             }
         }
 
         private void dropItemNearPlayer(Player player) {
-            ItemStack item = new ItemStack(Material.WHITE_WOOL, 1);
+            ItemStack item = new ItemStack(Material.WHITE_WOOL, 5);
             Vector direction = player.getEyeLocation().getDirection().normalize();
-            var droppedItem = player.getWorld().dropItem(player.getLocation().add(direction.multiply(1.5)), item);
+            var droppedItem = player.getWorld().dropItem(player.getLocation().add(direction.multiply(2)), item);
 
             new BukkitRunnable() {
                 @Override
