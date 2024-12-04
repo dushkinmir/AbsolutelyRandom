@@ -5,6 +5,7 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import ru.dushkinmir.absolutelyRandom.core.ExtensionManager;
 import ru.dushkinmir.absolutelyRandom.core.WebSocketHandler;
 import ru.dushkinmir.absolutelyRandom.features.actions.ActionsManager;
 import ru.dushkinmir.absolutelyRandom.features.actions.types.Stinky;
@@ -12,13 +13,9 @@ import ru.dushkinmir.absolutelyRandom.features.betters.HeadChat;
 import ru.dushkinmir.absolutelyRandom.features.betters.NameHider;
 import ru.dushkinmir.absolutelyRandom.features.events.ConsentEvent;
 import ru.dushkinmir.absolutelyRandom.features.events.DrugsEvent;
-import ru.dushkinmir.absolutelyRandom.features.sex.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.features.sex.SexCommandManager;
 import ru.dushkinmir.absolutelyRandom.features.warp.WarpCommandManager;
-import ru.dushkinmir.absolutelyRandom.features.warp.WarpManager;
-import ru.dushkinmir.absolutelyRandom.utils.DatabaseManager;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,11 +24,10 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     public static final Set<String> MESSAGES_SET = new HashSet<>(); // Set to store messages
     private static final long RELOAD_INTERVAL = 20 * 60 * 5; // Interval for automatic reload (every 5 minutes)
     private final Map<String, Boolean> enabledBetters = new ConcurrentHashMap<>(); // Map to enable/disable betters
-    private DatabaseManager database; // Database manager
-    private AnalFissureHandler fissureHandler; // Handler for anal fissure events
-    private WarpManager warpManager; // Warp manager
+    // Core modules
     private final ActionsManager actionsManager = new ActionsManager(this);
-    private WebSocketHandler webSocketHandler;
+    private final WebSocketHandler webSocketHandler = new WebSocketHandler(this);
+    private final ExtensionManager extensionManager = new ExtensionManager(this);
 
     public static Map<UUID, BukkitRunnable> getPlayerTasks() {
         return PLAYER_TASKS;
@@ -47,17 +43,9 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         try {
             saveDefaultConfig(); // Save default config if not exist
             loadConfigValues(); // Load configuration values
-            try {
-                openDatabase(); // Open the database
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
             getLogger().info("Конфигурация загружена.");
 
-            // Initialize managers
-            warpManager = new WarpManager(database, this);
-            fissureHandler = new AnalFissureHandler(database, this);
-            getLogger().info("Менеджеры инициализированы.");
+            extensionManager.initManagers();
 
             // Register events
             registerEvents();
@@ -68,7 +56,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             registerCommands(); // Register commands
             getLogger().info("Команды зарегистрированы.");
 
-            webSocketHandler = new WebSocketHandler(this);
             webSocketHandler.enableWebSocketServer();
 
             startAutoReloadTask(); // Start task for automatic reload
@@ -101,7 +88,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
 
         if (enabledBetters.get("head-chat")) HeadChat.onDisable(this);
 
-        closeDatabase(); // Close the database
+        extensionManager.shutdownManagers();
 
         logPluginDeactivation();
     }
@@ -154,7 +141,7 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
                 new DrugsEvent(),
                 new Stinky(),
                 new ConsentEvent(this),
-                fissureHandler
+                extensionManager.getFissureHandler()
         ));
 
         // Add conditional events based on config
@@ -175,23 +162,11 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         }
     }
 
-    private void openDatabase() throws SQLException {
-        database = new DatabaseManager(this); // Создаем экземпляр базы данных
-        getLogger().info("База данных открыта.");
-    }
-
-    private void closeDatabase() {
-        if (database != null) {
-            database.close(); // Закрываем пул соединений при отключении плагина
-        }
-        getLogger().info("База данных закрыта.");
-    }
-
     private void registerCommands() {
         // Initialize and register WarpCommandManager
-        WarpCommandManager wcm = new WarpCommandManager(warpManager, this);
+        WarpCommandManager wcm = new WarpCommandManager(extensionManager.getWarpManager(), this);
         // Initialize and register SexCommandManager
-        SexCommandManager scm = new SexCommandManager(fissureHandler, this);
+        SexCommandManager scm = new SexCommandManager(extensionManager.getFissureHandler(), this);
         wcm.registerWarpCommands(); // Register warp commands
         scm.registerSexCommand(); // Register sex commands
     }

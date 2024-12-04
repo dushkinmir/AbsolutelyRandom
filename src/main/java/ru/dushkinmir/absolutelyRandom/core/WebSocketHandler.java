@@ -12,7 +12,6 @@ public class WebSocketHandler {
         this.plugin = plugin;
     }
 
-
     public void enableWebSocketServer() {
         if (!plugin.getConfig().getBoolean("betters.websocket.enabled", false)) {
             plugin.getLogger().info("WebSocket отключен в конфиге");
