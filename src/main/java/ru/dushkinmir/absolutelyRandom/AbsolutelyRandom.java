@@ -5,6 +5,7 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import ru.dushkinmir.absolutelyRandom.core.WebSocketHandler;
 import ru.dushkinmir.absolutelyRandom.features.actions.ActionsManager;
 import ru.dushkinmir.absolutelyRandom.features.actions.types.Stinky;
 import ru.dushkinmir.absolutelyRandom.features.betters.HeadChat;
@@ -15,8 +16,6 @@ import ru.dushkinmir.absolutelyRandom.features.sex.AnalFissureHandler;
 import ru.dushkinmir.absolutelyRandom.features.sex.SexCommandManager;
 import ru.dushkinmir.absolutelyRandom.features.warp.WarpCommandManager;
 import ru.dushkinmir.absolutelyRandom.features.warp.WarpManager;
-import ru.dushkinmir.absolutelyRandom.network.WebSocketMessageListener;
-import ru.dushkinmir.absolutelyRandom.network.WebSocketServer;
 import ru.dushkinmir.absolutelyRandom.utils.DatabaseManager;
 
 import java.sql.SQLException;
@@ -31,12 +30,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
     private DatabaseManager database; // Database manager
     private AnalFissureHandler fissureHandler; // Handler for anal fissure events
     private WarpManager warpManager; // Warp manager
-    private WebSocketServer wsserver; // WebSocket server
     private final ActionsManager actionsManager = new ActionsManager(this);
-
-    public static void main(String[] args) {
-        System.out.println("пидисят два!!!");
-    }
+    private WebSocketHandler webSocketHandler;
 
     public static Map<UUID, BukkitRunnable> getPlayerTasks() {
         return PLAYER_TASKS;
@@ -73,9 +68,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             registerCommands(); // Register commands
             getLogger().info("Команды зарегистрированы.");
 
-            if (getConfig().getBoolean("betters.websocket.enabled", false)) {
-                enableWebSocketServer(); // Enable WebSocket server if enabled in config
-            }
+            webSocketHandler = new WebSocketHandler(this);
+            webSocketHandler.enableWebSocketServer();
 
             startAutoReloadTask(); // Start task for automatic reload
 //            scheduleActionTrigger(); // Schedule action triggers
@@ -94,8 +88,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         PLAYER_TASKS.values().forEach(BukkitRunnable::cancel);
         PLAYER_TASKS.clear();
 
-        // Stop WebSocket server if it exists
-        disableWebSocketServer();
+        // Stop WebSocket server
+        webSocketHandler.disableWebSocketServer();
 
         // Unregister commands
         CommandAPI.unregister("debugrandom");
@@ -110,40 +104,6 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
         closeDatabase(); // Close the database
 
         logPluginDeactivation();
-    }
-
-    private void enableWebSocketServer() {
-        getLogger().info("Запуск веб-сокет сервера...");
-        // Get server IP and port
-        String serverIp = this.getServer().getIp().isEmpty() ? "localhost" : this.getServer().getIp();
-        int port = this.getServer().getPort() + 1;
-
-        // Initialize WebSocket server
-        wsserver = new WebSocketServer(serverIp, port, getLogger());
-        try {
-            getLogger().info("Конфигурация WebSocket успешно загружена.");
-            wsserver.start(); // Start WebSocket server
-            getLogger().info("WebSocket сервер запущен на IP " + serverIp + " и порту " + port);
-        } catch (Exception e) {
-            this.getLogger().severe("Не удалось активировать слушателей WebSocket. " + e.getMessage());
-        }
-    }
-
-    private void disableWebSocketServer() {
-        // Stopping the WebSocket server
-        if (wsserver != null) {
-            try {
-                // Remove all listeners
-                for (WebSocketMessageListener listener : wsserver.getListeners()) {
-                    wsserver.removeListener(listener);
-                }
-                getLogger().info("Остановка WebSocket сервера.");
-                wsserver.stop(); // Stop the server
-            } catch (Exception e) {
-                this.getLogger().severe("Не удалось остановить WebSocket сервер: " + e.getMessage());
-            }
-            getLogger().info("WebSocket сервер остановлен.");
-        }
     }
 
     private void logPluginActivation() {
