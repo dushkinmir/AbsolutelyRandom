@@ -22,7 +22,7 @@ class WebSocketManager(private val plugin: Plugin) {
         try {
             plugin.logger.info("Конфигурация WebSocket успешно загружена.")
             wsserver?.start() // Start WebSocket server
-            plugin.logger.info("WebSocket сервер запущен на IP $serverIp и порту $port")
+            plugin.logger.info("WebSocket сервер запущен на IP $serverIp:$port")
         } catch (e: Exception) {
             plugin.logger.severe("Не удалось активировать слушателей WebSocket. " + e.message)
         }

@@ -49,7 +49,7 @@ class Group : Action("group") {
                 )
                 countdown--
             } else {
-                FallingBlocksTask(plugin, players).runTaskTimer(plugin, 0L, 1L)
+                FallingBlocksTask(plugin, players).runTaskTimer(plugin, 0L, 5L)
                 this.cancel()
             }
         }

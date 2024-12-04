@@ -71,12 +71,12 @@ object SexManager {
 
         PlayerUtils.sendMessageToPlayer(
             movingPlayer,
-            Component.text("<%s> даа мой папочка, накажи меня!!~".format(stationaryPlayer.name)),
+            Component.text("<${stationaryPlayer.name}> даа мой папочка, накажи меня!!~"),
             PlayerUtils.MessageType.CHAT
         )
         PlayerUtils.sendMessageToPlayer(
             stationaryPlayer,
-            Component.text("<%s> ода, давай сучка, нагибайся)".format(movingPlayer.name)),
+            Component.text("<${movingPlayer.name}> ода, давай сучка, нагибайся)"),
             PlayerUtils.MessageType.CHAT
         )
     }
@@ -130,7 +130,7 @@ object SexManager {
             Runnable {
                 Bukkit.getScheduler().cancelTask(taskId)
                 fissureHandler.checkForFissure(stationaryPlayer)
-                FallingBlocksTask(plugin, ArrayList(Arrays.asList(player, stationaryPlayer))).runTaskTimer(
+                FallingBlocksTask(plugin, ArrayList(listOf(player, stationaryPlayer))).runTaskTimer(
                     plugin,
                     0L,
                     5L

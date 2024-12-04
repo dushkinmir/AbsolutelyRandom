@@ -5,7 +5,7 @@
 
     <groupId>ru.dushkinmir</groupId>
     <artifactId>AbsolutelyRandom</artifactId>
-    <version>1.5-ALPHA</version>
+    <version>1.9-ALPHA</version>
     <packaging>jar</packaging>
 
     <properties>
