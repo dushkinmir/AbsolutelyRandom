@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.actions;
+package ru.dushkinmir.absolutelyRandom.features.actions.types;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.AbsolutelyRandom;
+import ru.dushkinmir.absolutelyRandom.features.actions.Action;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class RandomMessage extends Action {
     private static final long TASK_INTERVAL_TICKS = 20 * 4;
     private final Set<String> MESSAGES = AbsolutelyRandom.MESSAGES_SET;
 
-    protected RandomMessage() {
+    public RandomMessage() {
         super("message");
     }
 

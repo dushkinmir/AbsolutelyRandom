@@ -5,19 +5,19 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import ru.dushkinmir.absolutelyRandom.actions.ActionsManager;
-import ru.dushkinmir.absolutelyRandom.actions.Stinky;
-import ru.dushkinmir.absolutelyRandom.betters.HeadChat;
-import ru.dushkinmir.absolutelyRandom.betters.NameHider;
-import ru.dushkinmir.absolutelyRandom.events.ConsentEvent;
-import ru.dushkinmir.absolutelyRandom.events.DrugsEvent;
-import ru.dushkinmir.absolutelyRandom.sex.AnalFissureHandler;
-import ru.dushkinmir.absolutelyRandom.sex.SexCommandManager;
+import ru.dushkinmir.absolutelyRandom.features.actions.ActionsManager;
+import ru.dushkinmir.absolutelyRandom.features.actions.types.Stinky;
+import ru.dushkinmir.absolutelyRandom.features.betters.HeadChat;
+import ru.dushkinmir.absolutelyRandom.features.betters.NameHider;
+import ru.dushkinmir.absolutelyRandom.features.events.ConsentEvent;
+import ru.dushkinmir.absolutelyRandom.features.events.DrugsEvent;
+import ru.dushkinmir.absolutelyRandom.features.sex.AnalFissureHandler;
+import ru.dushkinmir.absolutelyRandom.features.sex.SexCommandManager;
+import ru.dushkinmir.absolutelyRandom.features.warp.WarpCommandManager;
+import ru.dushkinmir.absolutelyRandom.features.warp.WarpManager;
+import ru.dushkinmir.absolutelyRandom.network.WebSocketMessageListener;
+import ru.dushkinmir.absolutelyRandom.network.WebSocketServer;
 import ru.dushkinmir.absolutelyRandom.utils.DatabaseManager;
-import ru.dushkinmir.absolutelyRandom.utils.WebSocketMessageListener;
-import ru.dushkinmir.absolutelyRandom.utils.WebSocketServer;
-import ru.dushkinmir.absolutelyRandom.warp.WarpCommandManager;
-import ru.dushkinmir.absolutelyRandom.warp.WarpManager;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -69,8 +69,8 @@ public class AbsolutelyRandom extends JavaPlugin implements Listener {
             getLogger().info("События зарегистрированы.");
 
             actionsManager.registerAllActions(); // Регистрируем все экшены
-            registerCommands(); // Register commands
             actionsManager.registerCommands();
+            registerCommands(); // Register commands
             getLogger().info("Команды зарегистрированы.");
 
             if (getConfig().getBoolean("betters.websocket.enabled", false)) {

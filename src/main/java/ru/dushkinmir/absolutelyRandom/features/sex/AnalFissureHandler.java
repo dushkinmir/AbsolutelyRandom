@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.sex;
+package ru.dushkinmir.absolutelyRandom.features.sex;
 
 import dev.geco.gsit.api.event.PreEntitySitEvent;
 import dev.geco.gsit.api.event.PrePlayerPlayerSitEvent;

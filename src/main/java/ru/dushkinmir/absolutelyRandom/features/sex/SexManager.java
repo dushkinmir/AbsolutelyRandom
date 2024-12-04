@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.sex;
+package ru.dushkinmir.absolutelyRandom.features.sex;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import static ru.dushkinmir.absolutelyRandom.actions.Group.FallingBlocksTask;
+import static ru.dushkinmir.absolutelyRandom.features.actions.types.Group.FallingBlocksTask;
 
 public class SexManager {
 

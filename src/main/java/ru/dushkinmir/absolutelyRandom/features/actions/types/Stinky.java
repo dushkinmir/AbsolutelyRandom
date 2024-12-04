@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.actions;
+package ru.dushkinmir.absolutelyRandom.features.actions.types;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
@@ -15,6 +15,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import ru.dushkinmir.absolutelyRandom.AbsolutelyRandom;
+import ru.dushkinmir.absolutelyRandom.features.actions.Action;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.*;

@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.betters;
+package ru.dushkinmir.absolutelyRandom.features.betters;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

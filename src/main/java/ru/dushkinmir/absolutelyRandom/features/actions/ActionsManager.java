@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.actions;
+package ru.dushkinmir.absolutelyRandom.features.actions;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
@@ -27,7 +27,7 @@ public class ActionsManager {
 
     // Автоматическая регистрация всех Action классов
     public void registerAllActions() {
-        Reflections reflections = new Reflections("ru.dushkinmir.absolutelyRandom.actions");
+        Reflections reflections = new Reflections("ru.dushkinmir.absolutelyRandom.features.actions.types");
         // Ищем все классы, которые наследуют Action
         reflections.getSubTypesOf(Action.class).forEach(actionClass -> {
             try {

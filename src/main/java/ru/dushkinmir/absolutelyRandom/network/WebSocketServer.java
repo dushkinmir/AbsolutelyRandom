@@ -1,10 +1,12 @@
-package ru.dushkinmir.absolutelyRandom.utils;
+package ru.dushkinmir.absolutelyRandom.network;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
+import ru.dushkinmir.absolutelyRandom.utils.HashUtils;
+import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;

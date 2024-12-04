@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.warp;
+package ru.dushkinmir.absolutelyRandom.features.warp;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

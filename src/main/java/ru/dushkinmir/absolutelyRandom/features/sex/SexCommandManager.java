@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.sex;
+package ru.dushkinmir.absolutelyRandom.features.sex;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.Argument;

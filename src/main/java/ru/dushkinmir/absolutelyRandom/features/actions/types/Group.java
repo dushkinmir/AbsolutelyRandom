@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.actions;
+package ru.dushkinmir.absolutelyRandom.features.actions.types;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import ru.dushkinmir.absolutelyRandom.features.actions.Action;
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils;
 
 import java.util.List;

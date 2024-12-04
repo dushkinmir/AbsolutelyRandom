@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.actions;
+package ru.dushkinmir.absolutelyRandom.features.actions;
 
 import org.bukkit.plugin.Plugin;
 

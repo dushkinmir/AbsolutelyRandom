@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.utils;
+package ru.dushkinmir.absolutelyRandom.network;
 
 import org.java_websocket.WebSocket;
 

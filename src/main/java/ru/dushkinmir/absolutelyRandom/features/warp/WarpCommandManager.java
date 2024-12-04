@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.warp;
+package ru.dushkinmir.absolutelyRandom.features.warp;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;

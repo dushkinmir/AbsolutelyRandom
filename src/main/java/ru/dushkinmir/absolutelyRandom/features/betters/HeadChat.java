@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.betters;
+package ru.dushkinmir.absolutelyRandom.features.betters;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;

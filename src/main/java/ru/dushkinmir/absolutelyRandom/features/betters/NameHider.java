@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.betters;
+package ru.dushkinmir.absolutelyRandom.features.betters;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
