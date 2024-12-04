@@ -23,12 +23,12 @@ class ExtensionManager(private val plugin: Plugin) {
         plugin.logger.info("Менеджеры инициализированы.")
     }
 
-    fun getFissureHandler(): AnalFissureHandler? {
-        return fissureHandler
+    fun getFissureHandler(): AnalFissureHandler {
+        return fissureHandler!!
     }
 
-    fun getWarpManager(): WarpManager? {
-        return warpManager
+    fun getWarpManager(): WarpManager {
+        return warpManager!!
     }
 
     fun shutdownManagers() {
