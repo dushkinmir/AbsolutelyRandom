@@ -12,7 +12,7 @@ import java.util.*
 object SexManager {
 
     private val collisionManager = CollisionManager()
-    private val SEX_DURATION: Long = 15
+    private const val SEX_DURATION: Long = 15
 
     fun triggerSexEvent(initiator: Player, targetPlayer: Player?, plugin: Plugin, fissureHandler: AnalFissureHandler) {
 

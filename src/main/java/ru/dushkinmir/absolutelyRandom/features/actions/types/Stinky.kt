@@ -73,22 +73,6 @@ class Stinky : Action("stinky"), Listener {
         )
         private val NORMAL_PLAYER_MESSAGE = Component.text("воо, молодец!")
 
-        private fun sendPlayerWorldMessage(player: Player) {
-            val message = "a %s теперь воняет".format(Objects.requireNonNull(player).name)
-            PlayerUtils.sendMessageToAllPlayers(Component.text(message), PlayerUtils.MessageType.CHAT)
-        }
-
-        private fun scheduleEffects(plugin: Plugin, playerUUID: UUID) {
-            val player = plugin.server.getPlayer(playerUUID)
-            if (player != null) {
-                val playerTasks = AbsRand.getPlayerTasks()
-                val task = PlayerEffectTask(player)
-                task.runTaskTimer(plugin, 0, 20L)
-                if (!playerTasks.containsKey(playerUUID)) playerTasks[playerUUID] = task
-                PlayerUtils.sendMessageToPlayer(player, STINKY_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT)
-            }
-        }
-
         private fun applyPoisonEffect(player: Player) {
             for (entity in player.getNearbyEntities(1.0, 1.0, 1.0)) {
                 if (entity is LivingEntity && entity != player) {
@@ -106,6 +90,22 @@ class Stinky : Action("stinky"), Listener {
                 75, 1.0, 1.0, 1.0,
                 Particle.DustOptions(Color.GREEN, particleSize)
             )
+        }
+    }
+
+    private fun sendPlayerWorldMessage(player: Player) {
+        val message = "a %s теперь воняет".format(Objects.requireNonNull(player).name)
+        PlayerUtils.sendMessageToAllPlayers(Component.text(message), PlayerUtils.MessageType.CHAT)
+    }
+
+    private fun scheduleEffects(plugin: Plugin, playerUUID: UUID) {
+        val player = plugin.server.getPlayer(playerUUID)
+        if (player != null) {
+            val playerTasks = AbsRand.getPlayerTasks()
+            val task = PlayerEffectTask(player)
+            task.runTaskTimer(plugin, 0, 20L)
+            if (!playerTasks.containsKey(playerUUID)) playerTasks[playerUUID] = task
+            PlayerUtils.sendMessageToPlayer(player, STINKY_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT)
         }
     }
 }

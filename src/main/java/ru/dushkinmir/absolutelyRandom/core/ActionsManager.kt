@@ -87,7 +87,7 @@ class ActionsManager(private val plugin: Plugin) {
     }
 
     fun executeAction(actionName: String) {
-        val action = actions[actionName.lowercase(Locale.getDefault())]
+        val action = actions[actionName.lowercase()]
         if (action != null) {
             action.execute(plugin)
         } else {

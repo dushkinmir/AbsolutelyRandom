@@ -45,7 +45,6 @@ class AbsRand : JavaPlugin(), Listener {
     }
 
     override fun onDisable() {
-        // Cancel and clear player tasks
         PLAYER_TASKS.values.forEach { it.cancel() }
         PLAYER_TASKS.clear()
 
