@@ -16,11 +16,11 @@ class ExtensionManager(private val plugin: Plugin) {
     fun onEnable() {
         // Open database
         database = DatabaseManager(plugin)
-        plugin.logger.info("База данных открыта.")
+        plugin.logger.info("Database are opened.")
         // Initialize managers
         warpManager = WarpManager(database!!, plugin)
         fissureHandler = AnalFissureHandler(database!!, plugin)
-        plugin.logger.info("Менеджеры инициализированы.")
+        plugin.logger.info("Managers are initialized.")
     }
 
     fun getFissureHandler(): AnalFissureHandler {
@@ -34,7 +34,7 @@ class ExtensionManager(private val plugin: Plugin) {
     fun onDisable() {
         database?.let {
             it.close()
-            plugin.logger.info("База данных закрыта.")
+            plugin.logger.info("Database are closed.")
         }
     }
 }

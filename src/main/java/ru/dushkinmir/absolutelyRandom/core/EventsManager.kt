@@ -15,7 +15,7 @@ class EventsManager(private val plugin: Plugin, private val extensionManager: Ex
         events.add(DrugsEvent())
         events.add(Stinky())
         events.add(ConsentEvent(plugin))
-        events.add(extensionManager.getFissureHandler()!!)
+        events.add(extensionManager.getFissureHandler())
 
         if (plugin.config.getBoolean("betters.name-hider", false)) {
             events.add(NameHider(plugin))
@@ -25,7 +25,7 @@ class EventsManager(private val plugin: Plugin, private val extensionManager: Ex
         }
 
         events.forEach { event -> plugin.server.pluginManager.registerEvents(event, plugin) }
-        plugin.logger.info("Все события зарегистрированы.")
+        plugin.logger.info("All events are registered.")
     }
 
     fun onDisable() {

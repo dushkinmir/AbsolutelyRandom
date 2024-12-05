@@ -8,11 +8,11 @@ class WebSocketManager(private val plugin: Plugin) {
 
     fun onEnable() {
         if (!plugin.config.getBoolean("betters.websocket.enabled", false)) {
-            plugin.logger.info("WebSocket отключен в конфиге")
+            plugin.logger.info("WebSocket are disabled in config.")
             return
         }
 
-        plugin.logger.info("Запуск веб-сокет сервера...")
+        plugin.logger.info("Starting WebSocket server...")
         // Get server IP and port
         val serverIp = if (plugin.server.ip.isEmpty()) "localhost" else plugin.server.ip
         val port = plugin.server.port + 1
@@ -20,11 +20,11 @@ class WebSocketManager(private val plugin: Plugin) {
         // Initialize WebSocket server
         wsserver = WebSocketServer(serverIp, port, plugin.logger)
         try {
-            plugin.logger.info("Конфигурация WebSocket успешно загружена.")
+            plugin.logger.info("Configuration of WebSocket server is OK.")
             wsserver?.start() // Start WebSocket server
-            plugin.logger.info("WebSocket сервер запущен на IP $serverIp:$port")
+            plugin.logger.info("WebSocket server is running on IP $serverIp:$port")
         } catch (e: Exception) {
-            plugin.logger.severe("Не удалось активировать слушателей WebSocket. " + e.message)
+            plugin.logger.severe("Failed to activate WebSocket listeners. " + e.message)
         }
     }
 
@@ -36,12 +36,12 @@ class WebSocketManager(private val plugin: Plugin) {
                 for (listener in wsserver!!.listeners) {
                     wsserver?.removeListener(listener)
                 }
-                plugin.logger.info("Остановка WebSocket сервера.")
+                plugin.logger.info("Stopping the WebSocket server.")
                 wsserver?.stop() // Stop the server
             } catch (e: Exception) {
-                plugin.logger.severe("Не удалось остановить WebSocket сервер: " + e.message)
+                plugin.logger.severe("Failed to stop the WebSocket server: " + e.message)
             }
-            plugin.logger.info("WebSocket сервер остановлен.")
+            plugin.logger.info("WebSocket server stopped.")
         }
     }
 }

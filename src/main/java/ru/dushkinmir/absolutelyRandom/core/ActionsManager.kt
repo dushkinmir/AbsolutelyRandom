@@ -32,18 +32,18 @@ class ActionsManager(private val plugin: Plugin) {
                 plugin.logger.severe("An error has been occurred:\n${e.message}")
             }
         }
-        scheduleActionTrigger()
+        actionScheduler()
         registerCommands()
     }
 
-    private fun scheduleActionTrigger() {
+    private fun actionScheduler() {
         // Schedule task to trigger random events at intervals
         object : BukkitRunnable() {
             override fun run() {
                 executeRandomActions() // Execute random events
             }
         }.runTaskTimer(plugin, 0, SCHEDULE_PERIOD)
-        plugin.logger.info("Запланированные действия активированы.")
+        plugin.logger.info("Action scheduler activated.")
     }
 
     private fun executeRandomActions() {

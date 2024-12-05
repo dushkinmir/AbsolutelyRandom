@@ -22,7 +22,7 @@ class CommandsManager(private val plugin: Plugin, private val extensionManager: 
         CommandAPI.unregister("debugrandom")
         CommandAPI.unregister("warp")
         CommandAPI.unregister("sex")
-        plugin.logger.info("Команды CommandAPI отменены.")
+        plugin.logger.info("All commands are deregistered.")
         // Disable CommandAPI
         CommandAPI.onDisable()
     }

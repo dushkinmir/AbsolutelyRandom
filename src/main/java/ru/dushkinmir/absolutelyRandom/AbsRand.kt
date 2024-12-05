@@ -30,6 +30,7 @@ class AbsRand : JavaPlugin(), Listener {
 
     override fun onEnable() {
         try {
+            logger.info("Starting...")
             saveDefaultConfig() // Save default config if not exist
             extensionManager.onEnable()
             eventsManager.onEnable()
@@ -37,14 +38,16 @@ class AbsRand : JavaPlugin(), Listener {
             commandsManager.onEnable()
             webSocketHandler.onEnable()
 
+            logger.info("Starting is completed.")
             logger.info("Hi there!!")
         } catch (e: Exception) {
-            logger.severe("Ошибка при включении плагина: " + e.message)
+            logger.severe("An error occurred while enabling the plugin: ${e.message}")
             server.pluginManager.disablePlugin(this)
         }
     }
 
     override fun onDisable() {
+        logger.info("Stopping...")
         PLAYER_TASKS.values.forEach { it.cancel() }
         PLAYER_TASKS.clear()
 
@@ -52,5 +55,7 @@ class AbsRand : JavaPlugin(), Listener {
         commandsManager.onDisable()
         eventsManager.onDisable()
         extensionManager.onDisable()
+        logger.info("Stopping is completed.")
+        logger.info("Goodbye!")
     }
 }
