@@ -13,7 +13,7 @@ class ExtensionManager(private val plugin: Plugin) {
     private var warpManager: WarpManager? = null // Warp manager
 
     @Throws(SQLException::class)
-    fun initManagers() {
+    fun onEnable() {
         // Open database
         database = DatabaseManager(plugin)
         plugin.logger.info("База данных открыта.")
@@ -31,7 +31,7 @@ class ExtensionManager(private val plugin: Plugin) {
         return warpManager!!
     }
 
-    fun shutdownManagers() {
+    fun onDisable() {
         database?.let {
             it.close()
             plugin.logger.info("База данных закрыта.")

@@ -6,7 +6,7 @@ import ru.dushkinmir.absolutelyRandom.network.WebSocketServer
 class WebSocketManager(private val plugin: Plugin) {
     private var wsserver: WebSocketServer? = null
 
-    fun enableWebSocketServer() {
+    fun onEnable() {
         if (!plugin.config.getBoolean("betters.websocket.enabled", false)) {
             plugin.logger.info("WebSocket отключен в конфиге")
             return
@@ -28,7 +28,7 @@ class WebSocketManager(private val plugin: Plugin) {
         }
     }
 
-    fun disableWebSocketServer() {
+    fun onDisable() {
         // Stopping the WebSocket server
         if (wsserver != null) {
             try {

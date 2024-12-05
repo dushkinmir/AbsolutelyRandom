@@ -10,7 +10,7 @@ import ru.dushkinmir.absolutelyRandom.features.events.DrugsEvent
 
 class EventsManager(private val plugin: Plugin, private val extensionManager: ExtensionManager) {
 
-    fun registerEvents() {
+    fun onEnable() {
         val events: MutableList<Listener> = ArrayList()
         events.add(DrugsEvent())
         events.add(Stinky())

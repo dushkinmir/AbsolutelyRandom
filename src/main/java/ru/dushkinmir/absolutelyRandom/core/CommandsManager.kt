@@ -7,7 +7,7 @@ import ru.dushkinmir.absolutelyRandom.features.warp.WarpCommands
 
 class CommandsManager(private val plugin: Plugin, private val extensionManager: ExtensionManager) {
 
-    fun registerCommands() {
+    fun onEnable() {
         // Initialize and register WarpCommandManager
         val wcm = WarpCommands(extensionManager.getWarpManager(), plugin)
         // Initialize and register SexCommandManager
@@ -17,7 +17,7 @@ class CommandsManager(private val plugin: Plugin, private val extensionManager: 
         CommandAPI.onEnable() // Enable CommandAPI
     }
 
-    fun unregisterCommands() {
+    fun onDisable() {
         // Unregister commands
         CommandAPI.unregister("debugrandom")
         CommandAPI.unregister("warp")

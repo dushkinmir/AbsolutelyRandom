@@ -19,7 +19,7 @@ class ActionsManager(private val plugin: Plugin) {
     private val debugActions: MutableMap<String, Runnable> = HashMap()
 
     // Автоматическая регистрация всех Action классов
-    fun registerAllActions() {
+    fun onEnable() {
         val reflections = Reflections("ru.dushkinmir.absolutelyRandom.features.actions.types")
         // Ищем все классы, которые наследуют Action
         reflections.getSubTypesOf(Action::class.java).forEach { actionClass ->

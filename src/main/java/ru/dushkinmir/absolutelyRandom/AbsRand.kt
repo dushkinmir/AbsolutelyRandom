@@ -31,11 +31,11 @@ class AbsRand : JavaPlugin(), Listener {
     override fun onEnable() {
         try {
             saveDefaultConfig() // Save default config if not exist
-            extensionManager.initManagers()
-            eventsManager.registerEvents()
-            actionsManager.registerAllActions()
-            commandsManager.registerCommands()
-            webSocketHandler.enableWebSocketServer()
+            extensionManager.onEnable()
+            eventsManager.onEnable()
+            actionsManager.onEnable()
+            commandsManager.onEnable()
+            webSocketHandler.onEnable()
 
             logger.info("Hi there!!")
         } catch (e: Exception) {
@@ -48,9 +48,9 @@ class AbsRand : JavaPlugin(), Listener {
         PLAYER_TASKS.values.forEach { it.cancel() }
         PLAYER_TASKS.clear()
 
-        webSocketHandler.disableWebSocketServer()
-        commandsManager.unregisterCommands()
+        webSocketHandler.onDisable()
+        commandsManager.onDisable()
         eventsManager.onDisable()
-        extensionManager.shutdownManagers()
+        extensionManager.onDisable()
     }
 }
