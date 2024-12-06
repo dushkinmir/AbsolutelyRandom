@@ -13,7 +13,7 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
-import ru.dushkinmir.absolutelyRandom.AbsRand
+import ru.dushkinmir.absolutelyRandom.core.PlayerData
 import ru.dushkinmir.absolutelyRandom.features.actions.Action
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
 import java.util.*
@@ -32,7 +32,7 @@ class Stinky : Action("stinky"), Listener {
     }
 
     private fun isPlayerTracked(playerUUID: UUID): Boolean {
-        return AbsRand.getPlayerTasks().containsKey(playerUUID)
+        return getPlayerData(playerUUID).get<BukkitRunnable>("stinky") != null
     }
 
     @EventHandler
@@ -44,14 +44,12 @@ class Stinky : Action("stinky"), Listener {
         }
     }
 
-    private class PlayerEffectTask(private val player: Player) : BukkitRunnable() {
+    private class PlayerEffectTask(private val player: Player, private val playerData: PlayerData) : BukkitRunnable() {
         override fun run() {
-            val playerTasks = AbsRand.getPlayerTasks()
-            val playerUUID = player.uniqueId
             if (isPlayerInWater(player)) {
                 PlayerUtils.sendMessageToPlayer(player, NORMAL_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT)
                 this.cancel()
-                playerTasks.remove(playerUUID)
+                playerData.remove("stinky")
                 return
             }
             applyPoisonEffect(player)
@@ -101,10 +99,9 @@ class Stinky : Action("stinky"), Listener {
     private fun scheduleEffects(plugin: Plugin, playerUUID: UUID) {
         val player = plugin.server.getPlayer(playerUUID)
         if (player != null) {
-            val playerTasks = AbsRand.getPlayerTasks()
-            val task = PlayerEffectTask(player)
+            val task = PlayerEffectTask(player, getPlayerData(playerUUID))
             task.runTaskTimer(plugin, 0, 20L)
-            if (!playerTasks.containsKey(playerUUID)) playerTasks[playerUUID] = task
+            if (isPlayerTracked(playerUUID)) getPlayerData(playerUUID).set<BukkitRunnable>("stinky", task)
             PlayerUtils.sendMessageToPlayer(player, STINKY_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT)
         }
     }

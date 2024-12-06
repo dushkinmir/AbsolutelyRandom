@@ -21,6 +21,10 @@ public class PlayerUtils {
         return players.get(RANDOM.nextInt(players.size()));
     }
 
+    public static Player getRandomPlayer() {
+        return getOnlinePlayers().get(RANDOM.nextInt(getOnlinePlayers().size()));
+    }
+
     public static void sendMessageToPlayer(Player player, Component message, MessageType type) {
         switch (type) {
             case ACTION_BAR:
