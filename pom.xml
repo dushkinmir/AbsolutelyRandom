@@ -12,8 +12,6 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <grpc.version>1.57.0</grpc.version>
-        <protobuf.version>4.28.2</protobuf.version>
     </properties>
 
     <repositories>
@@ -92,26 +90,6 @@
             <artifactId>kotlin-stdlib</artifactId>
             <version>2.0.20</version>
         </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty-shaded</artifactId>
-            <version>${grpc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-protobuf</artifactId>
-            <version>${grpc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-stub</artifactId>
-            <version>${grpc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>${protobuf.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -134,23 +112,15 @@
                     <relocations>
                         <relocation>
                             <pattern>de.tr7zw.changeme.nbtapi</pattern>
-                            <shadedPattern>ru.dushkinmir.nbtapi</shadedPattern>
+                            <shadedPattern>asbrand.de.tr7zw.changeme.nbtapi</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>dev.jorel.commandapi</pattern>
-                            <shadedPattern>ru.dushkinmir.commandapi</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>spark</pattern>
-                            <shadedPattern>ru.dushkinmir.spark</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>org.json.simple</pattern>
-                            <shadedPattern>ru.dushkinmir.json.simple</shadedPattern>
+                            <shadedPattern>absrand.dev.jorel.commandapi</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>com.zaxxer.hikari</pattern>
-                            <shadedPattern>ru.dushkinmir.hikari</shadedPattern>
+                            <shadedPattern>absrand.com.zaxxer.hikari</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
