@@ -3,7 +3,27 @@ package ru.dushkinmir.absolutelyRandom.core
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
+class PlayerDataManager {
+    private val actionDataMap: MutableMap<String, MutableMap<UUID, PlayerData>> = mutableMapOf()
+
+    fun getPlayerDataForAction(actionName: String, playerUUID: UUID): PlayerData {
+        return actionDataMap
+            .computeIfAbsent(actionName) { mutableMapOf() }
+            .computeIfAbsent(playerUUID) { PlayerData() }
+    }
+
+    fun removePlayerDataForAction(actionName: String, playerUUID: UUID) {
+        actionDataMap[actionName]?.remove(playerUUID)
+    }
+
+    // Очистить все данные
+    fun clearAllData() {
+        actionDataMap.clear()
+    }
+}
+
 class PlayerData {
+
     private val data: MutableMap<String, Any> = ConcurrentHashMap()
 
     fun <T> set(key: String, value: T) {
@@ -22,20 +42,9 @@ class PlayerData {
     fun clear() {
         data.clear()
     }
-}
 
-class PlayerDataManager {
-    private val playerDataMap: ConcurrentHashMap<UUID, PlayerData> = ConcurrentHashMap()
-
-    fun getPlayerData(playerUUID: UUID): PlayerData {
-        return playerDataMap.computeIfAbsent(playerUUID) { PlayerData() }
-    }
-
-    fun removePlayerData(playerUUID: UUID) {
-        playerDataMap.remove(playerUUID)
-    }
-
-    fun clearAllData() {
-        playerDataMap.clear()
+    fun hasData(): Boolean {
+        return data.isNotEmpty()
     }
 }
+

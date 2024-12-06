@@ -4,26 +4,19 @@ import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.CommandAPIBukkitConfig
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scheduler.BukkitRunnable
 import ru.dushkinmir.absolutelyRandom.core.*
-import java.util.*
 
 class AbsRand : JavaPlugin(), Listener {
     companion object {
-        private val PLAYER_TASKS: MutableMap<UUID, BukkitRunnable> = HashMap() // Map to store player tasks
+        private var playerDataManager: PlayerDataManager = PlayerDataManager()
 
-        fun getPlayerTasks(): MutableMap<UUID, BukkitRunnable> {
-            return PLAYER_TASKS
-        }
+        /*        private val PLAYER_TASKS: MutableMap<UUID, BukkitRunnable> = HashMap() // Map to store player tasks
 
-        private val playerDataManager = PlayerDataManager()
-
+                fun getPlayerTasks(): MutableMap<UUID, BukkitRunnable> {
+                    return PLAYER_TASKS
+                }*/
         fun getPlayerDataManager(): PlayerDataManager {
             return playerDataManager
-        }
-
-        fun clearAllPlayerData() {
-            playerDataManager.clearAllData()
         }
     }
 
@@ -59,12 +52,14 @@ class AbsRand : JavaPlugin(), Listener {
 
     override fun onDisable() {
         logger.info("Stopping...")
+        /*
+                PLAYER_TASKS.values.forEach { it.cancel() }
+                PLAYER_TASKS.clear()*/
 
-        PLAYER_TASKS.values.forEach { it.cancel() }
-        PLAYER_TASKS.clear()
-
+        playerDataManager.clearAllData()
         webSocketHandler.onDisable()
         commandsManager.onDisable()
+        actionsManager.onDisable()
         eventsManager.onDisable()
         extensionManager.onDisable()
 
