@@ -15,6 +15,16 @@ class AbsRand : JavaPlugin(), Listener {
         fun getPlayerTasks(): MutableMap<UUID, BukkitRunnable> {
             return PLAYER_TASKS
         }
+
+        private val playerDataManager = PlayerDataManager()
+
+        fun getPlayerDataManager(): PlayerDataManager {
+            return playerDataManager
+        }
+
+        fun clearAllPlayerData() {
+            playerDataManager.clearAllData()
+        }
     }
 
     // Core modules
@@ -31,6 +41,7 @@ class AbsRand : JavaPlugin(), Listener {
     override fun onEnable() {
         try {
             logger.info("Starting...")
+
             saveDefaultConfig() // Save default config if not exist
             extensionManager.onEnable()
             eventsManager.onEnable()
@@ -48,6 +59,7 @@ class AbsRand : JavaPlugin(), Listener {
 
     override fun onDisable() {
         logger.info("Stopping...")
+
         PLAYER_TASKS.values.forEach { it.cancel() }
         PLAYER_TASKS.clear()
 
@@ -55,6 +67,7 @@ class AbsRand : JavaPlugin(), Listener {
         commandsManager.onDisable()
         eventsManager.onDisable()
         extensionManager.onDisable()
+
         logger.info("Stopping is completed.")
         logger.info("Goodbye!")
     }
