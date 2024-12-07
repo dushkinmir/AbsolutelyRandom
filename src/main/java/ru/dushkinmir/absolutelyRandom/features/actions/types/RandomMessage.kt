@@ -15,8 +15,7 @@ class RandomMessage : Action("message") {
     private val MESSAGES = ArrayList(listOf("bruh"))
 
     override fun execute(plugin: Plugin) {
-        val onlinePlayers = PlayerUtils.getOnlinePlayers()
-        val randomPlayer = PlayerUtils.getRandomPlayer(onlinePlayers)
+        val randomPlayer = PlayerUtils.getRandomPlayer()
         scheduleRandomMessagesTask(plugin, randomPlayer)
     }
 

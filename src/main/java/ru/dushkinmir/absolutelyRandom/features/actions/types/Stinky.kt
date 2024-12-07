@@ -24,7 +24,7 @@ class Stinky(private val plugin: Plugin) : Action("stinky"), Listener {
     }
 
     override fun execute(plugin: Plugin) {
-        val randomPlayer = PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers())
+        val randomPlayer = PlayerUtils.getRandomPlayer()
         PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR)
         sendPlayerWorldMessage(randomPlayer)
         val playerUUID = randomPlayer.uniqueId

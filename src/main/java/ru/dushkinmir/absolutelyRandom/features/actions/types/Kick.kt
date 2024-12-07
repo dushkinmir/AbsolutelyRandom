@@ -17,7 +17,7 @@ class Kick : Action("kick") {
     }
 
     override fun execute(plugin: Plugin) {
-        kickPlayer(PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers()))
+        kickPlayer(PlayerUtils.getRandomPlayer())
     }
 
     private fun kickPlayer(player: Player) {

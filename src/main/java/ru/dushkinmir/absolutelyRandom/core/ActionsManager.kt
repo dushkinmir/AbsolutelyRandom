@@ -18,10 +18,10 @@ class ActionsManager(private val plugin: Plugin) {
     private val actionsChances: MutableMap<String, Int> = mutableMapOf<String, Int>()
     private val debugActions: MutableList<String> = mutableListOf<String>()
 
-    // Автоматическая регистрация всех Action классов
     fun onEnable() {
         registerAction(Crash())
         registerAction(Group())
+        registerAction(Inventory())
         registerAction(Kick())
         registerAction(Prank())
         registerAction(RandomMessage())

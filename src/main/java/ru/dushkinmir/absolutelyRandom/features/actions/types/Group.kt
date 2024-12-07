@@ -9,6 +9,7 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitRunnable
 import ru.dushkinmir.absolutelyRandom.features.actions.Action
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import kotlin.random.Random
 
 class Group : Action("group") {
 
@@ -18,7 +19,7 @@ class Group : Action("group") {
         private val EVENT_END_MESSAGE =
             Component.text("ГРУППОВАЯ МАСТУРБАЦИЯ ОКОНЧЕНА, СПАСИБО ЗА УЧАСТИЕ", NamedTextColor.GREEN)
         private const val COUNTDOWN_SECONDS = 5
-        private const val EVENT_DURATION_TICKS = 100
+        private const val EVENT_DURATION_TICKS = 500
         private var eventActive = false
     }
 
@@ -35,7 +36,7 @@ class Group : Action("group") {
             override fun run() {
                 PlayerUtils.sendMessageToAllPlayers(EVENT_END_MESSAGE, PlayerUtils.MessageType.CHAT)
             }
-        }.runTaskLater(plugin, (COUNTDOWN_SECONDS * 20 + EVENT_DURATION_TICKS).toLong())
+        }.runTaskLater(plugin, ((COUNTDOWN_SECONDS * 20) + EVENT_DURATION_TICKS).toLong())
     }
 
     private class EventCountdownTask(private val plugin: Plugin, private val players: List<Player>) : BukkitRunnable() {
@@ -49,7 +50,7 @@ class Group : Action("group") {
                 )
                 countdown--
             } else {
-                FallingBlocksTask(plugin, players).runTaskTimer(plugin, 0L, 5L)
+                FallingBlocksTask(plugin, players).runTaskTimer(plugin, 0L, 1L)
                 this.cancel()
             }
         }
@@ -61,6 +62,7 @@ class Group : Action("group") {
         override fun run() {
             if (remainingTicks > 0) {
                 for (player in players) {
+                    if (!player.isOnline) return
                     dropItemNearPlayer(player)
                 }
                 remainingTicks--
@@ -71,15 +73,18 @@ class Group : Action("group") {
         }
 
         private fun dropItemNearPlayer(player: Player) {
-            val item = ItemStack(Material.WHITE_WOOL, 5)
+            val item = ItemStack(Material.WHITE_WOOL, 3)
             val direction = player.eyeLocation.direction.normalize()
             val droppedItem = player.world.dropItem(player.location.add(direction.multiply(2)), item)
-
-            object : BukkitRunnable() {
-                override fun run() {
-                    droppedItem.remove()
-                }
-            }.runTaskLater(plugin, 9L)
+            if (Random.nextInt(10) == 1) {
+                droppedItem.pickupDelay = Int.MAX_VALUE
+            } else {
+                object : BukkitRunnable() {
+                    override fun run() {
+                        droppedItem.remove()
+                    }
+                }.runTaskLater(plugin, 9L)
+            }
         }
     }
 }

@@ -133,7 +133,7 @@ object SexManager {
                 FallingBlocksTask(plugin, ArrayList(listOf(player, stationaryPlayer))).runTaskTimer(
                     plugin,
                     0L,
-                    5L
+                    1L
                 )
             },
             SEX_DURATION * 20L // 15 секунд = 300 тиков

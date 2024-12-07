@@ -22,7 +22,7 @@ class Prank : Action("prank") {
     )
 
     override fun execute(plugin: Plugin) {
-        val loshara = PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers())
+        val loshara = PlayerUtils.getRandomPlayer()
         if (random.nextBoolean()) {
             eschkere(loshara)
         } else {

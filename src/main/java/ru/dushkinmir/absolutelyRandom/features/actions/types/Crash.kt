@@ -20,7 +20,6 @@ class Crash : Action("crash") {
         private val DISCONNECT_MESSAGE = Component.text(
             "Critical error: Server crashed. Please try again later.", NamedTextColor.RED
         )
-        private val FINAL_MOTD = Component.text("System Failure: Rebooting...", NamedTextColor.RED)
         private val GLITCH_BLOCK = Material.BARRIER // Используем барьер как эффект замены
 
     }
@@ -32,7 +31,6 @@ class Crash : Action("crash") {
         // Шаг 2: Через некоторое время кикаем всех игроков
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             kickAllPlayersWithStyle()
-            setMotd(FINAL_MOTD)
         }, GLITCH_DURATION_TICKS.toLong())
     }
 
