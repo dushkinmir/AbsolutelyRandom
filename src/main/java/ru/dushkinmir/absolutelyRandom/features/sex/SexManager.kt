@@ -4,9 +4,11 @@ import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
+import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scoreboard.Team
-import ru.dushkinmir.absolutelyRandom.features.actions.types.Group.FallingBlocksTask
+import ru.dushkinmir.absolutelyRandom.features.actions.actions.Group.FallingBlocksTask
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import ru.dushkinmir.absolutelyRandom.utils.ui.ChatConfirmation
 import java.util.*
 
 object SexManager {
@@ -14,10 +16,9 @@ object SexManager {
     private val collisionManager = CollisionManager()
     private const val SEX_DURATION: Long = 15
 
-    fun triggerSexEvent(initiator: Player, targetPlayer: Player?, plugin: Plugin, fissureHandler: AnalFissureHandler) {
-
+    fun triggerSexEvent(initiator: Player, targetPlayer: Player, plugin: Plugin, fissureHandler: AnalFissureHandler) {
         // Проверяем, что целевой игрок существует и в сети
-        if (targetPlayer == null || !targetPlayer.isOnline) {
+        if (!targetPlayer.isOnline) {
             PlayerUtils.sendMessageToPlayer(
                 initiator,
                 Component.text("Игрок не найден или не в сети."),
@@ -25,6 +26,44 @@ object SexManager {
             )
             return
         }
+        val chatConfirmation = ChatConfirmation(plugin)
+
+        chatConfirmation.showConfirmation(
+            targetPlayer,
+            "${initiator.name} хочет с тобой почпокаться! примешь ли ты его?",
+            onConfirm = {
+                PlayerUtils.sendMessageToPlayer(
+                    initiator,
+                    Component.text("ура! ${targetPlayer.name} принял твое предложение!"),
+                    PlayerUtils.MessageType.CHAT
+                )
+                object : BukkitRunnable() {
+                    override fun run() {
+                        executeSex(initiator, targetPlayer, plugin, fissureHandler)
+                    }
+                }.runTaskLater(plugin, 20L)
+            },
+            onCancel = {
+                PlayerUtils.sendMessageToPlayer(
+                    initiator,
+                    Component.text("увы, но ${targetPlayer.name} отверг твое предложение(((\nлох"),
+                    PlayerUtils.MessageType.CHAT
+                )
+                PlayerUtils.sendMessageToPlayer(
+                    targetPlayer,
+                    Component.text("ты отказал ${initiator.name} в чпок-чпок!\nтуда его"),
+                    PlayerUtils.MessageType.CHAT
+                )
+            }
+        )
+    }
+
+    private fun executeSex(
+        initiator: Player,
+        targetPlayer: Player,
+        plugin: Plugin,
+        fissureHandler: AnalFissureHandler
+    ) {
 
         // Проверяем расстояние между игроками
         if (initiator.location.distance(targetPlayer.location) > 1.5) {
@@ -50,14 +89,12 @@ object SexManager {
         }
 
         // Включаем коллизии обратно через 15 секунд
-        Bukkit.getScheduler().runTaskLater(
-            plugin,
-            Runnable {
+        object : BukkitRunnable() {
+            override fun run() {
                 collisionManager.removePlayerFromNoCollision(initiator)
                 collisionManager.removePlayerFromNoCollision(targetPlayer)
-            },
-            SEX_DURATION * 20L // 15 секунд
-        )
+            }
+        }.runTaskLater(plugin, SEX_DURATION * 20L)
     }
 
     private fun performMovement(
@@ -112,9 +149,9 @@ object SexManager {
 
 
                     if (moveForward) {
-                        player.velocity = direction.multiply(0.25) // Двигаем вперед
+                        player.velocity = direction.multiply(0.35) // Двигаем вперед
                     } else {
-                        player.velocity = direction.multiply(-0.25) // Двигаем назад
+                        player.velocity = direction.multiply(-0.35) // Двигаем назад
                     }
 
                     moveForward = !moveForward // Меняем направление
@@ -125,19 +162,17 @@ object SexManager {
         ).taskId
 
         // Останавливаем задачу через 15 секунд (300 тиков)
-        Bukkit.getScheduler().runTaskLater(
-            plugin,
-            Runnable {
+        object : BukkitRunnable() {
+            override fun run() {
                 Bukkit.getScheduler().cancelTask(taskId)
                 fissureHandler.checkForFissure(stationaryPlayer)
                 FallingBlocksTask(plugin, ArrayList(listOf(player, stationaryPlayer))).runTaskTimer(
                     plugin,
                     0L,
-                    1L
+                    5L
                 )
-            },
-            SEX_DURATION * 20L // 15 секунд = 300 тиков
-        )
+            }
+        }.runTaskLater(plugin, SEX_DURATION * 20L)
     }
 
     // Метод для телепортации игрока "движущегося" за спину "стоячего"
@@ -153,41 +188,42 @@ object SexManager {
         movingPlayer.teleport(teleportLocation)
     }
 
-    private class CollisionManager {
+}
 
-        private var noCollisionTeam: Team?
+private class CollisionManager {
 
-        init {
-            noCollisionTeam = setupNoCollisionTeam()
+    private var noCollisionTeam: Team?
+
+    init {
+        noCollisionTeam = setupNoCollisionTeam()
+    }
+
+    // Создаём команду с отключёнными коллизиями
+    private fun setupNoCollisionTeam(): Team? {
+        val manager = Bukkit.getScoreboardManager()
+        val board = manager.mainScoreboard
+
+        // Проверяем, существует ли команда уже
+        var team = board.getTeam("noCollision")
+        if (team == null) {
+            // Создаём новую команду с именем "noCollision"
+            team = board.registerNewTeam("noCollision")
+            team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER) // Отключаем коллизии
         }
+        return team
+    }
 
-        // Создаём команду с отключёнными коллизиями
-        private fun setupNoCollisionTeam(): Team? {
-            val manager = Bukkit.getScoreboardManager()
-            val board = manager.mainScoreboard
-
-            // Проверяем, существует ли команда уже
-            var team = board.getTeam("noCollision")
-            if (team == null) {
-                // Создаём новую команду с именем "noCollision"
-                team = board.registerNewTeam("noCollision")
-                team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER) // Отключаем коллизии
-            }
-            return team
+    // Добавляем игрока в команду без коллизий
+    fun addPlayerToNoCollision(player: Player) {
+        if (noCollisionTeam != null && !noCollisionTeam!!.hasEntry(player.name)) {
+            noCollisionTeam!!.addEntry(player.name)
         }
+    }
 
-        // Добавляем игрока в команду без коллизий
-        fun addPlayerToNoCollision(player: Player) {
-            if (noCollisionTeam != null && !noCollisionTeam!!.hasEntry(player.name)) {
-                noCollisionTeam!!.addEntry(player.name)
-            }
-        }
-
-        // Удаляем игрока из команды (включение коллизий)
-        fun removePlayerFromNoCollision(player: Player) {
-            if (noCollisionTeam != null && noCollisionTeam!!.hasEntry(player.name)) {
-                noCollisionTeam!!.removeEntry(player.name)
-            }
+    // Удаляем игрока из команды (включение коллизий)
+    fun removePlayerFromNoCollision(player: Player) {
+        if (noCollisionTeam != null && noCollisionTeam!!.hasEntry(player.name)) {
+            noCollisionTeam!!.removeEntry(player.name)
         }
     }
 }

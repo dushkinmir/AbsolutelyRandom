@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types
+package ru.dushkinmir.absolutelyRandom.features.actions.actions
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -107,9 +107,5 @@ class Crash : Action("crash") {
         for (player in Bukkit.getOnlinePlayers()) {
             PlayerUtils.kickPlayer(player, DISCONNECT_MESSAGE)
         }
-    }
-
-    private fun setMotd(motd: Component) {
-        Bukkit.getServer().motd(motd)
     }
 }

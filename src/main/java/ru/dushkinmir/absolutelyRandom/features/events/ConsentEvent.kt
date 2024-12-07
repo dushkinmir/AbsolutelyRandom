@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitRunnable
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
-import ru.dushkinmir.absolutelyRandom.utils.ui.ConsentMenu
+import ru.dushkinmir.absolutelyRandom.utils.ui.InventoryConfirmation
 import java.util.*
 
 class ConsentEvent(private val plugin: Plugin) : Listener {
@@ -26,7 +26,7 @@ class ConsentEvent(private val plugin: Plugin) : Listener {
         private val CONSENT_TITLE = Component.text("Согласие на обработку данных", NamedTextColor.YELLOW)
     }
 
-    private val consentMenu: ConsentMenu
+    private val inventoryConfirmation: InventoryConfirmation
 
     init {
         val infoLore = listOf(
@@ -36,7 +36,7 @@ class ConsentEvent(private val plugin: Plugin) : Listener {
             "Соглашаясь, вы теряете свою свободу",
             "и становитесь собственностью владельца сервера."
         )
-        consentMenu = ConsentMenu(
+        inventoryConfirmation = InventoryConfirmation(
             PlainTextComponentSerializer.plainText().serialize(CONSENT_TITLE),
             NamedTextColor.YELLOW,
             "Договор о согласии", NamedTextColor.GOLD,
@@ -53,7 +53,7 @@ class ConsentEvent(private val plugin: Plugin) : Listener {
         if (random.nextBoolean() && block != null && event.action.isRightClick && block.state is Container) {
             if (player.isSneaking) return
             playerBlockMap[player] = block
-            consentMenu.openConsentMenu(player)
+            inventoryConfirmation.openConsentMenu(player)
             event.isCancelled = true
         }
     }

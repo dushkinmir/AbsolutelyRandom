@@ -13,15 +13,14 @@ class SexCommands(val fissureHandler: AnalFissureHandler, val plugin: Plugin) {
     fun registerSexCommand() {
         val noSelectorSuggestions: Argument<*> = PlayerArgument("target")
             .replaceSafeSuggestions(SafeSuggestions.suggest { info ->
-                // Получаем игрока, который вводит команду
                 val senderPlayer = info.sender() as Player
-                // Получаем всех онлайн игроков, кроме отправителя
                 plugin.server.onlinePlayers.stream()
-                    .filter { player -> player != senderPlayer } // исключаем отправителя
+                    .filter { player -> player != senderPlayer }
                     .toArray { size -> arrayOfNulls<Player>(size) }
             })
         CommandAPICommand("sex")
             .withArguments(noSelectorSuggestions)
+            .withPermission("absolutelyrandom.sex")
             .executes(CommandExecutor { sender, args ->
                 if (sender is Player) {
                     val target = args["target"] as Player

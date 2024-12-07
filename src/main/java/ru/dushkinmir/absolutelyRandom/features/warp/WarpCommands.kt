@@ -16,15 +16,15 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
-import ru.dushkinmir.absolutelyRandom.utils.ui.ConsentMenu
+import ru.dushkinmir.absolutelyRandom.utils.ui.InventoryConfirmation
 
 class WarpCommands(private val warpManager: WarpManager, plugin: Plugin) : Listener {
 
-    private val consentMenu: ConsentMenu
+    private val inventoryConfirmation: InventoryConfirmation
 
     init {
         Bukkit.getServer().pluginManager.registerEvents(this, plugin)
-        this.consentMenu = ConsentMenu(
+        this.inventoryConfirmation = InventoryConfirmation(
             "Подтверждение", NamedTextColor.YELLOW,
             "Внимание: валюта не будет возвращена!", NamedTextColor.GOLD,
             listOf("Подтвердите удаление всех варпов."), NamedTextColor.DARK_PURPLE,
@@ -79,7 +79,7 @@ class WarpCommands(private val warpManager: WarpManager, plugin: Plugin) : Liste
                     Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.RED),
                     PlayerUtils.MessageType.CHAT
                 )
-                consentMenu.openConsentMenu(player)
+                inventoryConfirmation.openConsentMenu(player)
             })
 
         val warpList = CommandAPICommand("list")

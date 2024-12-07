@@ -9,7 +9,7 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitRunnable
 import ru.dushkinmir.absolutelyRandom.features.actions.Action
-import ru.dushkinmir.absolutelyRandom.features.actions.types.*
+import ru.dushkinmir.absolutelyRandom.features.actions.actions.*
 import kotlin.random.Random
 
 

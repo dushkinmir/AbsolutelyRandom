@@ -12,7 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
-public class ConsentMenu {
+public class InventoryConfirmation {
 
     private final Component title;
     private final Component infoTitle;
@@ -20,10 +20,10 @@ public class ConsentMenu {
     private final Component acceptTitle;
     private final Component declineTitle;
 
-    public ConsentMenu(String titleText, NamedTextColor titleColor, String infoTitleText, NamedTextColor infoTitleColor, List<String> infoLoreTexts, NamedTextColor infoLoreColor, String acceptText, NamedTextColor acceptColor, String declineText, NamedTextColor declineColor) {
+    public InventoryConfirmation(String titleText, NamedTextColor titleColor, String infoTitleText, NamedTextColor infoTitleColor, List<String> infoLoreTexts, NamedTextColor infoLoreColor, String acceptText, NamedTextColor acceptColor, String declineText, NamedTextColor declineColor) {
         this.title = Component.text(titleText, titleColor);
         this.infoTitle = Component.text(infoTitleText, infoTitleColor, TextDecoration.BOLD);
-        this.infoLore = infoLoreTexts.stream().map(text -> ConsentMenu.createStyledText(text, infoLoreColor, TextDecoration.ITALIC)).toList();
+        this.infoLore = infoLoreTexts.stream().map(text -> InventoryConfirmation.createStyledText(text, infoLoreColor, TextDecoration.ITALIC)).toList();
         this.acceptTitle = Component.text(acceptText, acceptColor, TextDecoration.BOLD);
         this.declineTitle = Component.text(declineText, declineColor, TextDecoration.BOLD);
     }

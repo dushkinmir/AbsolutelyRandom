@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types
+package ru.dushkinmir.absolutelyRandom.features.actions.actions
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -19,7 +19,7 @@ class Group : Action("group") {
         private val EVENT_END_MESSAGE =
             Component.text("ГРУППОВАЯ МАСТУРБАЦИЯ ОКОНЧЕНА, СПАСИБО ЗА УЧАСТИЕ", NamedTextColor.GREEN)
         private const val COUNTDOWN_SECONDS = 5
-        private const val EVENT_DURATION_TICKS = 500
+        private const val EVENT_DURATION_TICKS = 100
         private var eventActive = false
     }
 
@@ -77,7 +77,12 @@ class Group : Action("group") {
             val direction = player.eyeLocation.direction.normalize()
             val droppedItem = player.world.dropItem(player.location.add(direction.multiply(2)), item)
             if (Random.nextInt(10) == 1) {
-                droppedItem.pickupDelay = Int.MAX_VALUE
+                droppedItem.setCanPlayerPickup(false)
+                object : BukkitRunnable() {
+                    override fun run() {
+                        droppedItem.remove()
+                    }
+                }.runTaskLater(plugin, 20L * 20)
             } else {
                 object : BukkitRunnable() {
                     override fun run() {

@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types
+package ru.dushkinmir.absolutelyRandom.features.actions.actions
 
 import org.bukkit.Bukkit
 import org.bukkit.GameMode

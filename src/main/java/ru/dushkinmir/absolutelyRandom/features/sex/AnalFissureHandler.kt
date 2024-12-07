@@ -61,7 +61,7 @@ class AnalFissureHandler(private val database: DatabaseManager, private val plug
                             Overlay.PROGRESS
                         )
                         playerBossBars[player] = bossBar
-                        plugin.server.showBossBar(bossBar)
+                        player.showBossBar(bossBar)
 
                         PlayerUtils.sendMessageToPlayer(
                             player,

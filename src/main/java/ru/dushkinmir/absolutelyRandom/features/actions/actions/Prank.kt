@@ -1,4 +1,4 @@
-package ru.dushkinmir.absolutelyRandom.features.actions.types
+package ru.dushkinmir.absolutelyRandom.features.actions.actions
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
