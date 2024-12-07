@@ -1,7 +1,7 @@
 package ru.dushkinmir.absolutelyRandom.core
 
 import org.bukkit.plugin.Plugin
-import ru.dushkinmir.absolutelyRandom.network.WebSocketServer
+import ru.dushkinmir.absolutelyRandom.utils.network.WebSocketServer
 
 class WebSocketManager(private val plugin: Plugin) {
     private var wsserver: WebSocketServer? = null

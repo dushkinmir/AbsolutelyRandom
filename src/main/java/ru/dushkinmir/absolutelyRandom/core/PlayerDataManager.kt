@@ -3,48 +3,27 @@ package ru.dushkinmir.absolutelyRandom.core
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class PlayerDataManager {
-    private val actionDataMap: MutableMap<String, MutableMap<UUID, PlayerData>> = mutableMapOf()
+object PlayerDataManager {
+    private val playerDataMap: MutableMap<String, MutableMap<UUID, PlayerData>> = ConcurrentHashMap()
 
     fun getPlayerDataForAction(actionName: String, playerUUID: UUID): PlayerData {
-        return actionDataMap
-            .computeIfAbsent(actionName) { mutableMapOf() }
-            .computeIfAbsent(playerUUID) { PlayerData() }
+        val actionData = playerDataMap.computeIfAbsent(actionName) { ConcurrentHashMap() }
+        return actionData.computeIfAbsent(playerUUID) { PlayerData() }
     }
 
     fun removePlayerDataForAction(actionName: String, playerUUID: UUID) {
-        actionDataMap[actionName]?.remove(playerUUID)
+        playerDataMap[actionName]?.remove(playerUUID)
     }
 
-    // Очистить все данные
+    fun clearActionData(actionName: String) {
+        playerDataMap.remove(actionName)
+    }
+
     fun clearAllData() {
-        actionDataMap.clear()
+        playerDataMap.clear()
     }
 }
 
-class PlayerData {
+class PlayerData : MutableMap<String, Any> by ConcurrentHashMap()
 
-    private val data: MutableMap<String, Any> = ConcurrentHashMap()
-
-    fun <T> set(key: String, value: T) {
-        data[key] = value as Any
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T> get(key: String): T? {
-        return data[key] as? T
-    }
-
-    fun remove(key: String) {
-        data.remove(key)
-    }
-
-    fun clear() {
-        data.clear()
-    }
-
-    fun hasData(): Boolean {
-        return data.isNotEmpty()
-    }
-}
 

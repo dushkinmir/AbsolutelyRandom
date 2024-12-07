@@ -7,25 +7,13 @@ import org.bukkit.plugin.java.JavaPlugin
 import ru.dushkinmir.absolutelyRandom.core.*
 
 class AbsRand : JavaPlugin(), Listener {
-    companion object {
-        private var playerDataManager: PlayerDataManager = PlayerDataManager()
-
-        /*        private val PLAYER_TASKS: MutableMap<UUID, BukkitRunnable> = HashMap() // Map to store player tasks
-
-                fun getPlayerTasks(): MutableMap<UUID, BukkitRunnable> {
-                    return PLAYER_TASKS
-                }*/
-        fun getPlayerDataManager(): PlayerDataManager {
-            return playerDataManager
-        }
-    }
-
     // Core modules
     private val actionsManager = ActionsManager(this)
-    private val webSocketHandler = WebSocketManager(this)
+    private val webSocketManager = WebSocketManager(this)
     private val extensionManager = ExtensionManager(this)
     private val eventsManager = EventsManager(this, extensionManager)
     private val commandsManager = CommandsManager(this, extensionManager)
+
 
     override fun onLoad() {
         CommandAPI.onLoad(CommandAPIBukkitConfig(this).verboseOutput(true).usePluginNamespace())
@@ -40,7 +28,7 @@ class AbsRand : JavaPlugin(), Listener {
             eventsManager.onEnable()
             actionsManager.onEnable()
             commandsManager.onEnable()
-            webSocketHandler.onEnable()
+            webSocketManager.onEnable()
 
             logger.info("Starting is completed.")
             logger.info("Hi there!!")
@@ -51,13 +39,7 @@ class AbsRand : JavaPlugin(), Listener {
     }
 
     override fun onDisable() {
-        logger.info("Stopping...")
-        /*
-                PLAYER_TASKS.values.forEach { it.cancel() }
-                PLAYER_TASKS.clear()*/
-
-        playerDataManager.clearAllData()
-        webSocketHandler.onDisable()
+        webSocketManager.onDisable()
         commandsManager.onDisable()
         actionsManager.onDisable()
         eventsManager.onDisable()
@@ -66,4 +48,6 @@ class AbsRand : JavaPlugin(), Listener {
         logger.info("Stopping is completed.")
         logger.info("Goodbye!")
     }
+
+    companion object
 }

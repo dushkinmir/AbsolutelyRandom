@@ -15,8 +15,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
-import ru.dushkinmir.absolutelyRandom.utils.ConsentMenu
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import ru.dushkinmir.absolutelyRandom.utils.ui.ConsentMenu
 
 class WarpCommands(private val warpManager: WarpManager, plugin: Plugin) : Listener {
 

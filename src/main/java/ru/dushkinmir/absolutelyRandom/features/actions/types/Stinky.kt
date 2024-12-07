@@ -18,35 +18,36 @@ import ru.dushkinmir.absolutelyRandom.features.actions.Action
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
 import java.util.*
 
-class Stinky : Action("stinky"), Listener {
-    private var plugin: Plugin? = null
+class Stinky(private val plugin: Plugin) : Action("stinky"), Listener {
+    init {
+        plugin.server.pluginManager.registerEvents(this, plugin)
+    }
 
     override fun execute(plugin: Plugin) {
-        val players = PlayerUtils.getOnlinePlayers()
-        val randomPlayer = PlayerUtils.getRandomPlayer(players)
+        val randomPlayer = PlayerUtils.getRandomPlayer(PlayerUtils.getOnlinePlayers())
         PlayerUtils.sendMessageToPlayer(randomPlayer, ACTION_BAR_TEXT, PlayerUtils.MessageType.ACTION_BAR)
         sendPlayerWorldMessage(randomPlayer)
         val playerUUID = randomPlayer.uniqueId
-        scheduleEffects(plugin, playerUUID)
-        this.plugin = plugin
+        if (!isPlayerTracked(playerUUID)) {
+            scheduleEffects(plugin, playerUUID)
+        }
     }
 
     private fun isPlayerTracked(playerUUID: UUID): Boolean {
-        return getPlayerData(playerUUID).get<BukkitRunnable>("stinky") != null
+        val playerData = getPlayerData(playerUUID)
+        return playerData.containsKey("stinky")
     }
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        val player = event.player
-        val playerUUID = player.uniqueId
-        if (isPlayerTracked(playerUUID)) {
-            scheduleEffects(plugin!!, playerUUID)
+        if (isPlayerTracked(event.player.uniqueId)) {
+            scheduleEffects(plugin, event.player.uniqueId)
         }
     }
 
     private class PlayerEffectTask(private val player: Player, private val playerData: PlayerData) : BukkitRunnable() {
         override fun run() {
-            if (isPlayerInWater(player)) {
+            if (player.location.block.type == Material.WATER) {
                 PlayerUtils.sendMessageToPlayer(player, NORMAL_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT)
                 this.cancel()
                 playerData.remove("stinky")
@@ -57,10 +58,6 @@ class Stinky : Action("stinky"), Listener {
             if (!player.isOnline) {
                 this.cancel()
             }
-        }
-
-        private fun isPlayerInWater(player: Player): Boolean {
-            return player.location.block.type == Material.WATER
         }
     }
 
@@ -92,16 +89,17 @@ class Stinky : Action("stinky"), Listener {
     }
 
     private fun sendPlayerWorldMessage(player: Player) {
-        val message = "a %s теперь воняет".format(Objects.requireNonNull(player).name)
+        val message = "a ${player.name} теперь воняет"
         PlayerUtils.sendMessageToAllPlayers(Component.text(message), PlayerUtils.MessageType.CHAT)
     }
 
     private fun scheduleEffects(plugin: Plugin, playerUUID: UUID) {
         val player = plugin.server.getPlayer(playerUUID)
         if (player != null) {
-            val task = PlayerEffectTask(player, getPlayerData(playerUUID))
+            val playerData = getPlayerData(playerUUID)
+            val task = PlayerEffectTask(player, playerData)
             task.runTaskTimer(plugin, 0, 20L)
-            if (isPlayerTracked(playerUUID)) getPlayerData(playerUUID).set<BukkitRunnable>("stinky", task)
+            playerData["stinky"] = task
             PlayerUtils.sendMessageToPlayer(player, STINKY_PLAYER_MESSAGE, PlayerUtils.MessageType.CHAT)
         }
     }

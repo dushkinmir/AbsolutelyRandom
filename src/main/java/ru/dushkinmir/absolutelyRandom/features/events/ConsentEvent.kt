@@ -14,8 +14,8 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitRunnable
-import ru.dushkinmir.absolutelyRandom.utils.ConsentMenu
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
+import ru.dushkinmir.absolutelyRandom.utils.ui.ConsentMenu
 import java.util.*
 
 class ConsentEvent(private val plugin: Plugin) : Listener {

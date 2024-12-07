@@ -2,7 +2,6 @@ package ru.dushkinmir.absolutelyRandom.core
 
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
-import ru.dushkinmir.absolutelyRandom.features.actions.types.Stinky
 import ru.dushkinmir.absolutelyRandom.features.betters.HeadChat
 import ru.dushkinmir.absolutelyRandom.features.betters.NameHider
 import ru.dushkinmir.absolutelyRandom.features.events.ConsentEvent
@@ -13,7 +12,6 @@ class EventsManager(private val plugin: Plugin, private val extensionManager: Ex
     fun onEnable() {
         val events: MutableList<Listener> = ArrayList()
         events.add(DrugsEvent())
-        events.add(Stinky())
         events.add(ConsentEvent(plugin))
         events.add(extensionManager.getFissureHandler())
 
