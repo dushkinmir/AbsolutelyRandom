@@ -1,6 +1,8 @@
 package ru.dushkinmir.absolutelyRandom.features.sex
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
@@ -30,11 +32,21 @@ object SexManager {
 
         chatConfirmation.showConfirmation(
             targetPlayer,
-            "${initiator.name} хочет с тобой почпокаться! примешь ли ты его?",
+            Component.text("${initiator.name} хочет с тобой почпокаться! примешь ли ты его?")
+                .color(NamedTextColor.YELLOW),
             onConfirm = {
                 PlayerUtils.sendMessageToPlayer(
                     initiator,
-                    Component.text("ура! ${targetPlayer.name} принял твое предложение!"),
+                    Component.text("ура! ${targetPlayer.name} принял твое предложение!")
+                        .color(NamedTextColor.GREEN) // Позитивное подтверждение, зеленый
+                        .decorate(TextDecoration.BOLD), // Жирный текст,
+                    PlayerUtils.MessageType.CHAT
+                )
+                PlayerUtils.sendMessageToPlayer(
+                    targetPlayer,
+                    Component.text("ты принял предложение, щас будет трахен трахен чпокен чпокен")
+                        .color(NamedTextColor.AQUA) // Синие, немного игривые
+                        .decorate(TextDecoration.ITALIC), // Курсив,
                     PlayerUtils.MessageType.CHAT
                 )
                 object : BukkitRunnable() {
@@ -46,12 +58,14 @@ object SexManager {
             onCancel = {
                 PlayerUtils.sendMessageToPlayer(
                     initiator,
-                    Component.text("увы, но ${targetPlayer.name} отверг твое предложение(((\nлох"),
+                    Component.text("увы, но ${targetPlayer.name} отверг твое предложение(((\nлох")
+                        .color(NamedTextColor.RED), // Отрицательное сообщение, серый
                     PlayerUtils.MessageType.CHAT
                 )
                 PlayerUtils.sendMessageToPlayer(
                     targetPlayer,
-                    Component.text("ты отказал ${initiator.name} в чпок-чпок!\nтуда его"),
+                    Component.text("ты отказал ${initiator.name} в чпок-чпок!\nтуда его")
+                        .color(NamedTextColor.GRAY), // Отказ, красный,
                     PlayerUtils.MessageType.CHAT
                 )
             }
@@ -121,12 +135,12 @@ object SexManager {
 
     // Метод для движения игрока вперед-назад на ограниченное время (в секундах)
     private fun movePlayer(
-        player: Player,
+        movingPlayer: Player,
         stationaryPlayer: Player,
         plugin: Plugin,
         fissureHandler: AnalFissureHandler
     ) {
-        player.sendMessage("Вы будете двигаться вперед-назад!")
+        movingPlayer.sendMessage("Вы будете двигаться вперед-назад!")
 
         // Устанавливаем движение вперед-назад
         val taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(
@@ -135,12 +149,12 @@ object SexManager {
                 private var moveForward = true
 
                 override fun run() {
-                    if (!player.isOnline) {
+                    if (!movingPlayer.isOnline) {
                         return
                     }
 
                     // Получаем вектор скорости игрока (текущий вектор движения)
-                    val currentLocation = player.location
+                    val currentLocation = movingPlayer.location
                     var direction = currentLocation.direction.normalize() // Получаем направление взгляда и нормализуем
 
                     // Обнуляем вертикальную составляющую
@@ -149,9 +163,9 @@ object SexManager {
 
 
                     if (moveForward) {
-                        player.velocity = direction.multiply(0.35) // Двигаем вперед
+                        movingPlayer.velocity = direction.multiply(0.35) // Двигаем вперед
                     } else {
-                        player.velocity = direction.multiply(-0.35) // Двигаем назад
+                        movingPlayer.velocity = direction.multiply(-0.35) // Двигаем назад
                     }
 
                     moveForward = !moveForward // Меняем направление
@@ -166,10 +180,10 @@ object SexManager {
             override fun run() {
                 Bukkit.getScheduler().cancelTask(taskId)
                 fissureHandler.checkForFissure(stationaryPlayer)
-                FallingBlocksTask(plugin, ArrayList(listOf(player, stationaryPlayer))).runTaskTimer(
+                FallingBlocksTask(plugin, ArrayList(listOf(movingPlayer, stationaryPlayer))).runTaskTimer(
                     plugin,
                     0L,
-                    5L
+                    1L
                 )
             }
         }.runTaskLater(plugin, SEX_DURATION * 20L)

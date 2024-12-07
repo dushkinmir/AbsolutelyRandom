@@ -9,7 +9,6 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitRunnable
 import ru.dushkinmir.absolutelyRandom.features.actions.Action
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
-import kotlin.random.Random
 
 class Group : Action("group") {
 
@@ -73,23 +72,16 @@ class Group : Action("group") {
         }
 
         private fun dropItemNearPlayer(player: Player) {
-            val item = ItemStack(Material.WHITE_WOOL, 3)
+            val item = ItemStack(Material.WHITE_WOOL, 1)
             val direction = player.eyeLocation.direction.normalize()
             val droppedItem = player.world.dropItem(player.location.add(direction.multiply(2)), item)
-            if (Random.nextInt(10) == 1) {
-                droppedItem.setCanPlayerPickup(false)
-                object : BukkitRunnable() {
-                    override fun run() {
-                        droppedItem.remove()
-                    }
-                }.runTaskLater(plugin, 20L * 20)
-            } else {
-                object : BukkitRunnable() {
-                    override fun run() {
-                        droppedItem.remove()
-                    }
-                }.runTaskLater(plugin, 9L)
-            }
+
+            droppedItem.setCanPlayerPickup(false)
+            object : BukkitRunnable() {
+                override fun run() {
+                    droppedItem.remove()
+                }
+            }.runTaskLater(plugin, 20L * 5)
         }
     }
 }

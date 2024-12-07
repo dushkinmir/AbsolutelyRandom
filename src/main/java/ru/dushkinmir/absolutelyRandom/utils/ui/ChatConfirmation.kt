@@ -9,10 +9,11 @@ class ChatConfirmation(
     private val plugin: Plugin
 ) {
     // Показать окно подтверждения
-    fun showConfirmation(player: Player, message: String, onConfirm: () -> Unit, onCancel: () -> Unit) {
+    fun showConfirmation(player: Player, message: Component, onConfirm: () -> Unit, onCancel: () -> Unit) {
         // Создаём сообщение с кнопками
         val confirmationMessage = Component.text()
-            .append(Component.text("§e$message\n"))
+            .append(message)
+            .append(Component.text("\n"))
             .append(
                 Component.text("§r[§aДа§r]")
                     .clickEvent(ClickEvent.runCommand("/confirm_yes_${player.uniqueId}"))

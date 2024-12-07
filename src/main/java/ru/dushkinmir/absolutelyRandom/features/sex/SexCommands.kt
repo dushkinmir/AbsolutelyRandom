@@ -20,7 +20,6 @@ class SexCommands(val fissureHandler: AnalFissureHandler, val plugin: Plugin) {
             })
         CommandAPICommand("sex")
             .withArguments(noSelectorSuggestions)
-            .withPermission("absolutelyrandom.sex")
             .executes(CommandExecutor { sender, args ->
                 if (sender is Player) {
                     val target = args["target"] as Player
