@@ -47,6 +47,4 @@ class AbsRand : JavaPlugin(), Listener {
         logger.info("Stopping is completed.")
         logger.info("Goodbye!")
     }
-
-    companion object
 }

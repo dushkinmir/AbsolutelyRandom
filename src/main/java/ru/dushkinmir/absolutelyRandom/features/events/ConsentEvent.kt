@@ -25,7 +25,7 @@ class ConsentEvent(
     private val playerBlockMap: MutableMap<Player, Block> = HashMap()
     private val random = Random()
 
-    companion object {
+    private companion object {
         private val CONSENT_TITLE = Component.text("Согласие на обработку данных").color(NamedTextColor.YELLOW)
         private val infoLore: List<String> = listOf(
             "Соглашаясь, вы добровольно передаете",

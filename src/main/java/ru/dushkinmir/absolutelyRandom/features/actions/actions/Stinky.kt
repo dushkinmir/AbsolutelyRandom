@@ -61,7 +61,7 @@ class Stinky(private val plugin: Plugin) : Action("stinky"), Listener {
         }
     }
 
-    companion object {
+    private companion object {
         private val ACTION_BAR_TEXT = Component.text("фуу ты вонючка!")
         private val STINKY_PLAYER_MESSAGE = Component.text(
             "бля чел иди искупайся, а то от тебя весь сервер щарахается"

@@ -14,7 +14,7 @@ import java.util.*
 
 class Crash : Action("crash") {
 
-    companion object {
+    private companion object {
         private val RANDOM = Random()
         private const val GLITCH_DURATION_TICKS = 200 // Длительность хаоса
         private val DISCONNECT_MESSAGE = Component.text(

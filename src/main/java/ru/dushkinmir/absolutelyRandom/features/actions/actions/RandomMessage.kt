@@ -70,7 +70,7 @@ class RandomMessage : Action("message") {
         }
     }
 
-    companion object {
+    private companion object {
         private val RANDOM = Random()
         private const val MAX_MESSAGE_COUNT = 3
         private const val TASK_INTERVAL_TICKS: Long = 20 * 4

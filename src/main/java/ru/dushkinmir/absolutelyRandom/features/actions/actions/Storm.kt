@@ -15,7 +15,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 class Storm : Action("storm") {
-    companion object {
+    private companion object {
         private val STORM_MESSAGE = Component.text("Гроза началась! Убегай!", NamedTextColor.YELLOW)
         private const val STORM_DURATION_SECONDS = 60
         private const val STRIKE_INTERVAL_SECONDS = 10

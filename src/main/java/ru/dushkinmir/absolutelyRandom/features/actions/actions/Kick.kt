@@ -9,11 +9,10 @@ import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
 
 class Kick : Action("kick") {
 
-    companion object {
+    private companion object {
         private val PLAYER_KICK_MESSAGE = Component.text("хахаха лошара", NamedTextColor.RED)
         private const val BROADCAST_KICK_MESSAGE_TEMPLATE = "вот же %s лох!"
         private val BROADCAST_KICK_MESSAGE_COLOR = NamedTextColor.YELLOW
-
     }
 
     override fun execute(plugin: Plugin) {
