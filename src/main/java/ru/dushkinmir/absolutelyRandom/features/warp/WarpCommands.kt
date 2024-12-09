@@ -8,12 +8,8 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.Location
-import org.bukkit.Material
 import org.bukkit.entity.Player
-import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 import ru.dushkinmir.absolutelyRandom.utils.PlayerUtils
 import ru.dushkinmir.absolutelyRandom.utils.ui.InventoryConfirmation
@@ -25,11 +21,7 @@ class WarpCommands(private val warpManager: WarpManager, plugin: Plugin) : Liste
     init {
         Bukkit.getServer().pluginManager.registerEvents(this, plugin)
         this.inventoryConfirmation = InventoryConfirmation(
-            "Подтверждение", NamedTextColor.YELLOW,
-            "Внимание: валюта не будет возвращена!", NamedTextColor.GOLD,
-            listOf("Подтвердите удаление всех варпов."), NamedTextColor.DARK_PURPLE,
-            "Подтвердить", NamedTextColor.GREEN,
-            "Отменить", NamedTextColor.RED
+            Component.text("Подтверждение").color(NamedTextColor.YELLOW)
         )
     }
 
@@ -79,7 +71,17 @@ class WarpCommands(private val warpManager: WarpManager, plugin: Plugin) : Liste
                     Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.RED),
                     PlayerUtils.MessageType.CHAT
                 )
-                inventoryConfirmation.openConsentMenu(player)
+                inventoryConfirmation.showConfirmation(
+                    player,
+                    Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.GOLD),
+                    listOf("Подтвердите удаление всех варпов.").map { it ->
+                        Component.text(it).color(NamedTextColor.DARK_PURPLE)
+                    },
+                    Component.text("Подтвердить").color(NamedTextColor.GREEN),
+                    Component.text("Отменить").color(NamedTextColor.RED),
+                    { onConfirm(player) },
+                    { onCancel(player) }
+                )
             })
 
         val warpList = CommandAPICommand("list")
@@ -114,41 +116,17 @@ class WarpCommands(private val warpManager: WarpManager, plugin: Plugin) : Liste
             .register()
     }
 
-    // Обработка кликов в меню подтверждения удаления всех варпов
-    @EventHandler
-    fun handleInventoryClick(event: InventoryClickEvent) {
-        if (event.view.title() == Component.text(
-                "Подтверждение",
-                NamedTextColor.YELLOW
-            )
-        ) {
-            val player = event.whoClicked as Player
-            event.isCancelled = true
-            val clickedItem = event.currentItem
-            if (clickedItem == null || clickedItem.type == Material.AIR) return
-
-            handleItemClick(player, clickedItem)
-        }
+    private fun onConfirm(player: Player) {
+        warpManager.deleteAllWarps(player)
+        player.closeInventory()
     }
 
-    private fun handleItemClick(player: Player, clickedItem: ItemStack) {
-        // Обработка нажатия на кнопки
-        when (clickedItem.type) {
-            Material.GREEN_WOOL -> {
-                warpManager.deleteAllWarps(player)
-                player.closeInventory()
-            }
-
-            Material.RED_WOOL -> {
-                player.closeInventory()
-                PlayerUtils.sendMessageToPlayer(
-                    player,
-                    Component.text("Удаление всех варпов отменено.").color(NamedTextColor.GREEN),
-                    PlayerUtils.MessageType.CHAT
-                )
-            }
-
-            else -> {}
-        }
+    private fun onCancel(player: Player) {
+        player.closeInventory()
+        PlayerUtils.sendMessageToPlayer(
+            player,
+            Component.text("Удаление всех варпов отменено.").color(NamedTextColor.GREEN),
+            PlayerUtils.MessageType.CHAT
+        )
     }
 }

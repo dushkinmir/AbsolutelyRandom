@@ -102,15 +102,23 @@
                     <relocations>
                         <relocation>
                             <pattern>de.tr7zw.changeme.nbtapi</pattern>
-                            <shadedPattern>asbrand.de.tr7zw.changeme.nbtapi</shadedPattern>
+                            <shadedPattern>absrand.de.tr7zw.changeme.nbtapi</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>dev.jorel.commandapi</pattern>
                             <shadedPattern>absrand.dev.jorel.commandapi</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com.zaxxer.hikari</pattern>
-                            <shadedPattern>absrand.com.zaxxer.hikari</shadedPattern>
+                            <pattern>com</pattern>
+                            <shadedPattern>absrand.com</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org</pattern>
+                            <shadedPattern>absrand.org</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>kotlin</pattern>
+                            <shadedPattern>absrand.kotlin</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>

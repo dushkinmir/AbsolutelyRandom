@@ -14,7 +14,6 @@ class AbsRand : JavaPlugin(), Listener {
     private val eventsManager = EventsManager(this, extensionManager)
     private val commandsManager = CommandsManager(this, extensionManager)
 
-
     override fun onLoad() {
         CommandAPI.onLoad(CommandAPIBukkitConfig(this).verboseOutput(true).usePluginNamespace())
     }

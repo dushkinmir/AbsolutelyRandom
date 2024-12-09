@@ -1,17 +1,20 @@
 package ru.dushkinmir.absolutelyRandom.core
 
+import net.kyori.adventure.text.Component
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 import ru.dushkinmir.absolutelyRandom.features.betters.HeadChat
 import ru.dushkinmir.absolutelyRandom.features.betters.NameHider
 import ru.dushkinmir.absolutelyRandom.features.events.ConsentEvent
 import ru.dushkinmir.absolutelyRandom.features.events.DrugsEvent
+import ru.dushkinmir.absolutelyRandom.utils.ui.InventoryConfirmation
 
 class EventsManager(private val plugin: Plugin, private val extensionManager: ExtensionManager) {
 
     fun onEnable() {
         val events: MutableList<Listener> = ArrayList()
         events.add(DrugsEvent())
+        events.add(InventoryConfirmation(Component.text("placeholder")))
         events.add(ConsentEvent(plugin))
         events.add(extensionManager.getFissureHandler())
 

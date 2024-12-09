@@ -24,6 +24,4 @@ object PlayerDataManager {
     }
 }
 
-class PlayerData : MutableMap<String, Any> by ConcurrentHashMap()
-
 
