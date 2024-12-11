@@ -109,16 +109,8 @@
                             <shadedPattern>absrand.dev.jorel.commandapi</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com</pattern>
-                            <shadedPattern>absrand.com</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>org</pattern>
-                            <shadedPattern>absrand.org</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>kotlin</pattern>
-                            <shadedPattern>absrand.kotlin</shadedPattern>
+                            <pattern>com.zaxxer.hikari</pattern>
+                            <shadedPattern>absrand.com.zaxxer.hikari</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
