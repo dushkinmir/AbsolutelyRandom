@@ -20,6 +20,7 @@ import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitRunnable
+import kotlin.math.min
 
 class HeadChat(private val plugin: Plugin) : Listener {
     init {
@@ -150,7 +151,7 @@ class HeadChat(private val plugin: Plugin) : Listener {
                                 }
                             }.runTaskLater(plugin, 20L)
                         } else {
-                            val endIndex = offset + visibleLength
+                            val endIndex = min(offset + visibleLength, messageLength)
                             var visibleText = message.substring(offset, endIndex)
 
                             if (endIndex < messageLength) {
