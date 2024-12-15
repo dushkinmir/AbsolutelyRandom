@@ -8,9 +8,10 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
-import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.Display.Billboard
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
+import org.bukkit.entity.TextDisplay
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
@@ -19,11 +20,10 @@ import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitRunnable
-import kotlin.math.min
 
 class HeadChat(private val plugin: Plugin) : Listener {
     init {
-        CraftingRecipe(plugin) // Initialize crafting recipe
+        CraftingRecipe(plugin)
     }
 
     private fun decreaseRadioDurability(player: Player) {
@@ -42,9 +42,9 @@ class HeadChat(private val plugin: Plugin) : Listener {
                         .build()
 
                     meta.displayName(updatedName)
-                    radio.itemMeta = meta // Сохранить изменения в ItemMeta
+                    radio.itemMeta = meta
                 } else if (durability != null) {
-                    player.inventory.setItemInMainHand(null) // Удалить предмет, если у него закончилась прочность
+                    player.inventory.setItemInMainHand(null)
                 }
             }
         }
@@ -66,16 +66,16 @@ class HeadChat(private val plugin: Plugin) : Listener {
 
         event.isCancelled = true
 
-        // Переносим создание ArmorStand в основной поток
         object : BukkitRunnable() {
             override fun run() {
-                val armorStand = createArmorStand(player, message)
+                val armorStand = createTextDisplay(player, message)
                 if (message.length > 20) {
                     MessageScroller(plugin).scrollMessageAboveHead(armorStand, message)
                 } else {
-                    removeArmorStandLater(armorStand, 80L)
+                    var delay = 80L
+                    removeTextDisplayLater(armorStand, delay)
                 }
-                ArmorStandFollower(plugin).followPlayer(player, armorStand, 1L)
+                TextDisplayFollower(plugin).followPlayer(player, armorStand, 1L)
             }
         }.runTask(plugin)
     }
@@ -91,50 +91,50 @@ class HeadChat(private val plugin: Plugin) : Listener {
                 heldItem.itemMeta!!.displayName().toString().contains(RADIO_NAME.toString())
     }
 
-    private fun createArmorStand(player: Player, message: String): ArmorStand {
+    private fun createTextDisplay(player: Player, message: String): TextDisplay {
         val location = player.location.add(0.0, 2.25, 0.0)
-        val armorStand = player.world.spawnEntity(location, EntityType.ARMOR_STAND) as ArmorStand
-        armorStand.isInvisible = true
-        armorStand.customName(Component.text(message))
-        armorStand.isCustomNameVisible = true
-        armorStand.isMarker = true
-        armorStand.setGravity(false)
-        return armorStand
+        val textDisplay = player.world.spawnEntity(location, EntityType.TEXT_DISPLAY) as TextDisplay
+        textDisplay.isInvisible = true
+        textDisplay.customName(Component.text(message))
+        textDisplay.billboard = Billboard.CENTER
+        textDisplay.isCustomNameVisible = true
+        textDisplay.setGravity(false)
+        return textDisplay
     }
 
-    private fun removeArmorStandLater(armorStand: ArmorStand, delay: Long) {
+    private fun removeTextDisplayLater(textDisplay: TextDisplay, delay: Long) {
         object : BukkitRunnable() {
             override fun run() {
-                armorStand.remove()
+                textDisplay.remove()
             }
         }.runTaskLater(plugin, delay)
     }
 
-    private data class ArmorStandFollower(val plugin: Plugin) {
-        fun followPlayer(player: Player, armorStand: ArmorStand, interval: Long) {
+    private data class TextDisplayFollower(val plugin: Plugin) {
+        fun followPlayer(player: Player, textDisplay: TextDisplay, interval: Long) {
             object : BukkitRunnable() {
                 override fun run() {
-                    if (!armorStand.isValid || !player.isOnline) {
-                        armorStand.remove()
+                    if (!textDisplay.isValid || !player.isOnline) {
+                        textDisplay.remove()
                         this.cancel()
                         return
                     }
                     val location = player.location.add(0.0, 2.25, 0.0)
-                    armorStand.teleport(location)
+                    textDisplay.teleport(location)
                 }
             }.runTaskTimer(plugin, 0L, interval)
         }
     }
 
     private data class MessageScroller(val plugin: Plugin) {
-        fun scrollMessageAboveHead(armorStand: ArmorStand, message: String) {
+        fun scrollMessageAboveHead(textDisplay: TextDisplay, message: String) {
             val messageLength = message.length
-            val visibleLength = 30 // Максимальная длина видимого текста
+            val visibleLength = 30
             if (messageLength <= visibleLength) {
-                armorStand.customName(Component.text(message))
+                textDisplay.customName(Component.text(message))
                 object : BukkitRunnable() {
                     override fun run() {
-                        armorStand.remove()
+                        textDisplay.remove()
                     }
                 }.runTaskLater(plugin, 80L)
             } else {
@@ -146,21 +146,18 @@ class HeadChat(private val plugin: Plugin) : Listener {
                             this.cancel()
                             object : BukkitRunnable() {
                                 override fun run() {
-                                    armorStand.remove()
+                                    textDisplay.remove()
                                 }
                             }.runTaskLater(plugin, 20L)
                         } else {
-                            // Формируем видимую часть текста
-                            val endIndex = min(offset + visibleLength, messageLength)
+                            val endIndex = offset + visibleLength
                             var visibleText = message.substring(offset, endIndex)
 
-                            // Добавляем троеточие, если есть текст, который не уместился
                             if (endIndex < messageLength) {
                                 visibleText += "..."
                             }
 
-                            // Обновляем текст у ArmorStand
-                            armorStand.customName(Component.text(visibleText))
+                            textDisplay.customName(Component.text(visibleText))
                             offset++
                         }
                     }
@@ -189,7 +186,6 @@ class HeadChat(private val plugin: Plugin) : Listener {
             val meta = radio.itemMeta
             meta!!.displayName(Component.text("Radio", NamedTextColor.GOLD))
 
-            // Внимание: здесь радио получает начальную прочность в 30 единиц
             val durabilityKey = NamespacedKey(plugin, "durability")
             meta.persistentDataContainer.set(durabilityKey, PersistentDataType.INTEGER, 30)
 
@@ -209,7 +205,6 @@ class HeadChat(private val plugin: Plugin) : Listener {
             val meta = brokenRadio.itemMeta
             meta!!.displayName(Component.text("Radio", NamedTextColor.GOLD))
 
-            // Внимание: изначальная прочность радио равна 0, поскольку оно сломано
             val durabilityKey = NamespacedKey(plugin, "durability")
             meta.persistentDataContainer.set(durabilityKey, PersistentDataType.INTEGER, 0)
 
@@ -219,16 +214,13 @@ class HeadChat(private val plugin: Plugin) : Listener {
             val fixedMeta = fixedRadio.itemMeta
             fixedMeta!!.displayName(Component.text("Radio", NamedTextColor.GOLD))
 
-            // Внимание: прочность радио восстанавливается до 30, поскольку оно ремонтируется
             fixedMeta.persistentDataContainer.set(durabilityKey, PersistentDataType.INTEGER, 30)
 
             fixedRadio.itemMeta = fixedMeta
 
             val key = NamespacedKey(plugin, "radioRepaired")
-            // Создаем рецепт без определенной формы
             val recipe = ShapelessRecipe(key, fixedRadio)
 
-            // Добавляем ингредиенты в любом порядке
             recipe.addIngredient(Material.IRON_INGOT)
             recipe.addIngredient(Material.IRON_INGOT)
             recipe.addIngredient(brokenRadio.type)
