@@ -2,6 +2,6 @@
 /target/
 /absolutely-random.iml
 /AbsolutelyRandom.iml
-/dependency-reduced-pom.xml
 /client.py
 /auth_token.json
+/.gradle/
