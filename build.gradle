@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '2.0.20'  // Плагин для Kotlin
+    id 'com.github.johnrengelman.shadow' version '7.1.0'  // Плагин для создания shaded JAR
+}
+
+group = 'ru.dushkinmir'
+version = '1.9-ALPHA'
+archivesBaseName = 'AbsolutelyRandom'
+
+sourceCompatibility = '21'
+targetCompatibility = '21'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url 'https://oss.sonatype.org/content/groups/public/' }
+    maven { url 'https://repo.codemc.io/repository/maven-public/' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.dmulloy2.net/repository/public/' }
+}
+
+dependencies {
+    implementation 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
+    implementation 'dev.jorel:commandapi-bukkit-shade:9.5.2'
+    implementation 'de.tr7zw:item-nbt-api:2.13.2'
+    implementation 'com.github.Gecolay.GSit:core:1.12.0'
+    implementation 'com.zaxxer:HikariCP:6.0.0'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.7'
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.0.20'
+}
+
+tasks.register('runPythonScript', Exec) {
+    commandLine 'python', 'C:\\Users\\dmiroslav\\Projects\\IdeaProjects\\AbsolutlyRandom\\client.py',
+            'dushkinmir@gmail.com', 'c++_is_trash',
+            "${buildDir}/libs/${archivesBaseName}-${version}.jar"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+shadowJar {
+    mergeServiceFiles()
+    relocate('de.tr7zw.changeme.nbtapi', 'absrand.de.tr7zw.changeme.nbtapi')
+    relocate('dev.jorel.commandapi', 'absrand.dev.jorel.commandapi')
+    relocate('com.zaxxer.hikari', 'absrand.com.zaxxer.hikari')
+    archiveFileName = "${archivesBaseName}-${version}.jar"
+}
+
+build {
+    dependsOn shadowJar
+}
+
