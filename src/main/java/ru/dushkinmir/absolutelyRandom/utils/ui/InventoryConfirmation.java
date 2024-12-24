@@ -15,18 +15,16 @@ import java.util.List;
 
 public class InventoryConfirmation implements Listener {
 
-    private final Component title;
+    private Component title;
 
     private Runnable onConfirm;
     private Runnable onCancel;
 
-    public InventoryConfirmation(Component title) {
-        this.title = title;
-    }
-
-    public void showConfirmation(Player player, Component infoTitle, List<Component> infoLore, Component acceptTitle, Component declineTitle, Runnable onConfirm, Runnable onCancel) {
+    public void showConfirmation(Component title, Player player, Component infoTitle, List<Component> infoLore, Component acceptTitle, Component declineTitle, Runnable onConfirm, Runnable onCancel) {
         this.onConfirm = onConfirm;
         this.onCancel = onCancel;
+
+        this.title = title;
 
         Inventory confirmationMenu = Bukkit.createInventory(null, 9, this.title);
 

@@ -1,10 +1,9 @@
 package ru.dushkinmir.absolutelyRandom.core
 
-import dev.jorel.commandapi.CommandAPICommand
-import dev.jorel.commandapi.CommandPermission
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
-import dev.jorel.commandapi.arguments.StringArgument
-import dev.jorel.commandapi.executors.CommandExecutor
+import dev.jorel.commandapi.kotlindsl.anyExecutor
+import dev.jorel.commandapi.kotlindsl.commandTree
+import dev.jorel.commandapi.kotlindsl.stringArgument
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import org.bukkit.scheduler.BukkitRunnable
@@ -63,19 +62,18 @@ class ActionsManager(private val plugin: Plugin) {
 
     private fun registerCommands() {
         // Register debugrandom command
-        CommandAPICommand("debugaction")
-            .withPermission(CommandPermission.fromString("absolutlyrandom.admin"))
-            .withUsage("/debugaction <actionName>")
-            .withArguments(
-                StringArgument("actionName")
-                    .replaceSuggestions(ArgumentSuggestions.strings(debugActions))
-            )
-            .executes(CommandExecutor { sender, args ->
-                val actionName = args["actionName"] as String
-                if (executeAction(actionName)) sender?.sendMessage("[DEBUG] Событие $actionName выполнено.")
-                else sender?.sendMessage("oops!")
-            })
-            .register()
+        commandTree("debugaction") {
+            withPermission("absolutlyrandom.admin")
+            withUsage("/debugaction <actionName>")
+            stringArgument("actionName") {
+                replaceSuggestions(ArgumentSuggestions.strings(debugActions))
+                anyExecutor { executor, args ->
+                    val actionName = args["actionName"] as String
+                    if (executeAction(actionName)) executor.sendMessage("[DEBUG] Событие $actionName выполнено.")
+                    else executor.sendMessage("oops!")
+                }
+            }
+        }
     }
 
     private fun executeAction(actionName: String): Boolean {

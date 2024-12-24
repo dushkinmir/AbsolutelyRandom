@@ -19,9 +19,7 @@ class CommandsManager(private val plugin: Plugin, private val extensionManager: 
 
     fun onDisable() {
         // Unregister commands
-        CommandAPI.unregister("debugrandom")
-        CommandAPI.unregister("warp")
-        CommandAPI.unregister("sex")
+        CommandAPI.getRegisteredCommands().forEach { CommandAPI.unregister(it.commandName) }
         plugin.logger.info("All commands are deregistered.")
         // Disable CommandAPI
         CommandAPI.onDisable()

@@ -1,9 +1,9 @@
 package ru.dushkinmir.absolutelyRandom.features.warp
 
-import dev.jorel.commandapi.CommandAPICommand
-import dev.jorel.commandapi.arguments.ArgumentSuggestions
-import dev.jorel.commandapi.arguments.StringArgument
-import dev.jorel.commandapi.executors.PlayerCommandExecutor
+import dev.jorel.commandapi.kotlindsl.commandTree
+import dev.jorel.commandapi.kotlindsl.playerExecutor
+import dev.jorel.commandapi.kotlindsl.stringArgument
+import dev.jorel.commandapi.kotlindsl.subcommand
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -20,100 +20,87 @@ class WarpCommands(private val warpManager: WarpManager, plugin: Plugin) : Liste
 
     init {
         Bukkit.getServer().pluginManager.registerEvents(this, plugin)
-        this.inventoryConfirmation = InventoryConfirmation(
-            Component.text("Подтверждение").color(NamedTextColor.YELLOW)
-        )
+        this.inventoryConfirmation = InventoryConfirmation()
     }
 
     fun registerWarpCommands() {
-        // Подкоманда "create"
-        val warpCreate = CommandAPICommand("create")
-            .withArguments(StringArgument("warpName"))
-            .executesPlayer(PlayerCommandExecutor { player, args ->
-                val warpName = args["warpName"] as String
-                val location: Location = player.location
-                warpManager.createWarp(player, warpName, location)
-            })
-
-        // Подкоманда "teleport"
-        val warpTeleport = CommandAPICommand("tp")
-            .withArguments(
-                StringArgument("warpName")
-                    .replaceSuggestions(ArgumentSuggestions.strings { info ->
-                        val player = info.sender() as Player
-                        warpManager.getWarps(player, false).toTypedArray()
-                    })
-            )
-            .executesPlayer(PlayerCommandExecutor { player, args ->
-                val warpName = args["warpName"] as String
-                warpManager.teleportToWarp(player, warpName)
-            })
-
-        // Подкоманда "delete"
-        val warpDelete = CommandAPICommand("del")
-            .withArguments(
-                StringArgument("warpName")
-                    .replaceSuggestions(ArgumentSuggestions.strings { info ->
-                        val player = info.sender() as Player
-                        warpManager.getWarps(player, false).toTypedArray()
-                    })
-            )
-            .executesPlayer(PlayerCommandExecutor { player, args ->
-                val warpName = args["warpName"] as String
-                warpManager.deleteWarp(player, warpName)
-            })
-
-// Подкоманда "deleteall"
-        val warpDeleteAll = CommandAPICommand("delall")
-            .executesPlayer(PlayerCommandExecutor { player, args ->
-                PlayerUtils.sendMessageToPlayer(
-                    player,
-                    Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.RED),
-                    PlayerUtils.MessageType.CHAT
-                )
-                inventoryConfirmation.showConfirmation(
-                    player,
-                    Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.GOLD),
-                    listOf("Подтвердите удаление всех варпов.").map { it ->
-                        Component.text(it).color(NamedTextColor.DARK_PURPLE)
-                    },
-                    Component.text("Подтвердить").color(NamedTextColor.GREEN),
-                    Component.text("Отменить").color(NamedTextColor.RED),
-                    { onConfirm(player) },
-                    { onCancel(player) }
-                )
-            })
-
-        val warpList = CommandAPICommand("list")
-            .executesPlayer(PlayerCommandExecutor { player, args ->
-                val warps = warpManager.getWarps(player, true)
-
-                if (warps.isEmpty()) {
-                    PlayerUtils.sendMessageToPlayer(
-                        player,
-                        Component.text("У вас нет созданных варпов.")
-                            .color(NamedTextColor.RED),
-                        PlayerUtils.MessageType.CHAT
-                    )
-                } else {
-                    val formattedWarps = warps.joinToString("\n ")
-                    PlayerUtils.sendMessageToPlayer(
-                        player,
-                        Component.text("Ваши варпы: \n $formattedWarps")
-                            .color(NamedTextColor.GREEN),
-                        PlayerUtils.MessageType.CHAT
-                    )
+        commandTree("warp") {
+            subcommand("create") {
+                stringArgument("warp") {
+                    playerExecutor { player, args ->
+                        val warpName = args["warpName"] as String
+                        val location: Location = player.location
+                        warpManager.createWarp(player, warpName, location)
+                    }
                 }
-            })
+            }
+            subcommand("tp") {
+                stringArgument("warpName") {
+                    replaceSuggestions { info, builder ->
+                        val player = info.sender() as Player
+                        warpManager.getWarps(player, false).toTypedArray()
+                        builder.buildFuture()
+                    }
+                    playerExecutor { player, args ->
+                        val warpName = args["warpName"] as String
+                        warpManager.teleportToWarp(player, warpName)
+                    }
+                }
+            }
+            subcommand("del") {
+                stringArgument("warpName") {
+                    replaceSuggestions { info, builder ->
+                        val player = info.sender() as Player
+                        warpManager.getWarps(player, false).toTypedArray()
+                        builder.buildFuture()
+                    }
+                    playerExecutor { player, args ->
+                        val warpName = args["warpName"] as String
+                        warpManager.deleteWarp(player, warpName)
+                    }
+                }
+            }
+            subcommand("delall") {
+                playerExecutor { player, _ ->
+                    PlayerUtils.sendMessageToPlayer(
+                        player,
+                        Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.RED),
+                        PlayerUtils.MessageType.CHAT
+                    )
+                    inventoryConfirmation.showConfirmation(
+                        Component.text("Подтверждение").color(NamedTextColor.YELLOW),
+                        player,
+                        Component.text("Внимание: валюта не будет возвращена!").color(NamedTextColor.GOLD),
+                        listOf("Подтвердите удаление всех варпов.").map { it ->
+                            Component.text(it).color(NamedTextColor.DARK_PURPLE)
+                        },
+                        Component.text("Подтвердить").color(NamedTextColor.GREEN),
+                        Component.text("Отменить").color(NamedTextColor.RED),
+                        { onConfirm(player) }
+                    ) { onCancel(player) }
+                }
+            }
+            subcommand("list") {
+                playerExecutor { player, _ ->
+                    val warps = warpManager.getWarps(player, true)
 
-        // Основная команда "warp" с подкомандами
-        CommandAPICommand("warp")
-            .withSubcommand(warpCreate)
-            .withSubcommand(warpTeleport)
-            .withSubcommand(warpDelete)
-            .withSubcommand(warpDeleteAll)
-            .withSubcommand(warpList)
-            .register()
+                    if (warps.isEmpty()) {
+                        PlayerUtils.sendMessageToPlayer(
+                            player,
+                            Component.text("У вас нет созданных варпов.").color(NamedTextColor.RED),
+                            PlayerUtils.MessageType.CHAT
+                        )
+                    } else {
+                        val formattedWarps = warps.joinToString("\n ")
+                        PlayerUtils.sendMessageToPlayer(
+                            player,
+                            Component.text("Ваши варпы: \n $formattedWarps").color(NamedTextColor.GREEN),
+                            PlayerUtils.MessageType.CHAT
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun onConfirm(player: Player) {

@@ -36,7 +36,7 @@ class Inventory : Action("inventory") {
         return currentGameMode
     }
 
-    private fun addPotionEffect(player: Player): List<PotionEffectType> {
+    private fun addPotionEffect(player: Player) {
         val potionEffects = listOf<PotionEffectType>(PotionEffectType.SLOWNESS, PotionEffectType.MINING_FATIGUE)
         potionEffects.forEach { type ->
             {
@@ -44,7 +44,6 @@ class Inventory : Action("inventory") {
                 player.addPotionEffect(effect)
             }
         }
-        return potionEffects
     }
 
     private fun returnEverythingBack(

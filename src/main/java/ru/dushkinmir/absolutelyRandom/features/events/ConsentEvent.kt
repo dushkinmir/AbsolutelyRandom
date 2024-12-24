@@ -18,9 +18,7 @@ import java.util.*
 class ConsentEvent(
     private val plugin: Plugin,
     private val chatConfirmation: ChatConfirmation = ChatConfirmation(plugin),
-    private val inventoryConfirmation: InventoryConfirmation = InventoryConfirmation(
-        CONSENT_TITLE,
-    )
+    private val inventoryConfirmation: InventoryConfirmation = InventoryConfirmation()
 ) : Listener {
     private val playerBlockMap: MutableMap<Player, Block> = HashMap()
     private val random = Random()
@@ -45,14 +43,14 @@ class ConsentEvent(
             playerBlockMap[player] = block
             if (random.nextBoolean()) {
                 inventoryConfirmation.showConfirmation(
+                    CONSENT_TITLE,
                     player,
                     Component.text("Договор о согласии").color(NamedTextColor.GOLD),
                     infoLore.map { it -> Component.text(it).color(NamedTextColor.DARK_PURPLE) },
                     Component.text("Принять").color(NamedTextColor.GREEN),
                     Component.text("Отказаться").color(NamedTextColor.RED),
-                    { onConfirm(player) },
-                    { onCancel(player) }
-                )
+                    { onConfirm(player) }
+                ) { onCancel(player) }
             } else {
                 chatConfirmation.showConfirmation(
                     player,
