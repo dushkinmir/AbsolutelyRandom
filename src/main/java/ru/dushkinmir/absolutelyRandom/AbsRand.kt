@@ -47,4 +47,7 @@ class AbsRand : JavaPlugin(), Listener {
         logger.info("Stopping is completed.")
         logger.info("Goodbye!")
     }
+
+    // TODO: добавить следы от шагов
+    //  /summon minecraft:text_display ~ ~0.02 ~ {text:{text:'◼',color:'gray'},transformation:{left_rotation:[1f,1f,1f,1f],right_rotation:[1f,1f,1f,1f],translation:[0f,0f,0f],scale:[8f,8f,8f]}}
 }
